@@ -1,0 +1,117 @@
+set(HEADER_FILES
+        ${PROJECT_SOURCE_DIR}/Include/PlatformHeader.h
+        include/ClientSocket.h
+        include/ConfParser.h
+        include/DateTranslator.h
+        include/EventContext.h
+        include/FastCopyMacros.h
+        include/Format.h
+        include/GetWord.h
+        include/IdleTask.h
+        include/MyAssert.h
+        include/OS.h
+        include/OSArrayObjectDeleter.h
+        include/OSBufferPool.h
+        include/OSCodeFragment.h
+        include/OSCond.h
+        include/OSFileSource.h
+        include/OSHashTable.h
+        include/OSHeaders.h
+        include/OSHeap.h
+        include/OSMapEx.h
+        include/OSMutex.h
+        include/OSMutexRW.h
+        include/OSQueue.h
+        include/OSRef.h
+        include/OSRefTableEx.h
+        include/OSThread.h
+        include/QueryParamList.h
+        include/ResizeableStringFormatter.h
+        include/SDPUtils.h
+        include/Socket.h
+        include/SocketUtils.h
+        include/StrPtrLen.h
+        include/StringFormatter.h
+        include/StringParser.h
+        include/StringTranslator.h
+        include/TCPListenerSocket.h
+        include/TCPSocket.h
+        include/Task.h
+        include/TimeoutTask.h
+        include/Trim.h
+        include/UDPDemuxer.h
+        include/UDPSocket.h
+        include/UDPSocketPool.h
+        include/UserAgentParser.h
+        include/atomic.h
+        include/base64.h
+        include/common.h
+        include/easy_gettimeofday.h
+        include/epollEvent.h
+        include/ev.h
+        include/getopt.h
+        include/keyframecache.h
+        include/md5.h
+        include/md5digest.h
+        include/sdpCache.h)
+
+set(SOURCE_FILES
+        ClientSocket.cpp
+        ConfParser.cpp
+        DateTranslator.cpp
+        EventContext.cpp
+        Format.cpp
+        GetWord.c
+        IdleTask.cpp
+        MyAssert.cpp
+        OS.cpp
+        OSBufferPool.cpp
+        OSCodeFragment.cpp
+        OSCond.cpp
+        OSFileSource.cpp
+        OSHeap.cpp
+        OSMapEx.cpp
+        OSMutex.cpp
+        OSMutexRW.cpp
+        OSQueue.cpp
+        OSRef.cpp
+        OSRefTableEx.cpp
+        OSThread.cpp
+        QueryParamList.cpp
+        ResizeableStringFormatter.cpp
+        SDPUtils.cpp
+        Socket.cpp
+        SocketUtils.cpp
+        StrPtrLen.cpp
+        StringFormatter.cpp
+        StringParser.cpp
+        StringTranslator.cpp
+        TCPListenerSocket.cpp
+        TCPSocket.cpp
+        Task.cpp
+        TimeoutTask.cpp
+        Trim.c
+        UDPDemuxer.cpp
+        UDPSocket.cpp
+        UDPSocketPool.cpp
+        UserAgentParser.cpp
+        atomic.cpp
+        base64.c
+        easy_gettimeofday.cpp
+        epollEvent.cpp
+        ev.cpp
+        getopt.c
+        keyframecache.cpp
+        md5.c
+        md5digest.cpp
+        sdpCache.cpp)
+
+add_library(CommonUtilities STATIC ${HEADER_FILES} ${SOURCE_FILES})
+target_include_directories(CommonUtilities
+        PUBLIC include
+        PUBLIC ${PROJECT_SOURCE_DIR}/ThirdParty)
+target_link_libraries(CommonUtilities
+        PUBLIC APICommonCode
+        PUBLIC SafeStd)
+target_compile_options(CommonUtilities
+        PUBLIC -include ${PROJECT_SOURCE_DIR}/Include/PlatformHeader.h)
