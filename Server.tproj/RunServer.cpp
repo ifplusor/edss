@@ -200,7 +200,7 @@ QTSS_ServerState StartServer(XMLPrefsParser *inPrefsSource,
 }
 
 void WritePid(bool forked) {
-#ifndef __Win32__
+#if !__Win32__ && !__MinGW__
   // WRITE PID TO FILE
   CF::CharArrayDeleter thePidFileName(sServer->GetPrefs()->GetPidFilePath());
   FILE *thePidFile = fopen(thePidFileName, "w");
@@ -218,7 +218,7 @@ void WritePid(bool forked) {
 }
 
 void CleanPid(bool force) {
-#ifndef __Win32__
+#if !__Win32__ && !__MinGW__
   if (sHasPID || force) {
     CF::CharArrayDeleter thePidFileName(sServer->GetPrefs()->GetPidFilePath());
     unlink(thePidFileName);

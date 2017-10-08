@@ -38,7 +38,7 @@
 #include <CF/MyAssert.h>
 #include <CF/Utils.h>
 
-#ifndef __Win32__
+#if !__WinSock__
 #include <netinet/in.h> //definition of htonl
 #endif
 

@@ -38,7 +38,7 @@
 #include "QTAccessFile.h"
 #include "SDPCache.h"
 
-#ifndef __Win32__
+#if !__WinSock__
 
 #include <netinet/in.h>
 

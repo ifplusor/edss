@@ -130,13 +130,9 @@ QTSS_Error QTSSCallbacks::QTSS_AddAttribute(QTSS_ObjectType inType,
 }
 
 QTSS_Error QTSSCallbacks::
-QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType,
-                          const char *inAttrName,
-                          void *inUnused,
-                          QTSS_AttrDataType inAttrDataType) {
+QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, const char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
   Assert(inUnused == NULL);
-  QTSS_ModuleState *theState = (QTSS_ModuleState *)
-      Core::Thread::GetMainThreadData();
+  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 
@@ -149,36 +145,26 @@ QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType,
     return QTSS_BadArgument;
 
   QTSSDictionaryMap *theMap = QTSSDictionaryMap::GetMap(theDictionaryIndex);
-  return theMap->AddAttribute(inAttrName, NULL, inAttrDataType,
-                              qtssAttrModeRead | qtssAttrModeWrite
-                                  | qtssAttrModePreempSafe);
+  return theMap->AddAttribute(inAttrName, NULL, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_AddInstanceAttribute(QTSS_Object inObject,
-                                                    const char *inAttrName,
-                                                    void *inUnused,
-                                                    QTSS_AttrDataType inAttrDataType) {
+QTSS_Error QTSSCallbacks::QTSS_AddInstanceAttribute(QTSS_Object inObject, const char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
   Assert(inUnused == NULL);
   if ((inObject == NULL) || (inAttrName == NULL))
     return QTSS_BadArgument;
 
   return ((QTSSDictionary *) inObject)
-      ->AddInstanceAttribute(inAttrName, NULL, inAttrDataType,
-                             qtssAttrModeRead | qtssAttrModeWrite
-                                 | qtssAttrModeDelete | qtssAttrModePreempSafe);
+      ->AddInstanceAttribute(inAttrName, NULL, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModeDelete | qtssAttrModePreempSafe);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_RemoveInstanceAttribute(QTSS_Object inObject,
-                                                       QTSS_AttributeID inID) {
+QTSS_Error QTSSCallbacks::QTSS_RemoveInstanceAttribute(QTSS_Object inObject, QTSS_AttributeID inID) {
   if (inObject == NULL || (inID == qtssIllegalAttrID))
     return QTSS_BadArgument;
 
   return ((QTSSDictionary *) inObject)->RemoveInstanceAttribute(inID);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_IDForAttr(QTSS_ObjectType inType,
-                                         const char *inName,
-                                         QTSS_AttributeID *outID) {
+QTSS_Error QTSSCallbacks::QTSS_IDForAttr(QTSS_ObjectType inType, const char *inName, QTSS_AttributeID *outID) {
   if (outID == NULL)
     return QTSS_BadArgument;
 
@@ -189,48 +175,31 @@ QTSS_Error QTSSCallbacks::QTSS_IDForAttr(QTSS_ObjectType inType,
   return QTSSDictionaryMap::GetMap(theDictionaryIndex)->GetAttrID(inName, outID);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByIndex(QTSS_Object inObject,
-                                                  UInt32 inIndex,
-                                                  QTSS_Object *outAttrInfoObject) {
+QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByIndex(QTSS_Object inObject, UInt32 inIndex, QTSS_Object *outAttrInfoObject) {
   if (inObject == NULL)
     return QTSS_BadArgument;
 
-  return ((QTSSDictionary *) inObject)->GetAttrInfoByIndex(inIndex,
-                                                           (QTSSAttrInfoDict **) outAttrInfoObject);
+  return ((QTSSDictionary *) inObject)->GetAttrInfoByIndex(inIndex, (QTSSAttrInfoDict **) outAttrInfoObject);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByID(QTSS_Object inObject,
-                                               QTSS_AttributeID inAttrID,
-                                               QTSS_Object *outAttrInfoObject) {
+QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByID(QTSS_Object inObject, QTSS_AttributeID inAttrID, QTSS_Object *outAttrInfoObject) {
   if (inObject == NULL || (inAttrID == qtssIllegalAttrID))
     return QTSS_BadArgument;
 
-  return ((QTSSDictionary *) inObject)->GetAttrInfoByID(inAttrID,
-                                                        (QTSSAttrInfoDict **) outAttrInfoObject);
+  return ((QTSSDictionary *) inObject)->GetAttrInfoByID(inAttrID, (QTSSAttrInfoDict **) outAttrInfoObject);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByName(QTSS_Object inObject,
-                                                 const char *inAttrName,
-                                                 QTSS_Object *outAttrInfoObject) {
+QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByName(QTSS_Object inObject, const char *inAttrName, QTSS_Object *outAttrInfoObject) {
   if (inObject == NULL)
     return QTSS_BadArgument;
 
-  return ((QTSSDictionary *) inObject)->GetAttrInfoByName(inAttrName,
-                                                          (QTSSAttrInfoDict **) outAttrInfoObject);
+  return ((QTSSDictionary *) inObject)->GetAttrInfoByName(inAttrName, (QTSSAttrInfoDict **) outAttrInfoObject);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_GetValuePtr(QTSS_Object inDictionary,
-                                           QTSS_AttributeID inID,
-                                           UInt32 inIndex,
-                                           void **outBuffer,
-                                           UInt32 *outLen) {
-  if ((inDictionary == NULL) || (outBuffer == NULL) || (outLen == NULL)
-      || (inID == qtssIllegalAttrID))
+QTSS_Error QTSSCallbacks::QTSS_GetValuePtr(QTSS_Object inDictionary, QTSS_AttributeID inID, UInt32 inIndex, void **outBuffer, UInt32 *outLen) {
+  if ((inDictionary == NULL) || (outBuffer == NULL) || (outLen == NULL) || (inID == qtssIllegalAttrID))
     return QTSS_BadArgument;
-  return ((QTSSDictionary *) inDictionary)->GetValuePtr(inID,
-                                                        inIndex,
-                                                        outBuffer,
-                                                        outLen);
+  return ((QTSSDictionary *) inDictionary)->GetValuePtr(inID, inIndex, outBuffer, outLen);
 }
 
 QTSS_Error QTSSCallbacks::QTSS_GetValue(QTSS_Object inDictionary, QTSS_AttributeID inID, UInt32 inIndex, void *ioBuffer, UInt32 *ioLen) {

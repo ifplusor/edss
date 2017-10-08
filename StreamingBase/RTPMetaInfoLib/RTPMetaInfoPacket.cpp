@@ -31,7 +31,7 @@
 #include <CF/StringParser.h>
 #include "RTPMetaInfoPacket.h"
 
-#ifndef __Win32__
+#if !__WinSock__
 #include <netinet/in.h>
 #endif
 

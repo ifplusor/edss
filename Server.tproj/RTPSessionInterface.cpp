@@ -41,176 +41,52 @@ std::atomic_uint RTPSessionInterface::sRTPSessionIDCounter{0};
 
 QTSSAttrInfoDict::AttrInfo  RTPSessionInterface::sAttributes[] =
     {   /*fields:   fAttrName, fFuncPtr, fAttrDataType, fAttrPermission */
-        /* 0  */
-        {"qtssCliSesStreamObjects", NULL, qtssAttrDataTypeQTSS_Object,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 1  */
-        {"qtssCliSesCreateTimeInMsec", NULL, qtssAttrDataTypeTimeVal,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 2  */
-        {"qtssCliSesFirstPlayTimeInMsec", NULL, qtssAttrDataTypeTimeVal,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 3  */
-        {"qtssCliSesPlayTimeInMsec", NULL, qtssAttrDataTypeTimeVal,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 4  */
-        {"qtssCliSesAdjustedPlayTimeInMsec", NULL, qtssAttrDataTypeTimeVal,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 5  */
-        {"qtssCliSesRTPBytesSent", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 6  */
-        {"qtssCliSesRTPPacketsSent", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 7  */
-        {"qtssCliSesState", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead |
-            qtssAttrModePreempSafe},
-        /* 8  */
-        {"qtssCliSesPresentationURL", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 9  */
-        {"qtssCliSesFirstUserAgent", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 10 */
-        {"qtssCliStrMovieDurationInSecs", NULL, qtssAttrDataTypeFloat64,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe |
-             qtssAttrModeWrite},
-        /* 11 */
-        {"qtssCliStrMovieSizeInBytes", NULL, qtssAttrDataTypeUInt64,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe |
-             qtssAttrModeWrite},
-        /* 12 */
-        {"qtssCliSesMovieAverageBitRate", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe |
-             qtssAttrModeWrite},
-        /* 13 */
-        {"qtssCliSesLastRTSPSession", NULL, qtssAttrDataTypeQTSS_Object,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 14 */
-        {"qtssCliSesFullURL", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 15 */
-        {"qtssCliSesHostName", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
+        /* 0  */{"qtssCliSesStreamObjects", NULL, qtssAttrDataTypeQTSS_Object, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 1  */{"qtssCliSesCreateTimeInMsec", NULL, qtssAttrDataTypeTimeVal, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 2  */{"qtssCliSesFirstPlayTimeInMsec", NULL, qtssAttrDataTypeTimeVal, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 3  */{"qtssCliSesPlayTimeInMsec", NULL, qtssAttrDataTypeTimeVal, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 4  */{"qtssCliSesAdjustedPlayTimeInMsec", NULL, qtssAttrDataTypeTimeVal, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 5  */{"qtssCliSesRTPBytesSent", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 6  */{"qtssCliSesRTPPacketsSent", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 7  */{"qtssCliSesState", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 8  */{"qtssCliSesPresentationURL", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 9  */{"qtssCliSesFirstUserAgent", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 10 */{"qtssCliStrMovieDurationInSecs", NULL, qtssAttrDataTypeFloat64, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+        /* 11 */{"qtssCliStrMovieSizeInBytes", NULL, qtssAttrDataTypeUInt64, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+        /* 12 */{"qtssCliSesMovieAverageBitRate", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+        /* 13 */{"qtssCliSesLastRTSPSession", NULL, qtssAttrDataTypeQTSS_Object, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 14 */{"qtssCliSesFullURL", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 15 */{"qtssCliSesHostName", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
 
-        /* 16 */
-        {"qtssCliRTSPSessRemoteAddrStr", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 17 */
-        {"qtssCliRTSPSessLocalDNS", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 18 */
-        {"qtssCliRTSPSessLocalAddrStr", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 19 */
-        {"qtssCliRTSPSesUserName", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 20 */
-        {"qtssCliRTSPSesUserPassword", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 21 */
-        {"qtssCliRTSPSesURLRealm", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 22 */
-        {"qtssCliRTSPReqRealStatusCode", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 23 */
-        {"qtssCliTeardownReason", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe |
-             qtssAttrModeWrite},
-        /* 24 */
-        {"qtssCliSesReqQueryString", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 25 */
-        {"qtssCliRTSPReqRespMsg", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
+        /* 16 */{"qtssCliRTSPSessRemoteAddrStr", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 17 */{"qtssCliRTSPSessLocalDNS", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 18 */{"qtssCliRTSPSessLocalAddrStr", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 19 */{"qtssCliRTSPSesUserName", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 20 */{"qtssCliRTSPSesUserPassword", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 21 */{"qtssCliRTSPSesURLRealm", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 22 */{"qtssCliRTSPReqRealStatusCode", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 23 */{"qtssCliTeardownReason", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+        /* 24 */{"qtssCliSesReqQueryString", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 25 */{"qtssCliRTSPReqRespMsg", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
 
-        /* 26 */
-        {"qtssCliSesCurrentBitRate", CurrentBitRate, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 27 */
-        {"qtssCliSesPacketLossPercent", PacketLossPercent,
-         qtssAttrDataTypeFloat32, qtssAttrModeRead |
-            qtssAttrModePreempSafe},
-        /* 28 */
-        {"qtssCliSesTimeConnectedinMsec", TimeConnected, qtssAttrDataTypeSInt64,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 29 */
-        {"qtssCliSesCounterID", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead |
-            qtssAttrModePreempSafe},
-        /* 30 */
-        {"qtssCliSesRTSPSessionID", NULL, qtssAttrDataTypeCharArray,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 31 */
-        {"qtssCliSesFramesSkipped", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModeWrite |
-             qtssAttrModePreempSafe},
-        /* 32 */
-        {"qtssCliSesTimeoutMsec", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModeWrite |
-             qtssAttrModePreempSafe},
-        /* 33 */
-        {"qtssCliSesOverBufferEnabled", NULL, qtssAttrDataTypeBool16,
-         qtssAttrModeRead |
-             qtssAttrModeWrite |
-             qtssAttrModePreempSafe},
-        /* 34 */
-        {"qtssCliSesRTCPPacketsRecv", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 35 */
-        {"qtssCliSesRTCPBytesRecv", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe},
-        /* 36 */
-        {"qtssCliSesStartedThinning", NULL, qtssAttrDataTypeBool16,
-         qtssAttrModeRead |
-             qtssAttrModeWrite |
-             qtssAttrModePreempSafe},
-        /* 37 */
-        {"qtssCliSessLastRTSPBandwidth", NULL, qtssAttrDataTypeUInt32,
-         qtssAttrModeRead |
-             qtssAttrModePreempSafe}
+        /* 26 */{"qtssCliSesCurrentBitRate", CurrentBitRate, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 27 */{"qtssCliSesPacketLossPercent", PacketLossPercent, qtssAttrDataTypeFloat32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 28 */{"qtssCliSesTimeConnectedinMsec", TimeConnected, qtssAttrDataTypeSInt64, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 29 */{"qtssCliSesCounterID", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 30 */{"qtssCliSesRTSPSessionID", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 31 */{"qtssCliSesFramesSkipped", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe},
+        /* 32 */{"qtssCliSesTimeoutMsec", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe},
+        /* 33 */{"qtssCliSesOverBufferEnabled", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe},
+        /* 34 */{"qtssCliSesRTCPPacketsRecv", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 35 */{"qtssCliSesRTCPBytesRecv", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+        /* 36 */{"qtssCliSesStartedThinning", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe},
+        /* 37 */{"qtssCliSessLastRTSPBandwidth", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe}
     };
 
 void RTPSessionInterface::Initialize() {
   for (UInt32 x = 0; x < qtssCliSesNumParams; x++)
-    QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kClientSessionDictIndex)->
-        SetAttribute(x,
-                     sAttributes[x].fAttrName,
-                     sAttributes[x].fFuncPtr,
-                     sAttributes[x].fAttrDataType,
-                     sAttributes[x].fAttrPermission);
+    QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kClientSessionDictIndex)
+        ->SetAttribute(x, sAttributes[x].fAttrName, sAttributes[x].fFuncPtr, sAttributes[x].fAttrDataType, sAttributes[x].fAttrPermission);
 }
 
 RTPSessionInterface::RTPSessionInterface()

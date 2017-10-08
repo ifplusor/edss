@@ -28,8 +28,6 @@
                for more details on what that object is). This object
                implements the RTP Session Dictionary.
 
-
-
 */
 
 

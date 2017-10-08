@@ -36,13 +36,15 @@
 #ifndef _RTCPPACKET_H_
 #define _RTCPPACKET_H_
 
+#include <CF/Types.h>
+
 #include <stdlib.h>
 #ifndef __Win32__
 #include <sys/types.h>
+#endif
+#ifndef __WinSock__
 #include <netinet/in.h>
 #endif
-
-#include <CF/Types.h>
 
 class RTCPPacket {
  public:

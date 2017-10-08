@@ -132,9 +132,7 @@ class ReflectorOutput {
     UInt32 numBookmarks = numStreams * 2;
 
     fBookmarkedPacketsElemsArray = new CF::QueueElem *[numBookmarks];
-    ::memset(fBookmarkedPacketsElemsArray,
-             0,
-             sizeof(CF::QueueElem *) * (numBookmarks));
+    ::memset(fBookmarkedPacketsElemsArray, 0, sizeof(CF::QueueElem *) * (numBookmarks));
 
     //DT("fBookmarkedPacketsElemsArray[-1] %p= %p", &fBookmarkedPacketsElemsArray[-1], fBookmarkedPacketsElemsArray[-1]);
     fNumBookmarks = numBookmarks;

@@ -30,9 +30,13 @@
 
 
 //INCLUDES:
+#include <CF/Types.h>
+
 #ifndef __Win32__
 #include <sys/types.h>
+#ifndef __MinGW__
 #include <sys/uio.h>
+#endif
 #endif
 
 #include <CF/ArrayObjectDeleter.h>

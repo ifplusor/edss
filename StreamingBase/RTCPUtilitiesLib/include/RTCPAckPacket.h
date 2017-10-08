@@ -35,7 +35,7 @@
 #define _RTCPACKPACKET_H_
 
 #include <stdlib.h>
-#ifndef __Win32__
+#if !__WinSock__
 #include <netinet/in.h>
 #endif
 

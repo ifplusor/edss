@@ -789,20 +789,14 @@ QTSSDictionaryMap::QTSSDictionaryMap(UInt32 inNumReservedAttrs, UInt32 inFlags)
   ::memset(fAttrArray, 0, sizeof(QTSSAttrInfoDict *) * fAttrArraySize);
 }
 
-QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName,
-                                           QTSS_AttrFunctionPtr inFuncPtr,
-                                           QTSS_AttrDataType inDataType,
-                                           QTSS_AttrPermission inPermission) {
+QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr, QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission) {
   if (inAttrName == NULL || ::strlen(inAttrName) > QTSS_MAX_ATTRIBUTE_NAME_SIZE)
     return QTSS_BadArgument;
 
   for (UInt32 count = 0; count < fNextAvailableID; count++) {
-    if (::strcmp(&fAttrArray[count]->fAttrInfo.fAttrName[0], inAttrName)
-        == 0) { // found the name in the dictionary
-      if (fAttrArray[count]->fAttrInfo.fAttrPermission &
-          qtssPrivateAttrModeRemoved) { // it is a previously removed attribute
-        if (fAttrArray[count]->fAttrInfo.fAttrDataType
-            == inDataType) { //same type so reuse the attribute
+    if (::strcmp(&fAttrArray[count]->fAttrInfo.fAttrName[0], inAttrName) == 0) { // found the name in the dictionary
+      if (fAttrArray[count]->fAttrInfo.fAttrPermission & qtssPrivateAttrModeRemoved) { // it is a previously removed attribute
+        if (fAttrArray[count]->fAttrInfo.fAttrDataType == inDataType) { //same type so reuse the attribute
           QTSS_AttributeID attrID = fAttrArray[count]->fID;
           this->UnRemoveAttribute(attrID);
           fAttrArray[count]->fAttrInfo.fFuncPtr = inFuncPtr; // reset
@@ -829,9 +823,7 @@ QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName,
     QTSSAttrInfoDict **theNewArray = new QTSSAttrInfoDict *[theNewArraySize];
     ::memset(theNewArray, 0, sizeof(QTSSAttrInfoDict *) * theNewArraySize);
     if (fAttrArray != NULL) {
-      ::memcpy(theNewArray,
-               fAttrArray,
-               sizeof(QTSSAttrInfoDict *) * fAttrArraySize);
+      ::memcpy(theNewArray, fAttrArray, sizeof(QTSSAttrInfoDict *) * fAttrArraySize);
       delete[] fAttrArray;
     }
     fAttrArray = theNewArray;
@@ -842,8 +834,7 @@ QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName,
   fNextAvailableID++;
   fNumValidAttrs++;
   if (fFlags & kIsInstanceMap)
-    theID |=
-        0x80000000; // Set the high order bit to indicate this is an instance attr
+    theID |= 0x80000000; // Set the high order bit to indicate this is an instance attr
 
   // Copy the information into the first available element
   // Currently, all attributes added in this fashion are always writeable

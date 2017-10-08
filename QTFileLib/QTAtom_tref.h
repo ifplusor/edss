@@ -32,7 +32,7 @@
 
 //
 // Includes
-#ifndef __Win32__
+#if !__WinSock__
 #include <netinet/in.h>
 #endif
 

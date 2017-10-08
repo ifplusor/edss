@@ -41,7 +41,7 @@
 #ifdef __MacOSX__
 #include <membership.h>
 #endif
-#ifndef __Win32__
+#if !__WinSock__
 #include <grp.h>
 #include <pwd.h>
 #endif
@@ -721,7 +721,7 @@ bool DSAccessFile::CheckGroupMembership(const char *inUsername,
 }
 
 bool DSAccessFile::ValidUser(char *userName, void *extraDataPtr) {
-#ifndef __Win32__
+#if !__Win32__ && !__MinGW__
   struct passwd *user = getpwnam(userName);
   bool result = true;
   if (user == NULL) {

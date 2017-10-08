@@ -32,11 +32,11 @@
 
 #include <stdlib.h>
 
-#ifndef __Win32__
+#include <CF/Types.h>
 
+#ifndef __WinSock__
 #include <arpa/inet.h>
 #include <fcntl.h>
-
 #endif
 
 #include <CF/Net/Socket/SocketUtils.h>
@@ -377,7 +377,7 @@ RTPStream::RTPStream(UInt32 inSSRC, RTPSessionInterface *inSession)
     fPlayerToMonitorAddr = Net::SocketUtils::ConvertStringToAddr(srcIP.Ptr);
 
     fMonitorSocket = ::socket(AF_INET, SOCK_DGRAM, 0);
-#ifdef __Win32__
+#ifdef __WinSock__
     u_long one = 1;
     (void) ::ioctlsocket(fMonitorSocket, FIONBIO, &one);
 #else

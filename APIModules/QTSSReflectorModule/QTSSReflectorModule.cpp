@@ -190,8 +190,7 @@ static StrPtrLen sTheNowRangeHeader("npt=now-");
 
 // FUNCTION PROTOTYPES
 
-static QTSS_Error QTSSReflectorModuleDispatch(QTSS_Role inRole,
-                                              QTSS_RoleParamPtr inParams);
+static QTSS_Error QTSSReflectorModuleDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParams);
 
 static QTSS_Error Register(QTSS_Register_Params *inParams);
 
@@ -834,28 +833,25 @@ QTSS_Error ProcessRTSPRequest(QTSS_StandardRTSP_Params *inParams) {
   return QTSS_NoErr;
 }
 
-ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams,
-                                 QTSS_AttributeID inPathType,
-                                 bool isPush,
-                                 bool *foundSessionPtr,
-                                 char **resultFilePath) {
+ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams, QTSS_AttributeID inPathType, bool isPush, bool *foundSessionPtr, char **resultFilePath) {
   // 调用FindOrCreateSession来对哈希表sSessionMap进行查询。
 
   char *theFileNameStr = NULL;
   QTSS_Error theErr = QTSS_GetValueAsString(inParams->inRTSPRequest, qtssRTSPReqFileName, 0, &theFileNameStr);
   Assert(theErr == QTSS_NoErr);
   QTSSCharArrayDeleter theFileNameStrDeleter(theFileNameStr);
+
   if (theErr != QTSS_NoErr) return NULL;
 
-  char *theQueryString = NULL;
-  theErr = QTSS_GetValueAsString(inParams->inRTSPRequest, qtssRTSPReqQueryString, 0, &theQueryString);
-  QTSSCharArrayDeleter theQueryStringDeleter(theQueryString);
+//  char *theQueryString = NULL;
+//  theErr = QTSS_GetValueAsString(inParams->inRTSPRequest, qtssRTSPReqQueryString, 0, &theQueryString);
+//  QTSSCharArrayDeleter theQueryStringDeleter(theQueryString);
 
-  std::string queryTemp;
-  if (theQueryString) {
+//  std::string queryTemp;
+//  if (theQueryString) {
 //    queryTemp = EasyUtil::Urldecode(theQueryString);
-  }
-  Net::QueryParamList parList(const_cast<char *>(queryTemp.c_str()));
+//  }
+//  Net::QueryParamList parList(const_cast<char *>(queryTemp.c_str()));
 
   UInt32 theChannelNum = 1;
 //  const char *chnNum = parList.DoFindCGIValueForParam(EASY_TAG_CHANNEL);
@@ -1697,13 +1693,12 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams) {
   // 2. 查询是否已经建立RTPSessionOutput。
   RTPSessionOutput **theOutput = NULL;
   theErr = QTSS_GetValuePtr(inParams->inClientSession, sOutputAttr, 0, (void **) &theOutput, &theLen);
-  // 注意对于一个新的播放链接来说,RTSPSession、RTPSession都是新创建的对象,所以需要重新
-  // 创建RTPSessionOutput对象
+  // 注意对于一个新的播放链接来说,RTSPSession、RTPSession都是新创建的对象,所以需要重新创建RTPSessionOutput对象
   if (theLen != sizeof(RTPSessionOutput *)) {
     //theLen = sizeof(theSession);
     //theErr = QTSS_GetValue(inParams->inClientSession, sSessionAttr, 0, &theSession, &theLen);
 
-    if (theErr != QTSS_NoErr && !isPush) {
+    if (/*theErr != QTSS_NoErr &&*/ !isPush) {
       // 1.1) 如果没有，且是从UI发来的标准RTSP客户端请求
 
       theSession = DoSessionSetup(inParams, qtssRTSPReqFileName);

@@ -1553,7 +1553,7 @@ void RTSPSession::CheckAuthentication() {
     if (userPassword->Len == 0) {
       authenticated = false;
     } else {
-#ifdef __Win32__
+#if __Win32__ || __MinGW__
       // The password is md5 encoded for win32
       char md5EncodeResult[120];
       // no memory is allocated in this function call
@@ -1801,7 +1801,7 @@ void RTSPSession::SetupRequest() {
 
   // If this is a DESCRIBE request, make sure there is no SessionID. This is not allowed,
   // and may screw up modules if we let them see this request.
-  // DESCRIBE请求，必须保证已经有了SessionID
+  // DESCRIBE请求，必须保证已经没有了SessionID
   if (fRequest->GetMethod() == qtssDescribeMethod) {
     if (fRequest->GetHeaderDictionary()->GetValue(qtssSessionHeader)->Len > 0) {
       (void) QTSSModuleUtils::SendErrorResponse(fRequest, qtssClientHeaderFieldNotValid, qtssMsgNoSesIDOnDescribe);
@@ -1813,6 +1813,7 @@ void RTSPSession::SetupRequest() {
   // 如果未查找到RTPSession，建立一个新的RTPSession
   if (fRTPSession == nullptr) {
     theErr = this->CreateNewRTPSession(theMap);
+    // 由于server的状态、最大连接数限制、最大带宽限制等原因，RTPSession的创建可能失败。
     if (theErr != QTSS_NoErr) return;
   }
 

@@ -31,10 +31,12 @@
 // -------------------------------------
 // Includes
 //
+#include <CF/Types.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef __Win32__
+#if !__WinSock__
 #include <netinet/in.h>
 #endif
 

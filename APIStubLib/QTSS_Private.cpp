@@ -32,7 +32,7 @@
 
 #include <CF/Types.h>
 
-#ifndef __Win32__
+#if !__Win32__ && !__MinGW__
 #include <sys/uio.h>
 #endif
 

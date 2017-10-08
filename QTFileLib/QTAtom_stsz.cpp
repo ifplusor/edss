@@ -31,8 +31,10 @@
 // -------------------------------------
 // Includes
 //
+#include <CF/Types.h>
+
 #include <stdlib.h>
-#ifndef __Win32__
+#if !__WinSock__
 #include <netinet/in.h>
 #endif
 

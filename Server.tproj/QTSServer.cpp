@@ -31,6 +31,7 @@
 
 */
 
+#include <CF/Types.h>
 
 #ifndef __Win32__
 
@@ -39,7 +40,7 @@
 
 #endif
 
-#ifndef __Win32__
+#if !__Win32__ && !__MinGW__
 
 #include <unistd.h>
 #include <grp.h>
@@ -86,8 +87,7 @@
 #ifdef _WIN32
 #include "CreateDump.h"
 
-LONG CrashHandler_EasyDarwin(EXCEPTION_POINTERS *pException)
-{
+LONG CrashHandler_EasyDarwin(EXCEPTION_POINTERS *pException) {
     SYSTEMTIME	systemTime;
     GetLocalTime(&systemTime);
 
@@ -651,7 +651,7 @@ bool QTSServer::SetupUDPSockets() {
 }
 
 bool QTSServer::SwitchPersonality() {
-#ifndef __Win32__  //not supported
+#if !__Win32__ && !__MinGW__  //not supported
   CharArrayDeleter runGroupName(fSrvrPrefs->GetRunGroupName());
   CharArrayDeleter runUserName(fSrvrPrefs->GetRunUserName());
 

@@ -104,8 +104,7 @@ bool QTAtom_stco::Initialize() {
   if (((PointerSizedInt) fChunkOffsetTable & (PointerSizedInt) 0x3) == 0)
     fTable = (void *) fChunkOffsetTable;
   else
-    fTable = (void *) (((PointerSizedInt) fChunkOffsetTable + 4)
-        & ~((PointerSizedInt) 0x3));
+    fTable = (void *) (((PointerSizedInt) fChunkOffsetTable + 4) & ~((PointerSizedInt) 0x3));
 
   ReadBytes(stcoPos_SampleTable, (char *) fTable, fNumEntries * fOffSetSize);
 

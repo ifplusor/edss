@@ -280,12 +280,10 @@ QTSS_Error LogError(QTSS_RoleParamPtr inParamBlock) {
 
         sDupErrorStringCount = 0;
       }
-#ifdef __Win32__
+#if __Win32__ || __MinGW__
       ::strncpy(sLastErrorString, inParamBlock->errorParams.inBuffer, sizeof(sLastErrorString));
 #else
-      ::strlcpy(sLastErrorString,
-                inParamBlock->errorParams.inBuffer,
-                sizeof(sLastErrorString));
+      ::strlcpy(sLastErrorString, inParamBlock->errorParams.inBuffer, sizeof(sLastErrorString));
 #endif
 
     }

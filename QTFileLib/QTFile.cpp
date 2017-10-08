@@ -36,7 +36,9 @@
 
 #include <string.h>
 
-#ifndef __Win32__
+#include <CF/Types.h>
+
+#if !__WinSock__
 #include <netinet/in.h>
 #endif
 

@@ -102,35 +102,18 @@ QTSS_Error Register(QTSS_Register_Params *inParams) {
 
 
   // Add other attributes
-  static char
-      *sNumLossesAboveToleranceName = "QTSSFlowControlModuleLossAboveTol";
-  static char
-      *sNumLossesBelowToleranceName = "QTSSFlowControlModuleLossBelowTol";
+  static char *sNumLossesAboveToleranceName = "QTSSFlowControlModuleLossAboveTol";
+  static char *sNumLossesBelowToleranceName = "QTSSFlowControlModuleLossBelowTol";
   static char *sNumGettingWorsesName = "QTSSFlowControlModuleGettingWorses";
 
-  (void) QTSS_AddStaticAttribute(qtssRTPStreamObjectType,
-                                 sNumLossesAboveToleranceName,
-                                 NULL,
-                                 qtssAttrDataTypeUInt32);
-  (void) QTSS_IDForAttr(qtssRTPStreamObjectType,
-                        sNumLossesAboveToleranceName,
-                        &sNumLossesAboveTolAttr);
+  (void) QTSS_AddStaticAttribute(qtssRTPStreamObjectType, sNumLossesAboveToleranceName, NULL, qtssAttrDataTypeUInt32);
+  (void) QTSS_IDForAttr(qtssRTPStreamObjectType, sNumLossesAboveToleranceName, &sNumLossesAboveTolAttr);
 
-  (void) QTSS_AddStaticAttribute(qtssRTPStreamObjectType,
-                                 sNumLossesBelowToleranceName,
-                                 NULL,
-                                 qtssAttrDataTypeUInt32);
-  (void) QTSS_IDForAttr(qtssRTPStreamObjectType,
-                        sNumLossesBelowToleranceName,
-                        &sNumLossesBelowTolAttr);
+  (void) QTSS_AddStaticAttribute(qtssRTPStreamObjectType, sNumLossesBelowToleranceName, NULL, qtssAttrDataTypeUInt32);
+  (void) QTSS_IDForAttr(qtssRTPStreamObjectType, sNumLossesBelowToleranceName, &sNumLossesBelowTolAttr);
 
-  (void) QTSS_AddStaticAttribute(qtssRTPStreamObjectType,
-                                 sNumGettingWorsesName,
-                                 NULL,
-                                 qtssAttrDataTypeUInt32);
-  (void) QTSS_IDForAttr(qtssRTPStreamObjectType,
-                        sNumGettingWorsesName,
-                        &sNumWorsesAttr);
+  (void) QTSS_AddStaticAttribute(qtssRTPStreamObjectType, sNumGettingWorsesName, NULL, qtssAttrDataTypeUInt32);
+  (void) QTSS_IDForAttr(qtssRTPStreamObjectType, sNumGettingWorsesName, &sNumWorsesAttr);
 
   // Tell the server our name!
   static char *sModuleName = "QTSSFlowControlModule";
