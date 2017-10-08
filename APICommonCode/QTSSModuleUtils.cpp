@@ -29,12 +29,14 @@
                     
 */
 
+#include <CF/DateTranslator.h>
+#include <CF/ArrayObjectDeleter.h>
+#include <CF/ResizeableStringFormatter.h>
+
 #include "QTSSModuleUtils.h"
 
-#include "OSArrayObjectDeleter.h"
-#include "StringFormatter.h"
-#include "ResizeableStringFormatter.h"
 #include "QTAccessFile.h"
+#include "SDPCache.h"
 
 #ifndef __Win32__
 
@@ -46,27 +48,23 @@
 #include <limits.h>
 #endif
 
-#include "sdpCache.h"
+using namespace CF;
 
-QTSS_TextMessagesObject     QTSSModuleUtils::sMessages = NULL;
-QTSS_ServerObject           QTSSModuleUtils::sServer = NULL;
-QTSS_StreamRef              QTSSModuleUtils::sErrorLog = NULL;
-bool                      QTSSModuleUtils::sEnableRTSPErrorMsg = false;
-QTSS_ErrorVerbosity
-    QTSSModuleUtils::sMissingPrefVerbosity = qtssMessageVerbosity;
+QTSS_TextMessagesObject QTSSModuleUtils::sMessages = NULL;
+QTSS_ServerObject       QTSSModuleUtils::sServer = NULL;
+QTSS_StreamRef          QTSSModuleUtils::sErrorLog = NULL;
+bool                    QTSSModuleUtils::sEnableRTSPErrorMsg = false;
+QTSS_ErrorVerbosity QTSSModuleUtils::sMissingPrefVerbosity = qtssMessageVerbosity;
 
-void QTSSModuleUtils::Initialize(QTSS_TextMessagesObject inMessages,
-                                 QTSS_ServerObject inServer,
-                                 QTSS_StreamRef inErrorLog) {
+void QTSSModuleUtils::
+Initialize(QTSS_TextMessagesObject inMessages, QTSS_ServerObject inServer, QTSS_StreamRef inErrorLog) {
   sMessages = inMessages;
   sServer = inServer;
   sErrorLog = inErrorLog;
 }
 
-QTSS_Error QTSSModuleUtils::ReadEntireFile(char *inPath,
-                                           StrPtrLen *outData,
-                                           QTSS_TimeVal inModDate,
-                                           QTSS_TimeVal *outModDate) {
+QTSS_Error QTSSModuleUtils::
+ReadEntireFile(char *inPath, StrPtrLen *outData, QTSS_TimeVal inModDate, QTSS_TimeVal *outModDate) {
 #if 0
   QTSS_Object theFileObject = NULL;
 #endif
@@ -86,11 +84,11 @@ QTSS_Error QTSSModuleUtils::ReadEntireFile(char *inPath,
     QTSS_TimeVal *theModDate = NULL;
     unsigned long long date = 0;
     //theErr = QTSS_GetValuePtr(theFileObject, qtssFlObjModDate, 0, (void**)&theModDate, &theParamLen);
-    date = CSdpCache::GetInstance()->getSdpCacheDate(inPath);
+    date = SDPCache::GetInstance()->getSdpCacheDate(inPath);
     theModDate = (QTSS_TimeVal *) &date;
     Assert(theParamLen == sizeof(QTSS_TimeVal));
-    if (theParamLen != sizeof(QTSS_TimeVal))
-      break;
+    if (theParamLen != sizeof(QTSS_TimeVal)) break;
+
     if (outModDate != NULL)
       *outModDate = (QTSS_TimeVal) *theModDate;
 
@@ -104,7 +102,7 @@ QTSS_Error QTSSModuleUtils::ReadEntireFile(char *inPath,
     UInt64 *theLength = NULL;
     UInt64 sdpLen = 0;
     //theErr = QTSS_GetValuePtr(theFileObject, qtssFlObjLength, 0, (void**)&theLength, &theParamLen);
-    char *sdpContext = CSdpCache::GetInstance()->getSdpMap(inPath);
+    char *sdpContext = SDPCache::GetInstance()->getSdpMap(inPath);
     if (sdpContext == NULL) {
       theErr = QTSS_RequestFailed;
     } else {
@@ -113,11 +111,9 @@ QTSS_Error QTSSModuleUtils::ReadEntireFile(char *inPath,
 
     theLength = &sdpLen;
 
-    if (theParamLen != sizeof(UInt64))
-      break;
+    if (theParamLen != sizeof(UInt64)) break;
 
-    if (*theLength > kSInt32_Max)
-      break;
+    if (*theLength > kSInt32_Max) break;
 
     // Allocate memory for the file data
     outData->Ptr = new char[(SInt32) (*theLength + 1)];
@@ -157,95 +153,58 @@ void QTSSModuleUtils::SetupSupportedMethods(QTSS_Object inServer,
   (void) QTSS_GetNumValues(inServer, qtssSvrHandledMethods, &theNumMethods);
 
   for (UInt32 x = 0; x < inNumMethods; x++)
-    (void) QTSS_SetValue(inServer,
-                         qtssSvrHandledMethods,
-                         theNumMethods++,
-                         (void *) &inMethodArray[x],
-                         sizeof(inMethodArray[x]));
+    (void) QTSS_SetValue(inServer, qtssSvrHandledMethods, theNumMethods++, (void *) &inMethodArray[x], sizeof(inMethodArray[x]));
 }
 
-void QTSSModuleUtils::LogError(QTSS_ErrorVerbosity inVerbosity,
-                               QTSS_AttributeID inTextMessage,
-                               UInt32 /*inErrNumber*/,
-                               char *inArgument,
-                               char *inArg2) {
+void QTSSModuleUtils::
+LogError(QTSS_ErrorVerbosity inVerbosity, QTSS_AttributeID inTextMessage, UInt32 /*inErrNumber*/, char *inArgument, char *inArg2) {
   static char *sEmptyArg = "";
 
-  if (sMessages == NULL)
-    return;
+  if (sMessages == NULL) return;
 
   // Retrieve the specified text message from the text messages dictionary.
 
   StrPtrLen theMessage;
-  (void) QTSS_GetValuePtr(sMessages,
-                          inTextMessage,
-                          0,
-                          (void **) &theMessage.Ptr,
-                          &theMessage.Len);
+  (void) QTSS_GetValuePtr(sMessages, inTextMessage, 0, (void **) &theMessage.Ptr, &theMessage.Len);
   if ((theMessage.Ptr == NULL) || (theMessage.Len == 0))
-    (void) QTSS_GetValuePtr(sMessages,
-                            qtssMsgNoMessage,
-                            0,
-                            (void **) &theMessage.Ptr,
-                            &theMessage.Len);
+    (void) QTSS_GetValuePtr(sMessages, qtssMsgNoMessage, 0, (void **) &theMessage.Ptr, &theMessage.Len);
 
-  if ((theMessage.Ptr == NULL) || (theMessage.Len == 0))
-    return;
+  if ((theMessage.Ptr == NULL) || (theMessage.Len == 0)) return;
 
-  // qtss_sprintf and ::strlen will crash if inArgument is NULL
-  if (inArgument == NULL)
-    inArgument = sEmptyArg;
-  if (inArg2 == NULL)
-    inArg2 = sEmptyArg;
+  // s_sprintf and ::strlen will crash if inArgument is NULL
+  if (inArgument == NULL) inArgument = sEmptyArg;
+  if (inArg2 == NULL) inArg2 = sEmptyArg;
 
   // Create a new string, and put the argument into the new string.
 
-  UInt32
-      theMessageLen = theMessage.Len + ::strlen(inArgument) + ::strlen(inArg2);
+  UInt32 theMessageLen = theMessage.Len + ::strlen(inArgument) + ::strlen(inArg2);
 
-  OSCharArrayDeleter theLogString(new char[theMessageLen + 1]);
-  qtss_sprintf(theLogString.GetObject(), theMessage.Ptr, inArgument, inArg2);
+  CharArrayDeleter theLogString(new char[theMessageLen + 1]);
+  s_sprintf(theLogString.GetObject(), theMessage.Ptr, inArgument, inArg2);
   Assert(theMessageLen >= ::strlen(theLogString.GetObject()));
 
-  (void) QTSS_Write(sErrorLog,
-                    theLogString.GetObject(),
-                    ::strlen(theLogString.GetObject()),
-                    NULL,
-                    inVerbosity);
+  (void) QTSS_Write(sErrorLog, theLogString.GetObject(), ::strlen(theLogString.GetObject()), NULL, inVerbosity);
 }
 
-void QTSSModuleUtils::LogErrorStr(QTSS_ErrorVerbosity inVerbosity,
-                                  char *inMessage) {
+void QTSSModuleUtils::LogErrorStr(QTSS_ErrorVerbosity inVerbosity, char *inMessage) {
   if (inMessage == NULL) return;
-  (void) QTSS_Write(sErrorLog,
-                    inMessage,
-                    ::strlen(inMessage),
-                    NULL,
-                    inVerbosity);
+  (void) QTSS_Write(sErrorLog, inMessage, ::strlen(inMessage), NULL, inVerbosity);
 }
 
-void QTSSModuleUtils::LogPrefErrorStr(QTSS_ErrorVerbosity inVerbosity,
-                                      char *preference,
-                                      char *inMessage) {
+void QTSSModuleUtils::LogPrefErrorStr(QTSS_ErrorVerbosity inVerbosity, char *preference, char *inMessage) {
   if (inMessage == NULL || preference == NULL) {
     Assert(0);
     return;
   }
   char buffer[1024];
 
-  qtss_snprintf(buffer,
-                sizeof(buffer),
-                "Server preference %s %s",
-                preference,
-                inMessage);
+  s_snprintf(buffer, sizeof(buffer), "Server preference %s %s", preference, inMessage);
 
   (void) QTSS_Write(sErrorLog, buffer, ::strlen(buffer), NULL, inVerbosity);
 }
 
-char *QTSSModuleUtils::GetFullPath(QTSS_RTSPRequestObject inRequest,
-                                   QTSS_AttributeID whichFileType,
-                                   UInt32 *outLen,
-                                   StrPtrLen *suffix) {
+char *QTSSModuleUtils::
+GetFullPath(QTSS_RTSPRequestObject inRequest, QTSS_AttributeID whichFileType, UInt32 *outLen, StrPtrLen *suffix) {
   Assert(outLen != NULL);
 
   (void) QTSS_LockObject(inRequest);
@@ -253,18 +212,10 @@ char *QTSSModuleUtils::GetFullPath(QTSS_RTSPRequestObject inRequest,
   // the file type is qtssFilePathTrunc attr, because there may be no path
   // once its truncated. That's ok. In that case, we just won't append a path.
   StrPtrLen theFilePath;
-  (void) QTSS_GetValuePtr(inRequest,
-                          whichFileType,
-                          0,
-                          (void **) &theFilePath.Ptr,
-                          &theFilePath.Len);
+  (void) QTSS_GetValuePtr(inRequest, whichFileType, 0, (void **) &theFilePath.Ptr, &theFilePath.Len);
 
   StrPtrLen theRootDir;
-  QTSS_Error theErr = QTSS_GetValuePtr(inRequest,
-                                       qtssRTSPReqRootDir,
-                                       0,
-                                       (void **) &theRootDir.Ptr,
-                                       &theRootDir.Len);
+  QTSS_Error theErr = QTSS_GetValuePtr(inRequest, qtssRTSPReqRootDir, 0, (void **) &theRootDir.Ptr, &theRootDir.Len);
   Assert(theErr == QTSS_NoErr);
 
 
@@ -275,8 +226,7 @@ char *QTSSModuleUtils::GetFullPath(QTSS_RTSPRequestObject inRequest,
       && theFilePath.Len && theFilePath.Ptr[0] == kPathDelimiterChar) {
     char *thePathEnd = &(theFilePath.Ptr[theFilePath.Len]);
     while (theFilePath.Ptr != thePathEnd) {
-      if (*theFilePath.Ptr != kPathDelimiterChar)
-        break;
+      if (*theFilePath.Ptr != kPathDelimiterChar) break;
 
       theFilePath.Ptr++;
       theFilePath.Len--;
@@ -286,8 +236,7 @@ char *QTSSModuleUtils::GetFullPath(QTSS_RTSPRequestObject inRequest,
   //construct a full path out of the root dir path for this request,
   //and the url path.
   *outLen = theFilePath.Len + theRootDir.Len + 2;
-  if (suffix != NULL)
-    *outLen += suffix->Len;
+  if (suffix != NULL) *outLen += suffix->Len;
 
   char *theFullPath = new char[*outLen];
 
@@ -295,8 +244,7 @@ char *QTSSModuleUtils::GetFullPath(QTSS_RTSPRequestObject inRequest,
   StringFormatter thePathFormatter(theFullPath, *outLen);
   thePathFormatter.Put(theRootDir);
   thePathFormatter.Put(theFilePath);
-  if (suffix != NULL)
-    thePathFormatter.Put(*suffix);
+  if (suffix != NULL) thePathFormatter.Put(*suffix);
   thePathFormatter.PutTerminator();
 
   *outLen = *outLen - 2;
@@ -306,9 +254,8 @@ char *QTSSModuleUtils::GetFullPath(QTSS_RTSPRequestObject inRequest,
   return theFullPath;
 }
 
-QTSS_Error QTSSModuleUtils::AppendRTPMetaInfoHeader(QTSS_RTSPRequestObject inRequest,
-                                                    StrPtrLen *inRTPMetaInfoHeader,
-                                                    RTPMetaInfoPacket::FieldID *inFieldIDArray) {
+QTSS_Error QTSSModuleUtils::
+AppendRTPMetaInfoHeader(QTSS_RTSPRequestObject inRequest, StrPtrLen *inRTPMetaInfoHeader, RTPMetaInfoPacket::FieldID *inFieldIDArray) {
   //
   // For formatting the response header
   char tempBuffer[128];
@@ -325,18 +272,16 @@ QTSS_Error QTSSModuleUtils::AppendRTPMetaInfoHeader(QTSS_RTSPRequestObject inReq
   UInt16 fieldNameValue = 0;
 
   while (theHeader.Ptr <= (theEndP - sizeof(RTPMetaInfoPacket::FieldName))) {
-    RTPMetaInfoPacket::FieldName
-        *theFieldName = (RTPMetaInfoPacket::FieldName *) theHeader.Ptr;
+    RTPMetaInfoPacket::FieldName *theFieldName = (RTPMetaInfoPacket::FieldName *) theHeader.Ptr;
     ::memcpy(&fieldNameValue, theFieldName, sizeof(UInt16));
 
-    RTPMetaInfoPacket::FieldIndex theFieldIndex =
-        RTPMetaInfoPacket::GetFieldIndexForName(ntohs(fieldNameValue));
+    RTPMetaInfoPacket::FieldIndex theFieldIndex = RTPMetaInfoPacket::GetFieldIndexForName(ntohs(fieldNameValue));
 
     //
     // This field is not supported (not in the field ID array), so
     // don't put it in the response
-    if ((theFieldIndex == RTPMetaInfoPacket::kIllegalField) ||
-        (inFieldIDArray[theFieldIndex] == RTPMetaInfoPacket::kFieldNotUsed)) {
+    if ((theFieldIndex == RTPMetaInfoPacket::kIllegalField)
+        || (inFieldIDArray[theFieldIndex] == RTPMetaInfoPacket::kFieldNotUsed)) {
       theHeader.Ptr += 3;
       continue;
     }
@@ -382,29 +327,16 @@ QTSS_Error QTSSModuleUtils::AppendRTPMetaInfoHeader(QTSS_RTSPRequestObject inReq
   //
   // When appending the header to the response, strip off the last ';'.
   // It's not needed.
-  return QTSS_AppendRTSPHeader(inRequest,
-                               qtssXRTPMetaInfoHeader,
-                               theFormatter.GetBufPtr(),
-                               theFormatter.GetCurrentOffset() - 1);
+  return QTSS_AppendRTSPHeader(inRequest, qtssXRTPMetaInfoHeader, theFormatter.GetBufPtr(), theFormatter.GetCurrentOffset() - 1);
 }
 
-QTSS_Error QTSSModuleUtils::SendErrorResponse(QTSS_RTSPRequestObject inRequest,
-                                              QTSS_RTSPStatusCode inStatusCode,
-                                              QTSS_AttributeID inTextMessage,
-                                              StrPtrLen *inStringArg) {
+QTSS_Error QTSSModuleUtils::
+SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatusCode, QTSS_AttributeID inTextMessage, StrPtrLen *inStringArg) {
   static bool sFalse = false;
 
   //set RTSP headers necessary for this error response message
-  (void) QTSS_SetValue(inRequest,
-                       qtssRTSPReqStatusCode,
-                       0,
-                       &inStatusCode,
-                       sizeof(inStatusCode));
-  (void) QTSS_SetValue(inRequest,
-                       qtssRTSPReqRespKeepAlive,
-                       0,
-                       &sFalse,
-                       sizeof(sFalse));
+  (void) QTSS_SetValue(inRequest, qtssRTSPReqStatusCode, 0, &inStatusCode, sizeof(inStatusCode));
+  (void) QTSS_SetValue(inRequest, qtssRTSPReqRespKeepAlive, 0, &sFalse, sizeof(sFalse));
   StringFormatter theErrorMsgFormatter(NULL, 0);
   char *messageBuffPtr = NULL;
 
@@ -416,21 +348,13 @@ QTSS_Error QTSSModuleUtils::SendErrorResponse(QTSS_RTSPRequestObject inRequest,
 
     // Retrieve the specified message out of the text messages dictionary.
     StrPtrLen theMessage;
-    (void) QTSS_GetValuePtr(sMessages,
-                            inTextMessage,
-                            0,
-                            (void **) &theMessage.Ptr,
-                            &theMessage.Len);
+    (void) QTSS_GetValuePtr(sMessages, inTextMessage, 0, (void **) &theMessage.Ptr, &theMessage.Len);
 
     if ((theMessage.Ptr == NULL) || (theMessage.Len == 0)) {
       // If we couldn't find the specified message, get the default
       // "No Message" message, and return that to the client instead.
 
-      (void) QTSS_GetValuePtr(sMessages,
-                              qtssMsgNoMessage,
-                              0,
-                              (void **) &theMessage.Ptr,
-                              &theMessage.Len);
+      (void) QTSS_GetValuePtr(sMessages, qtssMsgNoMessage, 0, (void **) &theMessage.Ptr, &theMessage.Len);
     }
     Assert(theMessage.Ptr != NULL);
     Assert(theMessage.Len > 0);
@@ -467,13 +391,8 @@ QTSS_Error QTSSModuleUtils::SendErrorResponse(QTSS_RTSPRequestObject inRequest,
       theErrorMsgFormatter.Put(theMessage);
 
     char buff[32];
-    qtss_sprintf(buff,
-                 "%"   _U32BITARG_   "",
-                 theErrorMsgFormatter.GetBytesWritten());
-    (void) QTSS_AppendRTSPHeader(inRequest,
-                                 qtssContentLengthHeader,
-                                 buff,
-                                 ::strlen(buff));
+    s_sprintf(buff, "%"   _U32BITARG_   "", theErrorMsgFormatter.GetBytesWritten());
+    (void) QTSS_AppendRTSPHeader(inRequest, qtssContentLengthHeader, buff, ::strlen(buff));
   }
 
   //send the response header. In all situations where errors could happen, we
@@ -485,37 +404,20 @@ QTSS_Error QTSSModuleUtils::SendErrorResponse(QTSS_RTSPRequestObject inRequest,
   //
   // Now that we've formatted the message into the temporary buffer,
   // write it out to the request stream and the Client Session object
-  (void) QTSS_Write(inRequest,
-                    theErrorMsgFormatter.GetBufPtr(),
-                    theErrorMsgFormatter.GetBytesWritten(),
-                    NULL,
-                    0);
-  (void) QTSS_SetValue(inRequest,
-                       qtssRTSPReqRespMsg,
-                       0,
-                       theErrorMsgFormatter.GetBufPtr(),
-                       theErrorMsgFormatter.GetBytesWritten());
+  (void) QTSS_Write(inRequest, theErrorMsgFormatter.GetBufPtr(), theErrorMsgFormatter.GetBytesWritten(), NULL, 0);
+  (void) QTSS_SetValue(inRequest, qtssRTSPReqRespMsg, 0, theErrorMsgFormatter.GetBufPtr(), theErrorMsgFormatter.GetBytesWritten());
 
   delete[] messageBuffPtr;
   return QTSS_RequestFailed;
 }
 
-QTSS_Error QTSSModuleUtils::SendErrorResponseWithMessage(QTSS_RTSPRequestObject inRequest,
-                                                         QTSS_RTSPStatusCode inStatusCode,
-                                                         StrPtrLen *inErrorMessagePtr) {
+QTSS_Error QTSSModuleUtils::
+SendErrorResponseWithMessage(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatusCode, StrPtrLen *inErrorMessagePtr) {
   static bool sFalse = false;
 
   //set RTSP headers necessary for this error response message
-  (void) QTSS_SetValue(inRequest,
-                       qtssRTSPReqStatusCode,
-                       0,
-                       &inStatusCode,
-                       sizeof(inStatusCode));
-  (void) QTSS_SetValue(inRequest,
-                       qtssRTSPReqRespKeepAlive,
-                       0,
-                       &sFalse,
-                       sizeof(sFalse));
+  (void) QTSS_SetValue(inRequest, qtssRTSPReqStatusCode, 0, &inStatusCode, sizeof(inStatusCode));
+  (void) QTSS_SetValue(inRequest, qtssRTSPReqRespKeepAlive, 0, &sFalse, sizeof(sFalse));
   StrPtrLen theErrorMessage(NULL, 0);
 
   if (sEnableRTSPErrorMsg) {
@@ -525,11 +427,8 @@ QTSS_Error QTSSModuleUtils::SendErrorResponseWithMessage(QTSS_RTSPRequestObject 
     theErrorMessage.Set(inErrorMessagePtr->Ptr, inErrorMessagePtr->Len);
 
     char buff[32];
-    qtss_sprintf(buff, "%"   _U32BITARG_   "", inErrorMessagePtr->Len);
-    (void) QTSS_AppendRTSPHeader(inRequest,
-                                 qtssContentLengthHeader,
-                                 buff,
-                                 ::strlen(buff));
+    s_sprintf(buff, "%"   _U32BITARG_   "", inErrorMessagePtr->Len);
+    (void) QTSS_AppendRTSPHeader(inRequest, qtssContentLengthHeader, buff, ::strlen(buff));
   }
 
   //send the response header. In all situations where errors could happen, we
@@ -539,95 +438,59 @@ QTSS_Error QTSSModuleUtils::SendErrorResponseWithMessage(QTSS_RTSPRequestObject 
   //
   // Now that we've formatted the message into the temporary buffer,
   // write it out to the request stream and the Client Session object
-  (void) QTSS_Write(inRequest,
-                    theErrorMessage.Ptr,
-                    theErrorMessage.Len,
-                    NULL,
-                    0);
-  (void) QTSS_SetValue(inRequest,
-                       qtssRTSPReqRespMsg,
-                       0,
-                       theErrorMessage.Ptr,
-                       theErrorMessage.Len);
+  (void) QTSS_Write(inRequest, theErrorMessage.Ptr, theErrorMessage.Len, NULL, 0);
+  (void) QTSS_SetValue(inRequest, qtssRTSPReqRespMsg, 0, theErrorMessage.Ptr, theErrorMessage.Len);
 
   return QTSS_RequestFailed;
 }
 
-QTSS_Error QTSSModuleUtils::SendHTTPErrorResponse(QTSS_RTSPRequestObject inRequest,
-                                                  QTSS_SessionStatusCode inStatusCode,
-                                                  bool inKillSession,
-                                                  char *errorMessage) {
+QTSS_Error QTSSModuleUtils::
+SendHTTPErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_SessionStatusCode inStatusCode, bool inKillSession, char *errorMessage) {
   static bool sFalse = false;
 
   //set status code for access log
-  (void) QTSS_SetValue(inRequest,
-                       qtssRTSPReqStatusCode,
-                       0,
-                       &inStatusCode,
-                       sizeof(inStatusCode));
+  (void) QTSS_SetValue(inRequest, qtssRTSPReqStatusCode, 0, &inStatusCode, sizeof(inStatusCode));
 
   if (inKillSession) // tell the server to end the session
-    (void) QTSS_SetValue(inRequest,
-                         qtssRTSPReqRespKeepAlive,
-                         0,
-                         &sFalse,
-                         sizeof(sFalse));
+    (void) QTSS_SetValue(inRequest, qtssRTSPReqRespKeepAlive, 0, &sFalse, sizeof(sFalse));
 
-  ResizeableStringFormatter
-      theErrorMessage(NULL, 0); //allocates and deletes memory
+  ResizeableStringFormatter theErrorMessage(NULL, 0); //allocates and deletes memory
   ResizeableStringFormatter bodyMessage(NULL, 0); //allocates and deletes memory
 
   char messageLineBuffer[64]; // used for each line
   static const int maxMessageBufferChars = sizeof(messageLineBuffer) - 1;
   messageLineBuffer[maxMessageBufferChars] = 0; // guarantee termination
 
-  // ToDo: put in a more meaningful http error message for each error. Not required by spec.
-  // ToDo: maybe use the HTTP protcol class static error strings.
+  // TODO: put in a more meaningful http error message for each error. Not required by spec.
+  // TODO: maybe use the HTTP protcol class static error strings.
   char *errorMsg = "error";
 
   DateBuffer theDate;
-  DateTranslator::UpdateDateBuffer(&theDate,
-                                   0); // get the current GMT date and time
+  DateTranslator::UpdateDateBuffer(&theDate, 0); // get the current GMT date and time
 
   UInt32 realCode = 0;
   UInt32 len = sizeof(realCode);
-  (void) QTSS_GetValue(inRequest,
-                       qtssRTSPReqRealStatusCode,
-                       0,
-                       (void *) &realCode,
-                       &len);
+  (void) QTSS_GetValue(inRequest, qtssRTSPReqRealStatusCode, 0, (void *) &realCode, &len);
 
   char serverHeaderBuffer[64]; // the qtss Server: header field
   len = sizeof(serverHeaderBuffer) - 1; // leave room for terminator
-  (void) QTSS_GetValue(sServer,
-                       qtssSvrRTSPServerHeader,
-                       0,
-                       (void *) serverHeaderBuffer,
-                       &len);
+  (void) QTSS_GetValue(sServer, qtssSvrRTSPServerHeader, 0, (void *) serverHeaderBuffer, &len);
   serverHeaderBuffer[len] = 0; // terminate.
 
-  qtss_snprintf(messageLineBuffer,
-                maxMessageBufferChars,
-                "HTTP/1.1 %"   _U32BITARG_   " %s",
-                realCode,
-                errorMsg);
+  s_snprintf(messageLineBuffer, maxMessageBufferChars, "HTTP/1.1 %" _U32BITARG_ " %s", realCode, errorMsg);
   theErrorMessage.Put(messageLineBuffer, ::strlen(messageLineBuffer));
   theErrorMessage.PutEOL();
 
   theErrorMessage.Put(serverHeaderBuffer, ::strlen(serverHeaderBuffer));
   theErrorMessage.PutEOL();
 
-  qtss_snprintf(messageLineBuffer,
-                maxMessageBufferChars,
-                "Date: %s",
-                theDate.GetDateBuffer());
+  s_snprintf(messageLineBuffer, maxMessageBufferChars, "Date: %s", theDate.GetDateBuffer());
   theErrorMessage.Put(messageLineBuffer, ::strlen(messageLineBuffer));
   theErrorMessage.PutEOL();
 
-  bool addBody = (errorMessage != NULL
-      && ::strlen(errorMessage) != 0); // body error message so add body headers
-  if (addBody) // body error message so add body headers
-  {
+  bool addBody = (errorMessage != NULL && ::strlen(errorMessage) != 0); // body error message so add body headers
+  if (addBody) { // body error message so add body headers
+
     // first create the html body
     static const StrPtrLen htmlBodyStart("<html><body>\n");
     bodyMessage.Put(htmlBodyStart.Ptr, htmlBodyStart.Len);
@@ -649,10 +512,7 @@ QTSS_Error QTSSModuleUtils::SendHTTPErrorResponse(QTSS_RTSPRequestObject inReque
     theErrorMessage.Put(bodyHeaderType.Ptr, bodyHeaderType.Len);
     theErrorMessage.PutEOL();
 
-    qtss_snprintf(messageLineBuffer,
-                  maxMessageBufferChars,
-                  "Content-Length: %"   _U32BITARG_   "",
-                  bodyMessage.GetBytesWritten());
+    s_snprintf(messageLineBuffer, maxMessageBufferChars, "Content-Length: %"   _U32BITARG_   "", bodyMessage.GetBytesWritten());
     theErrorMessage.Put(messageLineBuffer, ::strlen(messageLineBuffer));
     theErrorMessage.PutEOL();
   }
@@ -663,40 +523,25 @@ QTSS_Error QTSSModuleUtils::SendHTTPErrorResponse(QTSS_RTSPRequestObject inReque
 
   theErrorMessage.PutEOL();  // terminate headers with empty line
 
-  if (addBody) // add html body
-  {
+  if (addBody) { // add html body
     theErrorMessage.Put(bodyMessage.GetBufPtr(), bodyMessage.GetBytesWritten());
   }
 
   //
   // Now that we've formatted the message into the temporary buffer,
   // write it out to the request stream and the Client Session object
-  (void) QTSS_Write(inRequest,
-                    theErrorMessage.GetBufPtr(),
-                    theErrorMessage.GetBytesWritten(),
-                    NULL,
-                    0);
-  (void) QTSS_SetValue(inRequest,
-                       qtssRTSPReqRespMsg,
-                       0,
-                       theErrorMessage.GetBufPtr(),
-                       theErrorMessage.GetBytesWritten());
+  (void) QTSS_Write(inRequest, theErrorMessage.GetBufPtr(), theErrorMessage.GetBytesWritten(), NULL, 0);
+  (void) QTSS_SetValue(inRequest, qtssRTSPReqRespMsg, 0, theErrorMessage.GetBufPtr(), theErrorMessage.GetBytesWritten());
 
   return QTSS_RequestFailed;
 }
 
-void QTSSModuleUtils::SendDescribeResponse(QTSS_RTSPRequestObject inRequest,
-                                           QTSS_ClientSessionObject inSession,
-                                           iovec *describeData,
-                                           UInt32 inNumVectors,
-                                           UInt32 inTotalLength) {
+void QTSSModuleUtils::
+SendDescribeResponse(QTSS_RTSPRequestObject inRequest, QTSS_ClientSessionObject inSession, iovec *describeData, UInt32 inNumVectors, UInt32 inTotalLength) {
   //write content size header
   char buf[32];
-  qtss_sprintf(buf, "%" _S32BITARG_ "", inTotalLength);
-  (void) QTSS_AppendRTSPHeader(inRequest,
-                               qtssContentLengthHeader,
-                               &buf[0],
-                               ::strlen(&buf[0]));
+  s_sprintf(buf, "%" _S32BITARG_ "", inTotalLength);
+  (void) QTSS_AppendRTSPHeader(inRequest, qtssContentLengthHeader, &buf[0], ::strlen(&buf[0]));
 
   (void) QTSS_SendStandardRTSPResponse(inRequest, inSession, 0);
 
@@ -704,38 +549,27 @@ void QTSSModuleUtils::SendDescribeResponse(QTSS_RTSPRequestObject inRequest,
   // send the SDP if we have a number greater than the maximum allowed, we coalesce the vectors into
   // a single big buffer
 #ifdef __solaris__
-  if (inNumVectors > IOV_MAX )
-  {
+  if (inNumVectors > IOV_MAX ) {
           char* describeDataBuffer = QTSSModuleUtils::CoalesceVectors(describeData, inNumVectors, inTotalLength);
           (void)QTSS_Write(inRequest, (void *)describeDataBuffer, inTotalLength, NULL, qtssWriteFlagsNoFlags);
           // deleting memory allocated by the CoalesceVectors call
           delete [] describeDataBuffer;
-  }
-  else
+  } else
       (void)QTSS_WriteV(inRequest, describeData, inNumVectors, inTotalLength, NULL);
 #else
-  (void) QTSS_WriteV(inRequest,
-                     describeData,
-                     inNumVectors,
-                     inTotalLength,
-                     NULL);
+  (void) QTSS_WriteV(inRequest, describeData, inNumVectors, inTotalLength, NULL);
 #endif
 
 }
 
-char *QTSSModuleUtils::CoalesceVectors(iovec *inVec,
-                                       UInt32 inNumVectors,
-                                       UInt32 inTotalLength) {
-  if (inTotalLength == 0)
-    return NULL;
+char *QTSSModuleUtils::CoalesceVectors(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength) {
+  if (inTotalLength == 0) return NULL;
 
   char *buffer = new char[inTotalLength];
   UInt32 bufferOffset = 0;
 
   for (UInt32 index = 0; index < inNumVectors; index++) {
-    ::memcpy(buffer + bufferOffset,
-             inVec[index].iov_base,
-             inVec[index].iov_len);
+    ::memcpy(buffer + bufferOffset, inVec[index].iov_base, inVec[index].iov_len);
     bufferOffset += inVec[index].iov_len;
   }
 
@@ -747,8 +581,7 @@ char *QTSSModuleUtils::CoalesceVectors(iovec *inVec,
 QTSS_ModulePrefsObject QTSSModuleUtils::GetModulePrefsObject(QTSS_ModuleObject inModObject) {
   QTSS_ModulePrefsObject thePrefsObject = NULL;
   UInt32 theLen = sizeof(thePrefsObject);
-  QTSS_Error theErr =
-      QTSS_GetValue(inModObject, qtssModPrefs, 0, &thePrefsObject, &theLen);
+  QTSS_Error theErr = QTSS_GetValue(inModObject, qtssModPrefs, 0, &thePrefsObject, &theLen);
   Assert(theErr == QTSS_NoErr);
 
   return thePrefsObject;
@@ -757,11 +590,7 @@ QTSS_ModulePrefsObject QTSSModuleUtils::GetModulePrefsObject(QTSS_ModuleObject i
 QTSS_Object QTSSModuleUtils::GetModuleAttributesObject(QTSS_ModuleObject inModObject) {
   QTSS_Object theAttributesObject = NULL;
   UInt32 theLen = sizeof(theAttributesObject);
-  QTSS_Error theErr = QTSS_GetValue(inModObject,
-                                    qtssModAttributes,
-                                    0,
-                                    &theAttributesObject,
-                                    &theLen);
+  QTSS_Error theErr = QTSS_GetValue(inModObject, qtssModAttributes, 0, &theAttributesObject, &theLen);
   Assert(theErr == QTSS_NoErr);
 
   return theAttributesObject;
@@ -771,18 +600,12 @@ QTSS_ModulePrefsObject QTSSModuleUtils::GetModuleObjectByName(const StrPtrLen &i
   QTSS_ModuleObject theModule = NULL;
   UInt32 theLen = sizeof(theModule);
 
-  for (int x = 0;
-       QTSS_GetValue(sServer, qtssSvrModuleObjects, x, &theModule, &theLen)
-           == QTSS_NoErr; x++) {
+  for (int x = 0; QTSS_GetValue(sServer, qtssSvrModuleObjects, x, &theModule, &theLen) == QTSS_NoErr; x++) {
     Assert(theModule != NULL);
     Assert(theLen == sizeof(theModule));
 
     StrPtrLen theName;
-    QTSS_Error theErr = QTSS_GetValuePtr(theModule,
-                                         qtssModName,
-                                         0,
-                                         (void **) &theName.Ptr,
-                                         &theName.Len);
+    QTSS_Error theErr = QTSS_GetValuePtr(theModule, qtssModName, 0, (void **) &theName.Ptr, &theName.Len);
     Assert(theErr == QTSS_NoErr);
 
     if (inModuleName.Equal(theName))
@@ -796,20 +619,12 @@ QTSS_ModulePrefsObject QTSSModuleUtils::GetModuleObjectByName(const StrPtrLen &i
   return NULL;
 }
 
-void QTSSModuleUtils::GetAttribute(QTSS_Object inObject,
-                                   char *inAttributeName,
-                                   QTSS_AttrDataType inType,
-                                   void *ioBuffer,
-                                   void *inDefaultValue,
-                                   UInt32 inBufferLen) {
+void QTSSModuleUtils::
+GetAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *ioBuffer, void *inDefaultValue, UInt32 inBufferLen) {
   //
   // Check to make sure this attribute is the right type. If it's not, this will coerce
   // it to be the right type. This also returns the id of the attribute
-  QTSS_AttributeID theID = QTSSModuleUtils::CheckAttributeDataType(inObject,
-                                                                   inAttributeName,
-                                                                   inType,
-                                                                   inDefaultValue,
-                                                                   inBufferLen);
+  QTSS_AttributeID theID = QTSSModuleUtils::CheckAttributeDataType(inObject, inAttributeName, inType, inDefaultValue, inBufferLen);
 
   //
   // Get the attribute value.
@@ -829,32 +644,19 @@ void QTSSModuleUtils::GetAttribute(QTSS_Object inObject,
       //
       // Log an error for this pref only if there was a default value provided.
       char *theValueAsString = NULL;
-      theErr = QTSS_ValueToString(inDefaultValue,
-                                  inBufferLen,
-                                  inType,
-                                  &theValueAsString);
+      theErr = QTSS_ValueToString(inDefaultValue, inBufferLen, inType, &theValueAsString);
       Assert(theErr == QTSS_NoErr);
-      OSCharArrayDeleter theValueStr(theValueAsString);
-      QTSSModuleUtils::LogError(sMissingPrefVerbosity,
-                                qtssServerPrefMissing,
-                                0,
-                                inAttributeName,
-                                theValueStr.GetObject());
+      CharArrayDeleter theValueStr(theValueAsString);
+      QTSSModuleUtils::LogError(sMissingPrefVerbosity, qtssServerPrefMissing, 0, inAttributeName, theValueStr.GetObject());
     }
 
     //
     // Create an entry for this attribute
-    QTSSModuleUtils::CreateAttribute(inObject,
-                                     inAttributeName,
-                                     inType,
-                                     inDefaultValue,
-                                     inBufferLen);
+    QTSSModuleUtils::CreateAttribute(inObject, inAttributeName, inType, inDefaultValue, inBufferLen);
   }
 }
 
-char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject,
-                                          char *inAttributeName,
-                                          char *inDefaultValue) {
+char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char *inAttributeName, char *inDefaultValue) {
   UInt32 theDefaultValLen = 0;
   if (inDefaultValue != NULL)
     theDefaultValLen = ::strlen(inDefaultValue);
@@ -862,12 +664,7 @@ char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject,
   //
   // Check to make sure this attribute is the right type. If it's not, this will coerce
   // it to be the right type
-  QTSS_AttributeID
-      theID = QTSSModuleUtils::CheckAttributeDataType(inObject,
-                                                      inAttributeName,
-                                                      qtssAttrDataTypeCharArray,
-                                                      inDefaultValue,
-                                                      theDefaultValLen);
+  QTSS_AttributeID theID = QTSSModuleUtils::CheckAttributeDataType(inObject, inAttributeName, qtssAttrDataTypeCharArray, inDefaultValue, theDefaultValLen);
 
   char *theString = NULL;
   (void) QTSS_GetValueAsString(inObject, theID, 0, &theString);
@@ -878,20 +675,12 @@ char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject,
   // If we get here the attribute must be missing, so create it and log
   // an error.
 
-  QTSSModuleUtils::CreateAttribute(inObject,
-                                   inAttributeName,
-                                   qtssAttrDataTypeCharArray,
-                                   inDefaultValue,
-                                   theDefaultValLen);
+  QTSSModuleUtils::CreateAttribute(inObject, inAttributeName, qtssAttrDataTypeCharArray, inDefaultValue, theDefaultValLen);
 
   //
   // Return the default if it was provided. Only log an error if the default value was provided
   if (theDefaultValLen > 0) {
-    QTSSModuleUtils::LogError(sMissingPrefVerbosity,
-                              qtssServerPrefMissing,
-                              0,
-                              inAttributeName,
-                              inDefaultValue);
+    QTSSModuleUtils::LogError(sMissingPrefVerbosity, qtssServerPrefMissing, 0, inAttributeName, inDefaultValue);
   }
 
   if (inDefaultValue != NULL) {
@@ -907,32 +696,21 @@ char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject,
   return NULL;
 }
 
-void QTSSModuleUtils::GetIOAttribute(QTSS_Object inObject,
-                                     char *inAttributeName,
-                                     QTSS_AttrDataType inType,
-                                     void *ioDefaultResultBuffer,
-                                     UInt32 inBufferLen) {
+void QTSSModuleUtils::
+GetIOAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *ioDefaultResultBuffer, UInt32 inBufferLen) {
   char *defaultBuffPtr = new char[inBufferLen];
   ::memcpy(defaultBuffPtr, ioDefaultResultBuffer, inBufferLen);
-  QTSSModuleUtils::GetAttribute(inObject,
-                                inAttributeName,
-                                inType,
-                                ioDefaultResultBuffer,
-                                defaultBuffPtr,
-                                inBufferLen);
+  QTSSModuleUtils::GetAttribute(inObject, inAttributeName, inType, ioDefaultResultBuffer, defaultBuffPtr, inBufferLen);
   delete[] defaultBuffPtr;
 
 }
 
-QTSS_AttributeID QTSSModuleUtils::GetAttrID(QTSS_Object inObject,
-                                            char *inAttributeName) {
+QTSS_AttributeID QTSSModuleUtils::GetAttrID(QTSS_Object inObject, char *inAttributeName) {
   //
   // Get the attribute ID of this attribute.
   QTSS_Object theAttrInfo = NULL;
-  QTSS_Error
-      theErr = QTSS_GetAttrInfoByName(inObject, inAttributeName, &theAttrInfo);
-  if (theErr != QTSS_NoErr)
-    return qtssIllegalAttrID;
+  QTSS_Error theErr = QTSS_GetAttrInfoByName(inObject, inAttributeName, &theAttrInfo);
+  if (theErr != QTSS_NoErr) return qtssIllegalAttrID;
 
   QTSS_AttributeID theID = qtssIllegalAttrID;
   UInt32 theLen = sizeof(theID);
@@ -942,27 +720,17 @@ QTSS_AttributeID QTSSModuleUtils::GetAttrID(QTSS_Object inObject,
   return theID;
 }
 
-QTSS_AttributeID
-QTSSModuleUtils::CheckAttributeDataType(QTSS_Object inObject,
-                                        char *inAttributeName,
-                                        QTSS_AttrDataType inType,
-                                        void *inDefaultValue,
-                                        UInt32 inBufferLen) {
+QTSS_AttributeID QTSSModuleUtils::
+CheckAttributeDataType(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *inDefaultValue, UInt32 inBufferLen) {
   //
   // Get the attribute type of this attribute.
   QTSS_Object theAttrInfo = NULL;
-  QTSS_Error
-      theErr = QTSS_GetAttrInfoByName(inObject, inAttributeName, &theAttrInfo);
-  if (theErr != QTSS_NoErr)
-    return qtssIllegalAttrID;
+  QTSS_Error theErr = QTSS_GetAttrInfoByName(inObject, inAttributeName, &theAttrInfo);
+  if (theErr != QTSS_NoErr) return qtssIllegalAttrID;
 
   QTSS_AttrDataType theAttributeType = qtssAttrDataTypeUnknown;
   UInt32 theLen = sizeof(theAttributeType);
-  theErr = QTSS_GetValue(theAttrInfo,
-                         qtssAttrDataType,
-                         0,
-                         &theAttributeType,
-                         &theLen);
+  theErr = QTSS_GetValue(theAttrInfo, qtssAttrDataType, 0, &theAttributeType, &theLen);
   Assert(theErr == QTSS_NoErr);
 
   QTSS_AttributeID theID = qtssIllegalAttrID;
@@ -972,40 +740,24 @@ QTSSModuleUtils::CheckAttributeDataType(QTSS_Object inObject,
 
   if (theAttributeType != inType) {
     char *theValueAsString = NULL;
-    theErr = QTSS_ValueToString(inDefaultValue,
-                                inBufferLen,
-                                inType,
-                                &theValueAsString);
+    theErr = QTSS_ValueToString(inDefaultValue, inBufferLen, inType, &theValueAsString);
     Assert(theErr == QTSS_NoErr);
-    OSCharArrayDeleter theValueStr(theValueAsString);
-    QTSSModuleUtils::LogError(qtssWarningVerbosity,
-                              qtssServerPrefWrongType,
-                              0,
-                              inAttributeName,
-                              theValueStr.GetObject());
+    CharArrayDeleter theValueStr(theValueAsString);
+    QTSSModuleUtils::LogError(qtssWarningVerbosity, qtssServerPrefWrongType, 0, inAttributeName, theValueStr.GetObject());
 
     theErr = QTSS_RemoveInstanceAttribute(inObject, theID);
     Assert(theErr == QTSS_NoErr);
-    return QTSSModuleUtils::CreateAttribute(inObject,
-                                            inAttributeName,
-                                            inType,
-                                            inDefaultValue,
-                                            inBufferLen);
+    return QTSSModuleUtils::CreateAttribute(inObject, inAttributeName, inType, inDefaultValue, inBufferLen);
   }
   return theID;
 }
 
-QTSS_AttributeID QTSSModuleUtils::CreateAttribute(QTSS_Object inObject,
-                                                  char *inAttributeName,
-                                                  QTSS_AttrDataType inType,
-                                                  void *inDefaultValue,
-                                                  UInt32 inBufferLen) {
-  QTSS_Error theErr =
-      QTSS_AddInstanceAttribute(inObject, inAttributeName, NULL, inType);
+QTSS_AttributeID QTSSModuleUtils::
+CreateAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *inDefaultValue, UInt32 inBufferLen) {
+  QTSS_Error theErr = QTSS_AddInstanceAttribute(inObject, inAttributeName, NULL, inType);
   Assert((theErr == QTSS_NoErr) || (theErr == QTSS_AttrNameExists));
 
-  QTSS_AttributeID
-      theID = QTSSModuleUtils::GetAttrID(inObject, inAttributeName);
+  QTSS_AttributeID theID = QTSSModuleUtils::GetAttrID(inObject, inAttributeName);
   Assert(theID != qtssIllegalAttrID);
 
   //
@@ -1021,11 +773,7 @@ QTSS_ActionFlags QTSSModuleUtils::GetRequestActions(QTSS_RTSPRequestObject theRT
   // Don't touch write requests
   QTSS_ActionFlags action = qtssActionFlagsNoFlags;
   UInt32 len = sizeof(QTSS_ActionFlags);
-  QTSS_Error theErr = QTSS_GetValue(theRTSPRequest,
-                                    qtssRTSPReqAction,
-                                    0,
-                                    (void *) &action,
-                                    &len);
+  QTSS_Error theErr = QTSS_GetValue(theRTSPRequest, qtssRTSPReqAction, 0, (void *) &action, &len);
   Assert(theErr == QTSS_NoErr);
   Assert(len == sizeof(QTSS_ActionFlags));
   return action;
@@ -1033,33 +781,22 @@ QTSS_ActionFlags QTSSModuleUtils::GetRequestActions(QTSS_RTSPRequestObject theRT
 
 char *QTSSModuleUtils::GetLocalPath_Copy(QTSS_RTSPRequestObject theRTSPRequest) {
   char *pathBuffStr = NULL;
-  QTSS_Error theErr = QTSS_GetValueAsString(theRTSPRequest,
-                                            qtssRTSPReqLocalPath,
-                                            0,
-                                            &pathBuffStr);
+  QTSS_Error theErr = QTSS_GetValueAsString(theRTSPRequest, qtssRTSPReqLocalPath, 0, &pathBuffStr);
   Assert(theErr == QTSS_NoErr);
   return pathBuffStr;
 }
 
 char *QTSSModuleUtils::GetMoviesRootDir_Copy(QTSS_RTSPRequestObject theRTSPRequest) {
   char *movieRootDirStr = NULL;
-  QTSS_Error theErr = QTSS_GetValueAsString(theRTSPRequest,
-                                            qtssRTSPReqRootDir,
-                                            0,
-                                            &movieRootDirStr);
+  QTSS_Error theErr = QTSS_GetValueAsString(theRTSPRequest, qtssRTSPReqRootDir, 0, &movieRootDirStr);
   Assert(theErr == QTSS_NoErr);
   return movieRootDirStr;
 }
 
-QTSS_UserProfileObject QTSSModuleUtils::GetUserProfileObject(
-    QTSS_RTSPRequestObject theRTSPRequest) {
+QTSS_UserProfileObject QTSSModuleUtils::GetUserProfileObject( QTSS_RTSPRequestObject theRTSPRequest) {
   QTSS_UserProfileObject theUserProfile = NULL;
   UInt32 len = sizeof(QTSS_UserProfileObject);
-  QTSS_Error theErr = QTSS_GetValue(theRTSPRequest,
-                                    qtssRTSPReqUserProfile,
-                                    0,
-                                    (void *) &theUserProfile,
-                                    &len);
+  QTSS_Error theErr = QTSS_GetValue(theRTSPRequest, qtssRTSPReqUserProfile, 0, (void *) &theUserProfile, &len);
   Assert(theErr == QTSS_NoErr);
   return theUserProfile;
 }
@@ -1070,40 +807,29 @@ char *QTSSModuleUtils::GetUserName_Copy(QTSS_UserProfileObject inUserProfile) {
   return username;
 }
 
-char **QTSSModuleUtils::GetGroupsArray_Copy(QTSS_UserProfileObject inUserProfile,
-                                            UInt32 *outNumGroupsPtr) {
+char **QTSSModuleUtils::GetGroupsArray_Copy(QTSS_UserProfileObject inUserProfile, UInt32 *outNumGroupsPtr) {
   Assert(NULL != outNumGroupsPtr);
 
   char **outGroupCharPtrArray = NULL;
   *outNumGroupsPtr = 0;
 
-  if (NULL == inUserProfile)
-    return NULL;
+  if (NULL == inUserProfile) return NULL;
 
-  QTSS_Error theErr =
-      QTSS_GetNumValues(inUserProfile, qtssUserGroups, outNumGroupsPtr);
-  if (theErr != QTSS_NoErr || *outNumGroupsPtr == 0)
-    return NULL;
+  QTSS_Error theErr = QTSS_GetNumValues(inUserProfile, qtssUserGroups, outNumGroupsPtr);
+  if (theErr != QTSS_NoErr || *outNumGroupsPtr == 0) return NULL;
 
   outGroupCharPtrArray = new char *[*outNumGroupsPtr]; // array of char *
   UInt32 len = 0;
   for (UInt32 index = 0; index < *outNumGroupsPtr; index++) {
     outGroupCharPtrArray[index] = NULL;
-    QTSS_GetValuePtr(inUserProfile,
-                     qtssUserGroups,
-                     index,
-                     (void **) &outGroupCharPtrArray[index],
-                     &len);
+    QTSS_GetValuePtr(inUserProfile, qtssUserGroups, index, (void **) &outGroupCharPtrArray[index], &len);
   }
 
   return outGroupCharPtrArray;
 }
 
-bool QTSSModuleUtils::UserInGroup(QTSS_UserProfileObject inUserProfile,
-                                  char *inGroup,
-                                  UInt32 inGroupLen) {
-  if (NULL == inUserProfile || NULL == inGroup || inGroupLen == 0)
-    return false;
+bool QTSSModuleUtils::UserInGroup(QTSS_UserProfileObject inUserProfile, char *inGroup, UInt32 inGroupLen) {
+  if (NULL == inUserProfile || NULL == inGroup || inGroupLen == 0) return false;
 
   char *userName = NULL;
   UInt32 len = 0;
@@ -1122,10 +848,7 @@ bool QTSSModuleUtils::UserInGroup(QTSS_UserProfileObject inUserProfile,
 
   for (UInt32 index = 0; index < numGroups; index++) {
     userGroup = NULL;
-    QTSS_GetValueAsString(inUserProfile,
-                          qtssUserGroups,
-                          index,
-                          &userGroup); //allocates string
+    QTSS_GetValueAsString(inUserProfile, qtssUserGroups, index, &userGroup); //allocates string
     userGroupStr.Delete();
     userGroupStr.Set(userGroup);
     if (userGroupStr.Equal(inGroup)) {
@@ -1135,19 +858,15 @@ bool QTSSModuleUtils::UserInGroup(QTSS_UserProfileObject inUserProfile,
   }
 
   return result;
-
 }
 
-bool QTSSModuleUtils::AddressInList(QTSS_Object inObject,
-                                    QTSS_AttributeID listID,
-                                    StrPtrLen *inAddressPtr) {
+bool QTSSModuleUtils::AddressInList(QTSS_Object inObject, QTSS_AttributeID listID, StrPtrLen *inAddressPtr) {
   StrPtrLenDel strDeleter;
   char *theAttributeString = NULL;
   IPComponentStr inAddress(inAddressPtr);
   IPComponentStr addressFromList;
 
-  if (!inAddress.Valid())
-    return false;
+  if (!inAddress.Valid()) return false;
 
   UInt32 numValues = 0;
   (void) QTSS_GetNumValues(inObject, listID, &numValues);
@@ -1165,13 +884,10 @@ bool QTSSModuleUtils::AddressInList(QTSS_Object inObject,
   return false;
 }
 
-bool QTSSModuleUtils::FindStringInAttributeList(QTSS_Object inObject,
-                                                QTSS_AttributeID listID,
-                                                StrPtrLen *inStrPtr) {
+bool QTSSModuleUtils::FindStringInAttributeList(QTSS_Object inObject, QTSS_AttributeID listID, StrPtrLen *inStrPtr) {
   StrPtrLenDel tempString;
 
-  if (NULL == inStrPtr || NULL == inStrPtr->Ptr || 0 == inStrPtr->Len)
-    return false;
+  if (NULL == inStrPtr || NULL == inStrPtr->Ptr || 0 == inStrPtr->Len) return false;
 
   UInt32 numValues = 0;
   (void) QTSS_GetNumValues(inObject, listID, &numValues);
@@ -1180,56 +896,40 @@ bool QTSSModuleUtils::FindStringInAttributeList(QTSS_Object inObject,
     tempString.Delete();
     (void) QTSS_GetValueAsString(inObject, listID, index, &tempString.Ptr);
     tempString.Set(tempString.Ptr);
-    if (tempString.Ptr == NULL)
-      return false;
+    if (tempString.Ptr == NULL) return false;
 
-    if (tempString.Equal(StrPtrLen("*", 1)))
-      return true;
+    if (tempString.Equal(StrPtrLen("*", 1))) return true;
 
-    if (inStrPtr->FindString(tempString.Ptr))
-      return true;
-
+    if (inStrPtr->FindString(tempString.Ptr)) return true;
   }
 
   return false;
 }
 
-bool QTSSModuleUtils::HavePlayerProfile(QTSS_PrefsObject inPrefObjectToCheck,
-                                        QTSS_StandardRTSP_Params *inParams,
-                                        UInt32 feature) {
+bool QTSSModuleUtils::
+HavePlayerProfile(QTSS_PrefsObject inPrefObjectToCheck, QTSS_StandardRTSP_Params *inParams, UInt32 feature) {
   StrPtrLenDel userAgentStr;
-  (void) QTSS_GetValueAsString(inParams->inClientSession,
-                               qtssCliSesFirstUserAgent,
-                               0,
-                               &userAgentStr.Ptr);
+  (void) QTSS_GetValueAsString(inParams->inClientSession, qtssCliSesFirstUserAgent, 0, &userAgentStr.Ptr);
   userAgentStr.Set(userAgentStr.Ptr);
 
   switch (feature) {
     case QTSSModuleUtils::kRequiresRTPInfoSeqAndTime: {
-      return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,
-                                                        qtssPrefsPlayersReqRTPHeader,
-                                                        &userAgentStr);
+      return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck, qtssPrefsPlayersReqRTPHeader, &userAgentStr);
     }
       break;
 
     case QTSSModuleUtils::kAdjustBandwidth: {
-      return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,
-                                                        qtssPrefsPlayersReqBandAdjust,
-                                                        &userAgentStr);
+      return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck, qtssPrefsPlayersReqBandAdjust, &userAgentStr);
     }
       break;
 
     case QTSSModuleUtils::kDisablePauseAdjustedRTPTime: {
-      return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,
-                                                        qtssPrefsPlayersReqNoPauseTimeAdjust,
-                                                        &userAgentStr);
+      return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck, qtssPrefsPlayersReqNoPauseTimeAdjust, &userAgentStr);
     }
       break;
 
     case QTSSModuleUtils::kDelayRTPStreamsUntilAfterRTSPResponse: {
-      return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck,
-                                                        qtssPrefsPlayersReqRTPStartTimeAdjust,
-                                                        &userAgentStr);
+      return QTSSModuleUtils::FindStringInAttributeList(inPrefObjectToCheck, qtssPrefsPlayersReqRTPStartTimeAdjust, &userAgentStr);
     }
       break;
   }
@@ -1237,37 +937,22 @@ bool QTSSModuleUtils::HavePlayerProfile(QTSS_PrefsObject inPrefObjectToCheck,
   return false;
 }
 
-QTSS_Error QTSSModuleUtils::AuthorizeRequest(QTSS_RTSPRequestObject theRTSPRequest,
-                                             bool *allowed,
-                                             bool *foundUser,
-                                             bool *authContinue) {
+QTSS_Error QTSSModuleUtils::
+AuthorizeRequest(QTSS_RTSPRequestObject theRTSPRequest, bool *allowed, bool *foundUser, bool *authContinue) {
   QTSS_Error theErr = QTSS_NoErr;
   //printf("QTSSModuleUtils::AuthorizeRequest allowed=%d foundUser=%d authContinue=%d\n", *allowed, *foundUser, *authContinue);
 
   if (NULL != allowed)
-    theErr = QTSS_SetValue(theRTSPRequest,
-                           qtssRTSPReqUserAllowed,
-                           0,
-                           allowed,
-                           sizeof(bool));
-  if (QTSS_NoErr != theErr)
-    return theErr;
+    theErr = QTSS_SetValue(theRTSPRequest, qtssRTSPReqUserAllowed, 0, allowed, sizeof(bool));
+  if (QTSS_NoErr != theErr) return theErr;
 
   if (NULL != foundUser)
-    theErr = QTSS_SetValue(theRTSPRequest,
-                           qtssRTSPReqUserFound,
-                           0,
-                           foundUser,
-                           sizeof(bool));
+    theErr = QTSS_SetValue(theRTSPRequest, qtssRTSPReqUserFound, 0, foundUser, sizeof(bool));
   if (QTSS_NoErr != theErr)
     return theErr;
 
   if (NULL != authContinue)
-    theErr = QTSS_SetValue(theRTSPRequest,
-                           qtssRTSPReqAuthHandled,
-                           0,
-                           authContinue,
-                           sizeof(bool));
+    theErr = QTSS_SetValue(theRTSPRequest, qtssRTSPReqAuthHandled, 0, authContinue, sizeof(bool));
 
   return theErr;
 }
@@ -1291,8 +976,7 @@ bool IPComponentStr::Set(StrPtrLen *theAddressStrPtr) {
 
   while (IP_Paser.GetDataRemaining() > 0) {
     IP_Paser.ConsumeUntil(piecePtr, '.');
-    if (piecePtr->Len == 0)
-      break;
+    if (piecePtr->Len == 0) break;
 
     IP_Paser.ConsumeLength(NULL, 1);
     if (piecePtr == &fAddressComponent[IPComponentStr::kNumComponents - 1]) {
@@ -1307,25 +991,18 @@ bool IPComponentStr::Set(StrPtrLen *theAddressStrPtr) {
 }
 
 bool IPComponentStr::Equal(IPComponentStr *testAddressPtr) {
-  if (testAddressPtr == NULL)
-    return false;
+  if (testAddressPtr == NULL) return false;
 
-  if (!this->Valid() || !testAddressPtr->Valid())
-    return false;
+  if (!this->Valid() || !testAddressPtr->Valid()) return false;
 
-  for (UInt16 component = 0; component < IPComponentStr::kNumComponents;
-       component++) {
+  for (UInt16 component = 0; component < IPComponentStr::kNumComponents; component++) {
     StrPtrLen *allowedPtr = this->GetComponent(component);
     StrPtrLen *testPtr = testAddressPtr->GetComponent(component);
 
-    if (testPtr->Equal("*") || allowedPtr->Equal("*"))
-      continue;
+    if (testPtr->Equal("*") || allowedPtr->Equal("*")) continue;
 
-    if (!testPtr->Equal(*allowedPtr))
-      return false;
+    if (!testPtr->Equal(*allowedPtr)) return false;
   };
 
   return true;
 }
-
-

@@ -27,6 +27,7 @@
 //   Some defs for RTP-Meta-Info payloads.
 
 
+#include <CF/Utils.h>
 #include <CF/StringParser.h>
 #include "RTPMetaInfoPacket.h"
 
@@ -164,12 +165,12 @@ bool RTPMetaInfoPacket::ParsePacket(UInt8 *inPacketBuffer,
     switch (theFieldIndex) {
       case kPacketPosField: {
         ::memcpy(&sInt64Val, theFieldP, sizeof(sInt64Val));
-        fPacketPosition = (UInt64) OS::NetworkToHostSInt64(sInt64Val);
+        fPacketPosition = (UInt64) Utils::NetworkToHostSInt64(sInt64Val);
         break;
       }
       case kTransTimeField: {
         ::memcpy(&sInt64Val, theFieldP, sizeof(sInt64Val));
-        fTransmitTime = (UInt64) OS::NetworkToHostSInt64(sInt64Val);
+        fTransmitTime = (UInt64) Utils::NetworkToHostSInt64(sInt64Val);
         break;
       }
       case kFrameTypeField: {
@@ -178,7 +179,7 @@ bool RTPMetaInfoPacket::ParsePacket(UInt8 *inPacketBuffer,
       }
       case kPacketNumField: {
         ::memcpy(&sInt64Val, theFieldP, sizeof(sInt64Val));
-        fPacketNumber = (UInt64) OS::NetworkToHostSInt64(sInt64Val);
+        fPacketNumber = (UInt64) Utils::NetworkToHostSInt64(sInt64Val);
         break;
       }
       case kSeqNumField: {

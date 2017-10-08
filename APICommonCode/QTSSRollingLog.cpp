@@ -32,17 +32,21 @@
 
 #include <time.h>
 #include <stdlib.h>
-#include "SafeStdLib.h"
 #include <string.h>
 #include <math.h>
 #include <sys/stat.h>
 #include <errno.h>
 #ifndef __Win32__
 #endif
+
+#include <CF/sstdlib.h>
+#include <CF/ArrayObjectDeleter.h>
+#include <CF/ResizeableStringFormatter.h>
+#include <CF/Utils.h>
+
 #include "QTSSRollingLog.h"
-#include "OS.h"
-#include "OSArrayObjectDeleter.h"
-#include "ResizeableStringFormatter.h"
+
+using namespace CF;
 
 static bool sCloseOnWrite = true;
 
@@ -72,7 +76,7 @@ bool QTSSRollingLog::IsLogEnabled() {
 }
 
 void QTSSRollingLog::WriteToLog(char *inLogData, bool allowLogToRoll) {
-  OSMutexLocker locker(&fMutex);
+  Core::MutexLocker locker(&fMutex);
 
   if (fLogging == false)
     return;
@@ -84,7 +88,7 @@ void QTSSRollingLog::WriteToLog(char *inLogData, bool allowLogToRoll) {
     (void) this->CheckRollLog();
 
   if (fLog != nullptr) {
-    qtss_fprintf(fLog, "%s", inLogData);
+    s_fprintf(fLog, "%s", inLogData);
     ::fflush(fLog);
   }
 
@@ -93,7 +97,7 @@ void QTSSRollingLog::WriteToLog(char *inLogData, bool allowLogToRoll) {
 }
 
 bool QTSSRollingLog::RollLog() {
-  OSMutexLocker locker(&fMutex);
+  Core::MutexLocker locker(&fMutex);
 
   //returns false if an error occurred, true otherwise
 
@@ -115,10 +119,8 @@ bool QTSSRollingLog::RollLog() {
 char *QTSSRollingLog::GetLogPath(char *extension) {
   char *thePath = nullptr;
 
-  OSCharArrayDeleter logDir
-      (this->GetLogDir()); //The string passed into this function is a copy
-  OSCharArrayDeleter logName
-      (this->GetLogName());  //The string passed into this function is a copy
+  CharArrayDeleter logDir(this->GetLogDir()); //The string passed into this function is a copy
+  CharArrayDeleter logName(this->GetLogName());  //The string passed into this function is a copy
 
   ResizeableStringFormatter formatPath(nullptr, 0); //allocate the buffer
   formatPath.PutFilePath(logDir, logName);
@@ -138,9 +140,9 @@ char *QTSSRollingLog::GetLogPath(char *extension) {
 void QTSSRollingLog::EnableLog(bool appendDotLog) {
   //
   // Start this object running!
-  this->Signal(Task::kStartEvent);
+  this->Signal(kStartEvent);
 
-  OSMutexLocker locker(&fMutex);
+  Core::MutexLocker locker(&fMutex);
 
   fAppendDotLog = appendDotLog;
 
@@ -160,8 +162,8 @@ void QTSSRollingLog::EnableLog(bool appendDotLog) {
 
   //create the log directory if it doesn't already exist
   if (!logExists) {
-    OSCharArrayDeleter tempDir(this->GetLogDir());
-    OS::RecursiveMakeDir(tempDir.GetObject());
+    CharArrayDeleter tempDir(this->GetLogDir());
+    Utils::RecursiveMakeDir(tempDir.GetObject());
   }
 
   fLog = ::fopen(fLogFullPath, "a+");//open for "append"
@@ -178,7 +180,7 @@ void QTSSRollingLog::EnableLog(bool appendDotLog) {
 }
 
 void QTSSRollingLog::CloseLog(bool leaveEnabled) {
-  OSMutexLocker locker(&fMutex);
+  Core::MutexLocker locker(&fMutex);
 
   if (leaveEnabled)
     sCloseOnWrite = true;
@@ -203,9 +205,9 @@ bool QTSSRollingLog::FormatDate(char *ioDateBuffer, bool logTimeInGMT) {
   struct tm timeResult;
 
   if (logTimeInGMT)
-    theTime = ::qtss_gmtime(&calendarTime, &timeResult);
+    theTime = s_gmtime(&calendarTime, &timeResult);
   else
-    theTime = qtss_localtime(&calendarTime, &timeResult);
+    theTime = s_localtime(&calendarTime, &timeResult);
 
   Assert(nullptr != theTime);
 
@@ -217,8 +219,8 @@ bool QTSSRollingLog::FormatDate(char *ioDateBuffer, bool logTimeInGMT) {
   // the format is YYYY-MM-DD HH:MM:SS
   // the date time is in GMT, unless logTimeInGMT is false, in which case
   // the time logged is local time
-  //qtss_strftime(ioDateBuffer, kMaxDateBufferSize, "%d/%b/%Y:%H:%M:%S", theLocalTime);
-  qtss_strftime(ioDateBuffer,
+  //s_strftime(ioDateBuffer, kMaxDateBufferSize, "%d/%b/%Y:%H:%M:%S", theLocalTime);
+  s_strftime(ioDateBuffer,
                 kMaxDateBufferSizeInBytes,
                 "%Y-%m-%d %H:%M:%S",
                 theTime);
@@ -277,18 +279,17 @@ bool QTSSRollingLog::RenameLogFile(const char *inFileName) {
 
   //fix 2287086. Rolled log name can be different than original log name
   //GetLogDir returns a copy of the log dir
-  OSCharArrayDeleter logDirectory(this->GetLogDir());
+  CharArrayDeleter logDirectory(this->GetLogDir());
 
   //create the log directory if it doesn't already exist
-  OS::RecursiveMakeDir(logDirectory.GetObject());
+  Utils::RecursiveMakeDir(logDirectory.GetObject());
 
   //GetLogName returns a copy of the log name
-  OSCharArrayDeleter logBaseName(this->GetLogName());
+  CharArrayDeleter logBaseName(this->GetLogName());
 
   //QTStreamingServer.981217003.log
   //format the new file name
-  OSCharArrayDeleter theNewNameBuffer
-      (new char[::strlen(logDirectory) + kMaxFilenameLengthInBytes + 3]);
+  CharArrayDeleter theNewNameBuffer(new char[::strlen(logDirectory) + kMaxFilenameLengthInBytes + 3]);
 
   //copy over the directory - append a '/' if it's missing
   ::strcpy(theNewNameBuffer, logDirectory);
@@ -301,9 +302,9 @@ bool QTSSRollingLog::RenameLogFile(const char *inFileName) {
 
   //append the date the file was created
   struct tm timeResult;
-  struct tm *theLocalTime = qtss_localtime(&fLogCreateTime, &timeResult);
+  struct tm *theLocalTime = s_localtime(&fLogCreateTime, &timeResult);
   char timeString[10];
-  qtss_strftime(timeString, 10, ".%y%m%d", theLocalTime);
+  s_strftime(timeString, 10, ".%y%m%d", theLocalTime);
   ::strcat(theNewNameBuffer, timeString);
 
   SInt32 theBaseNameLength = ::strlen(theNewNameBuffer);
@@ -317,12 +318,12 @@ bool QTSSRollingLog::RenameLogFile(const char *inFileName) {
         == 1000) //we don't have any digits left, so just reuse the "---" until tomorrow...
     {
       //add a bogus log number and exit the loop
-      qtss_sprintf(theNewNameBuffer + theBaseNameLength, "---.log");
+      s_sprintf(theNewNameBuffer + theBaseNameLength, "---.log");
       break;
     }
 
     //add the log number & suffix
-    qtss_sprintf(theNewNameBuffer + theBaseNameLength,
+    s_sprintf(theNewNameBuffer + theBaseNameLength,
                  "%03" _S32BITARG_ ".log",
                  x);
 
@@ -331,7 +332,7 @@ bool QTSSRollingLog::RenameLogFile(const char *inFileName) {
     // csl - shouldn't you watch for a ENOENT result?
     struct stat theIdontCare;
     theErr = ::stat(theNewNameBuffer, &theIdontCare);
-    WarnV((theErr == 0 || OSThread::GetErrno() == ENOENT),
+    WarnV((theErr == 0 || Core::Thread::GetErrno() == ENOENT),
           "unexpected stat error in RenameLogFile");
 
   }
@@ -339,7 +340,7 @@ bool QTSSRollingLog::RenameLogFile(const char *inFileName) {
   //rename the file. Use posix rename function
   int result = ::rename(inFileName, theNewNameBuffer);
   if (result == -1)
-    theErr = (SInt32) OSThread::GetErrno();
+    theErr = (SInt32) Core::Thread::GetErrno();
   else
     theErr = 0;
 
@@ -361,7 +362,7 @@ bool QTSSRollingLog::DoesFileExist(const char *inPath) {
 }
 
 time_t QTSSRollingLog::WriteLogHeader(FILE *inFile) {
-  OSMutexLocker locker(&fMutex);
+  Core::MutexLocker locker(&fMutex);
 
   //The point of this header is to record the exact time the log file was created,
   //in a format that is easy to parse through whenever we open the file again.
@@ -373,7 +374,7 @@ time_t QTSSRollingLog::WriteLogHeader(FILE *inFile) {
     return -1;
 
   struct tm timeResult;
-  struct tm *theLocalTime = qtss_localtime(&calendarTime, &timeResult);
+  struct tm *theLocalTime = s_localtime(&calendarTime, &timeResult);
   Assert(nullptr != theLocalTime);
   if (nullptr == theLocalTime)
     return -1;
@@ -386,11 +387,11 @@ time_t QTSSRollingLog::WriteLogHeader(FILE *inFile) {
   //theLocalTime->tm_sec = 0;
 
   char tempbuf[1024];
-  qtss_strftime(tempbuf,
+  s_strftime(tempbuf,
                 sizeof(tempbuf),
                 "#Log File Created On: %m/%d/%Y %H:%M:%S\n",
                 theLocalTime);
-  //qtss_sprintf(tempbuf, "#Log File Created On: %d/%d/%d %d:%d:%d %d:%d:%d GMT\n",
+  //s_sprintf(tempbuf, "#Log File Created On: %d/%d/%d %d:%d:%d %d:%d:%d GMT\n",
   //          theLocalTime->tm_mon, theLocalTime->tm_mday, theLocalTime->tm_year,
   //          theLocalTime->tm_hour, theLocalTime->tm_min, theLocalTime->tm_sec,
   //          theLocalTime->tm_yday, theLocalTime->tm_wday, theLocalTime->tm_isdst);
@@ -400,7 +401,7 @@ time_t QTSSRollingLog::WriteLogHeader(FILE *inFile) {
 }
 
 time_t QTSSRollingLog::ReadLogHeader(FILE *inFile) {
-  OSMutexLocker locker(&fMutex);
+  Core::MutexLocker locker(&fMutex);
 
   //This function reads the header in a log file, returning the time stored
   //at the beginning of this file. This value is used to determine when to
@@ -470,7 +471,7 @@ time_t QTSSRollingLog::ReadLogHeader(FILE *inFile) {
       return false;
 
   struct tm  timeResult;
-  struct tm* theLocalTime = qtss_localtime(&calendarTime, &timeResult);
+  struct tm* theLocalTime = s_localtime(&calendarTime, &timeResult);
   Assert(nullptr != theLocalTime);
   if (nullptr == theLocalTime)
       return false;
@@ -486,10 +487,10 @@ SInt64 QTSSRollingLog::Run() {
   //
   // If we are going away, just return
   EventFlags events = this->GetEvents();
-  if (events & Task::kKillEvent)
+  if (events & kKillEvent)
     return -1;
 
-  OSMutexLocker locker(&fMutex);
+  Core::MutexLocker locker(&fMutex);
 
   UInt32 theRollInterval = (this->GetRollIntervalInDays()) * 60 * 60 * 24;
 
@@ -519,7 +520,7 @@ void QTSSRollingLog::ResetToMidnight(time_t *inTimePtr, time_t *outTimePtr) {
   }
 
   struct tm timeResult;
-  struct tm *theLocalTime = qtss_localtime(inTimePtr, &timeResult);
+  struct tm *theLocalTime = s_localtime(inTimePtr, &timeResult);
   Assert(theLocalTime != nullptr);
 
   theLocalTime->tm_hour = 0;

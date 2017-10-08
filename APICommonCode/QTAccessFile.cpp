@@ -29,12 +29,14 @@
 */
 #include <string.h>
 #include <stdlib.h>
-#include "SafeStdLib.h"
+
+#include <CF/sstdlib.h>
+#include <CF/StringParser.h>
+#include <CF/ArrayObjectDeleter.h>
+
 #include "QTSS.h"
-#include "StringParser.h"
 #include "QTSSModuleUtils.h"
 #include "QTAccessFile.h"
-#include "OSArrayObjectDeleter.h"
 
 #ifdef __MacOSX__
 #include <membership.h>
@@ -45,7 +47,9 @@
 #endif
 
 #define DEBUG_QTACCESS 0
-#define debug_printf if (DEBUG_QTACCESS) qtss_printf
+#define debug_printf if (DEBUG_QTACCESS) s_printf
+
+using namespace CF;
 
 char *QTAccessFile::sAccessValidUser = "require valid-user\n";
 char *QTAccessFile::sAccessAnyUser = "require any-user\n";
@@ -81,18 +85,18 @@ UInt8 QTAccessFile::sWhitespaceAndGreaterThanMask[] = {
 
 char *QTAccessFile::sQTAccessFileName = "qtaccess";
 bool      QTAccessFile::sAllocatedName = false;
-OSMutex *QTAccessFile::sAccessFileMutex = NULL;//QTAccessFile isn't reentrant
+Core::Mutex *QTAccessFile::sAccessFileMutex = NULL;//QTAccessFile isn't reentrant
 const int kBuffLen = 512;
 
 void QTAccessFile::Initialize() { // called by server at initialize never call again
 
   if (NULL == sAccessFileMutex) {
-    sAccessFileMutex = new OSMutex();
+    sAccessFileMutex = new Core::Mutex();
   }
 }
 
 void QTAccessFile::SetAccessFileName(const char *inQTAccessFileName) {
-  OSMutexLocker locker(sAccessFileMutex);
+  Core::MutexLocker locker(sAccessFileMutex);
   if (NULL == inQTAccessFileName) {
     Assert(NULL != inQTAccessFileName);
     return;
@@ -330,7 +334,7 @@ bool QTAccessFile::AccessAllowed(char *userName,
 
 char *QTAccessFile::GetAccessFile_Copy(const char *movieRootDir,
                                        const char *dirPath) {
-  OSMutexLocker locker(sAccessFileMutex);
+  Core::MutexLocker locker(sAccessFileMutex);
 
   char *currentDir = NULL;
   char *lastSlash = NULL;
@@ -405,7 +409,7 @@ QTSS_AuthScheme QTAccessFile::FindUsersAndGroupsFilesAndAuthScheme(char *inAcces
 
   StrPtrLen accessFileBuf;
   (void) QTSSModuleUtils::ReadEntireFile(inAccessFilePath, &accessFileBuf);
-  OSCharArrayDeleter accessFileBufDeleter(accessFileBuf.Ptr);
+  CharArrayDeleter accessFileBufDeleter(accessFileBuf.Ptr);
 
   StringParser accessFileParser(&accessFileBuf);
   StrPtrLen line;
@@ -525,42 +529,42 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params *inParams,
 
   //get the local file path
   char *pathBuffStr = QTSSModuleUtils::GetLocalPath_Copy(theRTSPRequest);
-  OSCharArrayDeleter pathBuffDeleter(pathBuffStr);
+  CharArrayDeleter pathBuffDeleter(pathBuffStr);
   if (NULL == pathBuffStr)
     return QTSS_RequestFailed;
 
   //get the root movie directory
-  char
-      *movieRootDirStr = QTSSModuleUtils::GetMoviesRootDir_Copy(theRTSPRequest);
-  OSCharArrayDeleter movieRootDeleter(movieRootDirStr);
+  char *movieRootDirStr =
+      QTSSModuleUtils::GetMoviesRootDir_Copy(theRTSPRequest);
+  CharArrayDeleter movieRootDeleter(movieRootDirStr);
   if (NULL == movieRootDirStr)
     return QTSS_RequestFailed;
 
-  QTSS_UserProfileObject
-      theUserProfile = QTSSModuleUtils::GetUserProfileObject(theRTSPRequest);
+  QTSS_UserProfileObject theUserProfile =
+      QTSSModuleUtils::GetUserProfileObject(theRTSPRequest);
   if (NULL == theUserProfile)
     return QTSS_RequestFailed;
 
   char *accessFilePath =
       QTAccessFile::GetAccessFile_Copy(movieRootDirStr, pathBuffStr);
-  OSCharArrayDeleter accessFilePathDeleter(accessFilePath);
+  CharArrayDeleter accessFilePathDeleter(accessFilePath);
 
   char *username = QTSSModuleUtils::GetUserName_Copy(theUserProfile);
-  OSCharArrayDeleter usernameDeleter(username);
+  CharArrayDeleter usernameDeleter(username);
 
   UInt32 numGroups = 0;
   char **groupCharPtrArray =
       QTSSModuleUtils::GetGroupsArray_Copy(theUserProfile, &numGroups);
-  OSCharPointerArrayDeleter groupCharPtrArrayDeleter(groupCharPtrArray);
+  CharPointerArrayDeleter groupCharPtrArrayDeleter(groupCharPtrArray);
 
   StrPtrLen accessFileBuf;
   (void) QTSSModuleUtils::ReadEntireFile(accessFilePath, &accessFileBuf);
-  OSCharArrayDeleter accessFileBufDeleter(accessFileBuf.Ptr);
+  CharArrayDeleter accessFileBufDeleter(accessFileBuf.Ptr);
 
   if (accessFileBuf.Len == 0 && !allowNoAccessFiles) {
     accessFileBuf.Set(sAccessValidUser);
     if (DEBUG_QTACCESS)
-      qtss_printf(
+      s_printf(
           "QTAccessFile::AuthorizeRequest SET Accessfile valid user for no accessfile %s\n",
           sAccessValidUser);
   }
@@ -568,7 +572,7 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params *inParams,
   if (accessFileBuf.Len == 0 && allowNoAccessFiles) {
     accessFileBuf.Set(sAccessAnyUser);
     if (DEBUG_QTACCESS)
-      qtss_printf(
+      s_printf(
           "QTAccessFile::AuthorizeRequest SET Accessfile any user for no access file %s\n",
           sAccessAnyUser);
   }
@@ -613,7 +617,7 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params *inParams,
     char *userRealm = NULL;
     (void) QTSS_GetValueAsString(theUserProfile, qtssUserRealm, 0, &userRealm);
     if (userRealm != NULL) {
-      OSCharArrayDeleter userRealmDeleter(userRealm);
+      CharArrayDeleter userRealmDeleter(userRealm);
       (void) QTSS_SetValue(theRTSPRequest,
                            qtssRTSPReqURLRealm,
                            0,
@@ -636,10 +640,10 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params *inParams,
                          &reqNameStr.Len);
 
   if (DEBUG_QTACCESS) {
-    qtss_printf("QTAccessFile::AuthorizeRequest qtaccess profile user =%s ",
+    s_printf("QTAccessFile::AuthorizeRequest qtaccess profile user =%s ",
                 username);
     reqNameStr.PrintStr("request user=", "\n");
-    qtss_printf(
+    s_printf(
         "QTAccessFile::AuthorizeRequest allowRequest=%d founduser=%d authContinue=%d\n",
         allowRequest,
         founduser,
@@ -657,11 +661,11 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params *inParams,
                                                &authContinue);
 
   if (DEBUG_QTACCESS) {
-    qtss_printf(
+    s_printf(
         "QTAccessFile::AuthorizeRequest QTSSModuleUtils::AuthorizeRequest qtaccess profile user =%s ",
         username);
     reqNameStr.PrintStr("request user=", "\n");
-    qtss_printf(
+    s_printf(
         "QTAccessFile::AuthorizeRequest allowRequest=%d founduser=%d authContinue=%d\n",
         allowRequest,
         founduser,

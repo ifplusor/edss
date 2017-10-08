@@ -30,12 +30,16 @@
 
 */
 
+#include <CF/StringFormatter.h>
+
+#include <CF/StringParser.h>
+#include <CF/Net/Socket/SocketUtils.h>
+#include <CF/ArrayObjectDeleter.h>
+#include <SDPUtils.h>
+
 #include "SDPSourceInfo.h"
 
-#include "StringFormatter.h"
-#include "SocketUtils.h"
-#include "SDPUtils.h"
-#include "OSArrayObjectDeleter.h"
+using namespace CF;
 
 static const StrPtrLen sCLine("c=IN IP4 0.0.0.0");
 static const StrPtrLen sControlLine("a=control:*");
@@ -72,7 +76,7 @@ char *SDPSourceInfo::GetLocalSDP(UInt32 *newSDPLen) {
   UInt32 trackIndex = 0;
 
   char *localSDP = new char[fSDPData.Len * 2];
-  OSCharArrayDeleter charArrayPathDeleter(localSDP);
+  CharArrayDeleter charArrayPathDeleter(localSDP);
   StringFormatter localSDPFormatter(localSDP, fSDPData.Len * 2);
 
   StrPtrLen sdpLine;
@@ -107,7 +111,7 @@ char *SDPSourceInfo::GetLocalSDP(UInt32 *newSDPLen) {
         }
         //the last "a=" for each m should be the control a=
         if ((trackIndex > 0) && (!hasControlLine)) {
-          qtss_sprintf(trackIndexBuffer,
+          s_sprintf(trackIndexBuffer,
                        "a=control:trackID=%" _S32BITARG_ "\r\n",
                        trackIndex);
           localSDPFormatter.Put(trackIndexBuffer, ::strlen(trackIndexBuffer));
@@ -157,7 +161,7 @@ char *SDPSourceInfo::GetLocalSDP(UInt32 *newSDPLen) {
   }
 
   if ((trackIndex > 0) && (!hasControlLine)) {
-    qtss_sprintf(trackIndexBuffer,
+    s_sprintf(trackIndexBuffer,
                  "a=control:trackID=%" _S32BITARG_ "\r\n",
                  trackIndex);
     localSDPFormatter.Put(trackIndexBuffer, ::strlen(trackIndexBuffer));
@@ -293,7 +297,7 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
 
         if (aLineType.Equal(sBroadcastControlStr)) {   // found a control line for the broadcast (delete at time or delete at end of broadcast/server startup)
 
-          // qtss_printf("found =%s\n",sBroadcastControlStr);
+          // s_printf("found =%s\n",sBroadcastControlStr);
 
           aParser.ConsumeUntil(NULL, StringParser::sWordMask);
 
@@ -321,10 +325,10 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
             StrPtrLen payloadNameFromParser;
             (void) aParser.GetThruEOL(&payloadNameFromParser);
             char *temp = payloadNameFromParser.GetAsCString();
-//                                                qtss_printf("payloadNameFromParser (%x) = %s\n", temp, temp);
+//                                                s_printf("payloadNameFromParser (%x) = %s\n", temp, temp);
             (fStreamArray[theStreamIndex - 1].fPayloadName).Set(temp,
                                                                 payloadNameFromParser.Len);
-//                                                qtss_printf("%s\n", fStreamArray[theStreamIndex - 1].fPayloadName.Ptr);
+//                                                s_printf("%s\n", fStreamArray[theStreamIndex - 1].fPayloadName.Ptr);
           }
         } else if (aLineType.Equal(sControlStr)) {
           // Modify By EasyDarwin
@@ -337,10 +341,10 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
             aParser.GetThruEOL(&trackNameFromParser);
 
             char *temp = trackNameFromParser.GetAsCString();
-//                                                qtss_printf("trackNameFromParser (%x) = %s\n", temp, temp);
+//                                                s_printf("trackNameFromParser (%x) = %s\n", temp, temp);
             (fStreamArray[theStreamIndex - 1].fTrackName).Set(temp,
                                                               trackNameFromParser.Len);
-//                                                qtss_printf("%s\n", fStreamArray[theStreamIndex - 1].fTrackName.Ptr);
+//                                                s_printf("%s\n", fStreamArray[theStreamIndex - 1].fTrackName.Ptr);
 
             StringParser tParser(&trackNameFromParser);
             tParser.ConsumeUntil(NULL, '=');
@@ -411,7 +415,7 @@ UInt32 SDPSourceInfo::GetIPAddr(StringParser *inParser, char inStopChar) {
 
   //inet_addr returns numeric IP addr in network byte order, make
   //sure to convert to host order.
-  UInt32 ipAddr = SocketUtils::ConvertStringToAddr(ipAddrStr.Ptr);
+  UInt32 ipAddr = Net::SocketUtils::ConvertStringToAddr(ipAddrStr.Ptr);
 
   // Make sure to put the old char back!
   ipAddrStr.Ptr[ipAddrStr.Len] = endChar;

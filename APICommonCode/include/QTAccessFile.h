@@ -32,10 +32,8 @@
 #ifndef _QT_ACCESS_FILE_H_
 #define _QT_ACCESS_FILE_H_
 
-#include <stdlib.h>
 #include <CF/StringParser.h>
 #include <CF/Core/Mutex.h>
-#include "QTSS.h"
 
 using namespace CF;
 

@@ -43,8 +43,12 @@ extern "C" {
 #include <CF/Types.h>
 #include "QTSS.h"
 
-class QTSSModule;
+namespace CF {
+namespace Thread {
 class Task;
+}
+}
+class QTSSModule;
 
 typedef QTSS_Error  (*QTSS_CallbackProcPtr)(...);
 typedef void *(*QTSS_CallbackPtrProcPtr)(...);
@@ -138,7 +142,7 @@ typedef struct {
 typedef struct {
   QTSSModule *curModule;  // this structure is setup in each thread
   QTSS_Role curRole;    // before invoking a module in a role. Sometimes
-  Task *curTask;    // this info. helps callback implementation
+  CF::Thread::Task *curTask;    // this info. helps callback implementation
   bool eventRequested;
   bool globalLockRequested;    // request event with global lock.
   bool isGlobalLocked;

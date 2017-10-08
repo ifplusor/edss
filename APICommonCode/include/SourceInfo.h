@@ -39,10 +39,10 @@
 #ifndef __SOURCE_INFO_H__
 #define __SOURCE_INFO_H__
 
+#include <CF/StrPtrLen.h>
+#include <CF/Core/Time.h>
+
 #include "QTSS.h"
-#include "StrPtrLen.h"
-#include "OSQueue.h"
-#include "OS.h"
 
 class SourceInfo {
  public:
@@ -88,9 +88,9 @@ class SourceInfo {
     UInt16 fPort;       // Dest (RTP) port of source content
     UInt16 fTimeToLive; // Ttl for this stream
     QTSS_RTPPayloadType fPayloadType;   // Payload type of this stream
-    StrPtrLen fPayloadName; // Payload name of this stream
+    CF::StrPtrLen fPayloadName; // Payload name of this stream
     UInt32 fTrackID;    // ID of this stream
-    StrPtrLen fTrackName;//Track Name of this stream
+    CF::StrPtrLen fTrackName;//Track Name of this stream
     Float32 fBufferDelay; // buffer delay (default is 3 seconds)
     bool
         fIsTCP;     // Is this a TCP broadcast? If this is the case, the port and ttl are not valid
@@ -174,7 +174,7 @@ class SourceInfo {
                                                                   : false;
   }
   bool IsActiveTime(time_t unixTimeSecs);
-  bool IsActiveNow() { return IsActiveTime(OS::UnixTime_Secs()); }
+  bool IsActiveNow() { return IsActiveTime(CF::Core::Time::UnixTime_Secs()); }
   bool IsRTSPControlled() {
     return (fSessionControlType == kRTSPSessionControl) ? true : false;
   }

@@ -13,9 +13,10 @@ set(SOURCE_FILES
         SDPSourceInfo.cpp
         SourceInfo.cpp)
 
-add_library(APICommonCode STATIC ${HEADER_FILES} ${SOURCE_FILES})
+add_library(APICommonCode STATIC
+        ${HEADER_FILES} ${SOURCE_FILES})
 target_include_directories(APICommonCode
         PUBLIC include)
 target_link_libraries(APICommonCode
-        PUBLIC APIStub
-        PUBLIC RTPMetaInfo)
+        PUBLIC StreamingBase
+        PUBLIC APIStub)

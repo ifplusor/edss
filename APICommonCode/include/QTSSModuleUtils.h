@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <CF/StrPtrLen.h>
 #include "QTSS.h"
+#include "RTPMetaInfoPacket.h"
 
 class QTSSModuleUtils {
  public:

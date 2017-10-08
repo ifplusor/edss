@@ -6,6 +6,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
         QTSS_Private.cpp)
 
-add_library(APIStub STATIC ${HEADER_FILES} ${SOURCE_FILES})
+add_library(APIStub STATIC
+        ${HEADER_FILES} ${SOURCE_FILES})
 target_include_directories(APIStub
         PUBLIC include)

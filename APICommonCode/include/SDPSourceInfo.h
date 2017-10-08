@@ -35,9 +35,9 @@
 #ifndef __SDP_SOURCE_INFO_H__
 #define __SDP_SOURCE_INFO_H__
 
-#include "StrPtrLen.h"
+#include <CF/StringParser.h>
+
 #include "SourceInfo.h"
-#include "StringParser.h"
 
 class SDPSourceInfo : public SourceInfo {
  public:
@@ -55,21 +55,21 @@ class SDPSourceInfo : public SourceInfo {
   virtual char *GetLocalSDP(UInt32 *newSDPLen);
 
   // Returns the SDP data
-  StrPtrLen *GetSDPData() { return &fSDPData; }
+  CF::StrPtrLen *GetSDPData() { return &fSDPData; }
 
   // Utility routines
 
   // Assuming the parser is currently pointing at the beginning of an dotted-
   // decimal IP address, this consumes it (stopping at inStopChar), and returns
   // the IP address (host ordered) as a UInt32
-  static UInt32 GetIPAddr(StringParser *inParser, char inStopChar);
+  static UInt32 GetIPAddr(CF::StringParser *inParser, char inStopChar);
 
  private:
 
   enum {
     kDefaultTTL = 15    //UInt16
   };
-  StrPtrLen fSDPData;
+  CF::StrPtrLen fSDPData;
 };
 #endif // __SDP_SOURCE_INFO_H__
 

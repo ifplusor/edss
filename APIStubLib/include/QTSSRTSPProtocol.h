@@ -63,7 +63,7 @@ typedef UInt32 QTSS_RTSPMethod;
 
 enum {
   //These are the common request headers (optimized)
-      qtssAcceptHeader = 0,
+  qtssAcceptHeader = 0,
   qtssCSeqHeader = 1,
   qtssUserAgentHeader = 2,
   qtssTransportHeader = 3,
@@ -72,7 +72,7 @@ enum {
   qtssNumVIPHeaders = 6,
 
   //Other request headers
-      qtssAcceptEncodingHeader = 6,
+  qtssAcceptEncodingHeader = 6,
   qtssAcceptLanguageHeader = 7,
   qtssAuthorizationHeader = 8,
   qtssBandwidthHeader = 9,
@@ -108,7 +108,7 @@ enum {
   qtssNumRequestHeaders = 39,
 
   //Additional response headers
-      qtssAllowHeader = 39,
+  qtssAllowHeader = 39,
   qtssPublicHeader = 40,
   qtssServerHeader = 41,
   qtssUnsupportedHeader = 42,
@@ -116,7 +116,7 @@ enum {
   qtssSameAsLastHeader = 44,
 
   //Newly added headers
-      qtssExtensionHeaders = 45,
+  qtssExtensionHeaders = 45,
 
   qtssXRetransmitHeader = 45,
   qtssXAcceptRetransmitHeader = 46,
@@ -128,7 +128,7 @@ enum {
   qtssXAcceptDynamicRateHeader = 52,
 
   // QT Player random data request
-      qtssXRandomDataSizeHeader = 53,
+  qtssXRandomDataSizeHeader = 53,
 
   qtssNumHeaders = 54,
   qtssIllegalHeader = 54
@@ -137,54 +137,54 @@ enum {
 typedef UInt32 QTSS_RTSPHeader;
 
 enum {
-  qtssContinue = 0,        //100
-  qtssSuccessOK = 1,        //200
-  qtssSuccessCreated = 2,        //201
-  qtssSuccessAccepted = 3,        //202
-  qtssSuccessNoContent = 4,        //203
-  qtssSuccessPartialContent = 5,        //204
-  qtssSuccessLowOnStorage = 6,        //250
-  qtssMultipleChoices = 7,        //300
-  qtssRedirectPermMoved = 8,        //301
-  qtssRedirectTempMoved = 9,        //302
-  qtssRedirectSeeOther = 10,       //303
-  qtssRedirectNotModified = 11,       //304
-  qtssUseProxy = 12,       //305
-  qtssClientBadRequest = 13,       //400
-  qtssClientUnAuthorized = 14,       //401
-  qtssPaymentRequired = 15,       //402
-  qtssClientForbidden = 16,       //403
-  qtssClientNotFound = 17,       //404
-  qtssClientMethodNotAllowed = 18,       //405
-  qtssNotAcceptable = 19,       //406
-  qtssProxyAuthenticationRequired = 20,       //407
-  qtssRequestTimeout = 21,       //408
-  qtssClientConflict = 22,       //409
-  qtssGone = 23,       //410
-  qtssLengthRequired = 24,       //411
-  qtssPreconditionFailed = 25,       //412
-  qtssRequestEntityTooLarge = 26,       //413
-  qtssRequestURITooLarge = 27,       //414
-  qtssUnsupportedMediaType = 28,       //415
-  qtssClientParameterNotUnderstood = 29,       //451
-  qtssClientConferenceNotFound = 30,       //452
-  qtssClientNotEnoughBandwidth = 31,       //453
-  qtssClientSessionNotFound = 32,       //454
-  qtssClientMethodNotValidInState = 33,       //455
+  qtssContinue = 0,                         //100
+  qtssSuccessOK = 1,                        //200
+  qtssSuccessCreated = 2,                   //201
+  qtssSuccessAccepted = 3,                  //202
+  qtssSuccessNoContent = 4,                 //203
+  qtssSuccessPartialContent = 5,            //204
+  qtssSuccessLowOnStorage = 6,              //250
+  qtssMultipleChoices = 7,                  //300
+  qtssRedirectPermMoved = 8,                //301
+  qtssRedirectTempMoved = 9,                //302
+  qtssRedirectSeeOther = 10,                //303
+  qtssRedirectNotModified = 11,             //304
+  qtssUseProxy = 12,                        //305
+  qtssClientBadRequest = 13,                //400
+  qtssClientUnAuthorized = 14,              //401
+  qtssPaymentRequired = 15,                 //402
+  qtssClientForbidden = 16,                 //403
+  qtssClientNotFound = 17,                  //404
+  qtssClientMethodNotAllowed = 18,          //405
+  qtssNotAcceptable = 19,                   //406
+  qtssProxyAuthenticationRequired = 20,     //407
+  qtssRequestTimeout = 21,                  //408
+  qtssClientConflict = 22,                  //409
+  qtssGone = 23,                            //410
+  qtssLengthRequired = 24,                  //411
+  qtssPreconditionFailed = 25,              //412
+  qtssRequestEntityTooLarge = 26,           //413
+  qtssRequestURITooLarge = 27,              //414
+  qtssUnsupportedMediaType = 28,            //415
+  qtssClientParameterNotUnderstood = 29,    //451
+  qtssClientConferenceNotFound = 30,        //452
+  qtssClientNotEnoughBandwidth = 31,        //453
+  qtssClientSessionNotFound = 32,           //454
+  qtssClientMethodNotValidInState = 33,     //455
   qtssClientHeaderFieldNotValid = 34,       //456
-  qtssClientInvalidRange = 35,       //457
-  qtssClientReadOnlyParameter = 36,       //458
-  qtssClientAggregateOptionNotAllowed = 37,       //459
-  qtssClientAggregateOptionAllowed = 38,       //460
-  qtssClientUnsupportedTransport = 39,       //461
-  qtssClientDestinationUnreachable = 40,       //462
-  qtssServerInternal = 41,       //500
-  qtssServerNotImplemented = 42,       //501
-  qtssServerBadGateway = 43,       //502
-  qtssServerUnavailable = 44,       //503
-  qtssServerGatewayTimeout = 45,       //505
-  qtssRTSPVersionNotSupported = 46,       //504
-  qtssServerOptionNotSupported = 47,       //551
+  qtssClientInvalidRange = 35,              //457
+  qtssClientReadOnlyParameter = 36,         //458
+  qtssClientAggregateOptionNotAllowed = 37, //459
+  qtssClientAggregateOptionAllowed = 38,    //460
+  qtssClientUnsupportedTransport = 39,      //461
+  qtssClientDestinationUnreachable = 40,    //462
+  qtssServerInternal = 41,                  //500
+  qtssServerNotImplemented = 42,            //501
+  qtssServerBadGateway = 43,                //502
+  qtssServerUnavailable = 44,               //503
+  qtssServerGatewayTimeout = 45,            //505
+  qtssRTSPVersionNotSupported = 46,         //504
+  qtssServerOptionNotSupported = 47,        //551
   qtssNumStatusCodes = 48
 
 };

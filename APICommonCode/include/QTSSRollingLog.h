@@ -40,13 +40,12 @@
 #ifndef __Win32__
 #include <sys/time.h>
 #endif
-#include "OSHeaders.h"
-#include "OSMutex.h"
-#include "Task.h"
+
+#include <CF/Thread/Task.h>
 
 const bool kAllowLogToRoll = true;
 
-class QTSSRollingLog : public Task {
+class QTSSRollingLog : public CF::Thread::Task {
  public:
 
   //pass in whether you'd like the log roller to log errors.
@@ -56,7 +55,7 @@ class QTSSRollingLog : public Task {
   // Call this to delete. Closes the log and sends a kill event
   void Delete() {
     CloseLog(false);
-    this->Signal(Task::kKillEvent);
+    this->Signal(kKillEvent);
   }
 
   //
@@ -135,7 +134,7 @@ class QTSSRollingLog : public Task {
 
   // To make sure what happens in Run doesn't also happen at the same time
   // in the public functions.
-  OSMutex fMutex;
+  CF::Core::Mutex fMutex;
 };
 
 #endif // __QTSS_ROLLINGLOG_H__
