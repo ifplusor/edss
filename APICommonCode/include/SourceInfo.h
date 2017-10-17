@@ -81,21 +81,17 @@ class SourceInfo {
 
     void Copy(const StreamInfo &copy);// Does copy dynamically allocated data
 
-    UInt32
-        fSrcIPAddr;  // Src IP address of content (this may be 0 if not known for sure)
-    UInt32
-        fDestIPAddr; // Dest IP address of content (destination IP addr for source broadcast!)
-    UInt16 fPort;       // Dest (RTP) port of source content
-    UInt16 fTimeToLive; // Ttl for this stream
-    QTSS_RTPPayloadType fPayloadType;   // Payload type of this stream
-    CF::StrPtrLen fPayloadName; // Payload name of this stream
-    UInt32 fTrackID;    // ID of this stream
-    CF::StrPtrLen fTrackName;//Track Name of this stream
-    Float32 fBufferDelay; // buffer delay (default is 3 seconds)
-    bool
-        fIsTCP;     // Is this a TCP broadcast? If this is the case, the port and ttl are not valid
-    bool
-        fSetupToReceive;    // If true then a push to the server is setup on this stream.
+    UInt32 fSrcIPAddr;                // Src IP address of content (this may be 0 if not known for sure)
+    UInt32 fDestIPAddr;               // Dest IP address of content (destination IP addr for source broadcast!)
+    UInt16 fPort;                     // Dest (RTP) port of source content
+    UInt16 fTimeToLive;               // Ttl for this stream
+    QTSS_RTPPayloadType fPayloadType; // Payload type of this stream
+    CF::StrPtrLen fPayloadName;       // Payload name of this stream
+    UInt32 fTrackID;                  // ID of this stream
+    CF::StrPtrLen fTrackName;         // Track Name of this stream
+    Float32 fBufferDelay;             // buffer delay (default is 3 seconds)
+    bool fIsTCP;                      // Is this a TCP broadcast? If this is the case, the port and ttl are not valid
+    bool fSetupToReceive;             // If true then a push to the server is setup on this stream.
     UInt32 fTimeScale;
   };
 
@@ -126,14 +122,11 @@ class SourceInfo {
     void Copy(const OutputInfo &copy);// Does copy dynamically allocated data
 
     UInt32 fDestAddr;       // Destination address to forward the input onto
-    UInt32
-        fLocalAddr;      // Address of local interface to send out on (may be 0)
+    UInt32 fLocalAddr;      // Address of local interface to send out on (may be 0)
     UInt16 fTimeToLive;     // Time to live for resulting output (if multicast)
     UInt16 *fPortArray;     // 1 destination RTP port for each Stream.
-    UInt32
-        fNumPorts;       // Size of the fPortArray (usually equal to fNumStreams)
-    UInt16
-        fBasePort;       // The base destination RTP port - for i=1 to fNumStreams fPortArray[i] = fPortArray[i-1] + 2
+    UInt32 fNumPorts;       // Size of the fPortArray (usually equal to fNumStreams)
+    UInt16 fBasePort;       // The base destination RTP port - for i=1 to fNumStreams fPortArray[i] = fPortArray[i-1] + 2
     bool fAlreadySetup;  // A flag used in QTSSReflectorModule.cpp
   };
 
@@ -170,8 +163,7 @@ class SourceInfo {
     return time >= (UInt32) kNTP_Offset_From_1970 ? true : false;
   }
   bool IsPermanentSource() {
-    return ((fStartTimeUnixSecs == 0) && (fEndTimeUnixSecs == 0)) ? true
-                                                                  : false;
+    return ((fStartTimeUnixSecs == 0) && (fEndTimeUnixSecs == 0)) ? true : false;
   }
   bool IsActiveTime(time_t unixTimeSecs);
   bool IsActiveNow() { return IsActiveTime(CF::Core::Time::UnixTime_Secs()); }

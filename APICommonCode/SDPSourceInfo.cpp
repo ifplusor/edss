@@ -197,9 +197,7 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
   UInt32 currentTrack = 1;
 
   bool hasGlobalStreamInfo = false;
-  StreamInfo
-      theGlobalStreamInfo; //needed if there is one c= header independent of
-  //individual streams
+  StreamInfo theGlobalStreamInfo; //needed if there is one c= header independent of individual streams
 
   StrPtrLen sdpLine;
   StringParser trackCounter(&fSDPData);
@@ -231,8 +229,7 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
   //Now actually get all the data on all the streams
   while (sdpParser.GetDataRemaining() > 0) {
     sdpParser.GetThruEOL(&sdpLine);
-    if (sdpLine.Len == 0)
-      continue;//skip over any blank lines
+    if (sdpLine.Len == 0) continue;//skip over any blank lines
 
     switch (*sdpLine.Ptr) {
       case 't': {
@@ -250,10 +247,8 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
 
       case 'm': {
         if (hasGlobalStreamInfo) {
-          fStreamArray[theStreamIndex].fDestIPAddr =
-              theGlobalStreamInfo.fDestIPAddr;
-          fStreamArray[theStreamIndex].fTimeToLive =
-              theGlobalStreamInfo.fTimeToLive;
+          fStreamArray[theStreamIndex].fDestIPAddr = theGlobalStreamInfo.fDestIPAddr;
+          fStreamArray[theStreamIndex].fTimeToLive = theGlobalStreamInfo.fTimeToLive;
         }
         fStreamArray[theStreamIndex].fTrackID = currentTrack;
         currentTrack++;
@@ -286,13 +281,12 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
         theStreamIndex++;
       }
         break;
+
       case 'a': {
         StringParser aParser(&sdpLine);
-
         aParser.ConsumeLength(NULL, 2);//go past 'a='
 
         StrPtrLen aLineType;
-
         aParser.ConsumeWord(&aLineType);
 
         if (aLineType.Equal(sBroadcastControlStr)) {   // found a control line for the broadcast (delete at time or delete at end of broadcast/server startup)
@@ -302,7 +296,6 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
           aParser.ConsumeUntil(NULL, StringParser::sWordMask);
 
           StrPtrLen sessionControlType;
-
           aParser.ConsumeWord(&sessionControlType);
 
           if (sessionControlType.Equal(sAutoDisconnect)) {
@@ -310,7 +303,6 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
           } else if (sessionControlType.Equal(sAutoDisconnectTime)) {
             fSessionControlType = kSDPTimeControl;
           }
-
         }
 
         //if we haven't even hit an 'm' line yet, just ignore all 'a' lines
@@ -320,20 +312,17 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
         if (aLineType.Equal(sRtpMapStr)) {
           //mark the codec type if this line has a codec name on it. If we already
           //have a codec type for this track, just ignore this line
-          if ((fStreamArray[theStreamIndex - 1].fPayloadName.Len == 0) &&
-              (aParser.GetThru(NULL, ' '))) {
+          if ((fStreamArray[theStreamIndex - 1].fPayloadName.Len == 0) && (aParser.GetThru(NULL, ' '))) {
             StrPtrLen payloadNameFromParser;
             (void) aParser.GetThruEOL(&payloadNameFromParser);
             char *temp = payloadNameFromParser.GetAsCString();
-//                                                s_printf("payloadNameFromParser (%x) = %s\n", temp, temp);
-            (fStreamArray[theStreamIndex - 1].fPayloadName).Set(temp,
-                                                                payloadNameFromParser.Len);
-//                                                s_printf("%s\n", fStreamArray[theStreamIndex - 1].fPayloadName.Ptr);
+//          s_printf("payloadNameFromParser (%x) = %s\n", temp, temp);
+            (fStreamArray[theStreamIndex - 1].fPayloadName).Set(temp, payloadNameFromParser.Len);
+//          s_printf("%s\n", fStreamArray[theStreamIndex - 1].fPayloadName.Ptr);
           }
         } else if (aLineType.Equal(sControlStr)) {
           // Modify By EasyDarwin
-          //if ((fStreamArray[theStreamIndex - 1].fTrackName.Len == 0) &&
-          //                   (aParser.GetThru(NULL, ' ')))
+          //if ((fStreamArray[theStreamIndex - 1].fTrackName.Len == 0) && (aParser.GetThru(NULL, ' ')))
           {
             StrPtrLen trackNameFromParser;
             aParser.ConsumeUntil(NULL, ':');
@@ -341,24 +330,22 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
             aParser.GetThruEOL(&trackNameFromParser);
 
             char *temp = trackNameFromParser.GetAsCString();
-//                                                s_printf("trackNameFromParser (%x) = %s\n", temp, temp);
-            (fStreamArray[theStreamIndex - 1].fTrackName).Set(temp,
-                                                              trackNameFromParser.Len);
-//                                                s_printf("%s\n", fStreamArray[theStreamIndex - 1].fTrackName.Ptr);
+//            s_printf("trackNameFromParser (%x) = %s\n", temp, temp);
+            (fStreamArray[theStreamIndex - 1].fTrackName).Set(temp, trackNameFromParser.Len);
+//            s_printf("%s\n", fStreamArray[theStreamIndex - 1].fTrackName.Ptr);
 
             StringParser tParser(&trackNameFromParser);
             tParser.ConsumeUntil(NULL, '=');
             tParser.ConsumeUntil(NULL, StringParser::sDigitMask);
-            fStreamArray[theStreamIndex - 1].fTrackID =
-                tParser.ConsumeInteger(NULL);
+            fStreamArray[theStreamIndex - 1].fTrackID = tParser.ConsumeInteger(NULL);
           }
         } else if (aLineType.Equal(sBufferDelayStr)) {   // if a BufferDelay is found then set all of the streams to the same buffer delay (it's global)
           aParser.ConsumeUntil(NULL, StringParser::sDigitMask);
           theGlobalStreamInfo.fBufferDelay = aParser.ConsumeFloat();
         }
-
       }
         break;
+
       case 'c': {
         //get the IP address off this header
         StringParser cParser(&sdpLine);
@@ -397,7 +384,6 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
     fStreamArray[count].fBufferDelay = bufferDelay;
     count++;
   }
-
 }
 
 UInt32 SDPSourceInfo::GetIPAddr(StringParser *inParser, char inStopChar) {

@@ -110,34 +110,22 @@ void SDPContainer::Parse() {
     StringParser lineParser(&line);
 
     lineParser.ConsumeWhitespace();//skip over leading whitespace
-    if (lineParser.GetDataRemaining() == 0) // must be an empty line
-      continue;
+    if (lineParser.GetDataRemaining() == 0) continue; // must be an empty line
 
     char firstChar = lineParser.PeekFast();
-    if (firstChar == '\0')
-      continue; //skip over blank lines
+    if (firstChar == '\0') continue; //skip over blank lines
 
     fFieldStr[(UInt8) firstChar] = firstChar;
     switch (firstChar) {
-      case 'v': fReqLines |= kV;
-        break;
-
-      case 's': fReqLines |= kS;
-        break;
-
-      case 't': fReqLines |= kT;
-        break;
-
-      case 'o': fReqLines |= kO;
-        break;
-
+      case 'v': fReqLines |= kV; break;
+      case 's': fReqLines |= kS; break;
+      case 't': fReqLines |= kT; break;
+      case 'o': fReqLines |= kO; break;
     }
 
     lineParser.ConsumeUntil(&fieldName, nameValueSeparator);
-    if ((fieldName.Len != 1)
-        || (::strchr(validChars, fieldName.Ptr[0]) == nullptr)) {
-      valid =
-          false; // line doesn't begin with one of the valid characters followed by an "="
+    if ((fieldName.Len != 1) || (::strchr(validChars, fieldName.Ptr[0]) == nullptr)) {
+      valid = false; // line doesn't begin with one of the valid characters followed by an "="
       break;
     }
 
@@ -159,7 +147,6 @@ void SDPContainer::Parse() {
     valid = false;
   }
   fValid = valid;
-
 }
 
 void SDPContainer::Initialize() {

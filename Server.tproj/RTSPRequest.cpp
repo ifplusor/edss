@@ -183,7 +183,8 @@ QTSS_Error RTSPRequest::ParseURI(StringParser &parser) {
 
   // don't allow non-aggregate operations indicated by a url/media track=id
   // might need this for rate adapt
-  //if (qtssSetupMethod != fMethod && qtssOptionsMethod != fMethod && qtssSetParameterMethod != fMethod) // any method not a setup, options, or setparameter is not allowed to have a "/trackID=" in the url.
+  //if (qtssSetupMethod != fMethod && qtssOptionsMethod != fMethod && qtssSetParameterMethod != fMethod)
+  // any method not a setup, options, or setparameter is not allowed to have a "/trackID=" in the url.
   if (qtssSetupMethod != fMethod) { // any method not a setup is not allowed to have a "/trackID=" in the url.
     StrPtrLenDel tempCStr(theAbsURL.GetAsCString());
     StrPtrLen nonaggregate(tempCStr.FindString("/trackID="));

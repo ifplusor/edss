@@ -57,9 +57,7 @@ void ReflectorSession::Initialize() {
   ;
 }
 
-ReflectorSession::ReflectorSession(StrPtrLen *inSourceID,
-                                   UInt32 inChannelNum,
-                                   SourceInfo *inInfo)
+ReflectorSession::ReflectorSession(StrPtrLen *inSourceID, UInt32 inChannelNum, SourceInfo *inInfo)
     : Task(),
       fIsSetup(false),
       fSessionName(inSourceID->GetAsCString()),
@@ -122,25 +120,17 @@ QTSS_Error ReflectorSession::SetSessionName() {
     theParams.easyStreamInfoParams.inChannel = fChannelNum;
     theParams.easyStreamInfoParams.inNumOutputs = fNumOutputs;
     theParams.easyStreamInfoParams.inAction = easyRedisActionSet;
-    auto numModules =
-        QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisUpdateStreamInfoRole);
-    for (UInt32 currentModule = 0; currentModule < numModules;
-         currentModule++) {
-      QTSSModule *theModule =
-          QTSServerInterface::GetModule(QTSSModule::kRedisUpdateStreamInfoRole,
-                                        currentModule);
-      (void) theModule->CallDispatch(Easy_RedisUpdateStreamInfo_Role,
-                                     &theParams);
+    auto numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisUpdateStreamInfoRole);
+    for (UInt32 currentModule = 0; currentModule < numModules; currentModule++) {
+      QTSSModule *theModule = QTSServerInterface::GetModule(QTSSModule::kRedisUpdateStreamInfoRole, currentModule);
+      (void) theModule->CallDispatch(Easy_RedisUpdateStreamInfo_Role, &theParams);
     }
   }
   return QTSS_NoErr;
 }
 
-QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo *inInfo,
-                                                   QTSS_StandardRTSP_Params *inParams,
-                                                   UInt32 inFlags,
-                                                   bool filterState,
-                                                   UInt32 filterTimeout) {
+QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo *inInfo, QTSS_StandardRTSP_Params *inParams,
+                                                   UInt32 inFlags, bool filterState, UInt32 filterTimeout) {
   // use the current SourceInfo
   if (inInfo == nullptr)
     inInfo = fSourceInfo;
@@ -159,9 +149,7 @@ QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo *inInfo,
 
   // 音视频分为两个流,对于每个流,创建 ReflectorStream 对象。
   fStreamArray = new ReflectorStream *[fSourceInfo->GetNumStreams()];
-  ::memset(fStreamArray,
-           0,
-           fSourceInfo->GetNumStreams() * sizeof(ReflectorStream *));
+  ::memset(fStreamArray, 0, fSourceInfo->GetNumStreams() * sizeof(ReflectorStream *));
 
   for (UInt32 x = 0; x < fSourceInfo->GetNumStreams(); x++) {
     fStreamArray[x] = new ReflectorStream(fSourceInfo->GetStreamInfo(x));
@@ -169,10 +157,7 @@ QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo *inInfo,
     // If that happens, we'll just abort here, which will leave the ReflectorStream
     // array in an inconsistent state, so we need to make sure in our cleanup
     // code to check for NULL.
-    QTSS_Error theError = fStreamArray[x]->BindSockets(inParams,
-                                                       inFlags,
-                                                       filterState,
-                                                       filterTimeout);
+    QTSS_Error theError = fStreamArray[x]->BindSockets(inParams, inFlags, filterState, filterTimeout);
     if (theError != QTSS_NoErr) {
       delete fStreamArray[x];
       fStreamArray[x] = nullptr;
@@ -183,8 +168,7 @@ QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo *inInfo,
     fStreamArray[x]->SetEnableBuffer(this->fHasBufferedStreams);// buffering is done by the stream's sender
 
     // If the port was 0, update it to reflect what the actual RTP port is.
-    fSourceInfo->GetStreamInfo(x)->fPort =
-        fStreamArray[x]->GetStreamInfo()->fPort;
+    fSourceInfo->GetStreamInfo(x)->fPort = fStreamArray[x]->GetStreamInfo()->fPort;
     //s_printf("ReflectorSession::SetupReflectorSession fSourceInfo->GetStreamInfo(x)->fPort= %u\n",fSourceInfo->GetStreamInfo(x)->fPort);
   }
 

@@ -308,8 +308,7 @@ class ReflectorSender : public CF::Net::UDPDemuxerTask {
 
   void SetPacketSeqNumber(const CF::StrPtrLen &inPacket, UInt16 inSeqNumber);
 
-  bool PacketShouldBeThinned(QTSS_RTPStreamObject inStream,
-                             const CF::StrPtrLen &inPacket);
+  bool PacketShouldBeThinned(QTSS_RTPStreamObject inStream, const CF::StrPtrLen &inPacket);
 
   //We want to make sure that ReflectPackets only gets invoked when there
   //is actually work to do, because it is an expensive function
@@ -322,30 +321,22 @@ class ReflectorSender : public CF::Net::UDPDemuxerTask {
   //this is the old way of doing reflect packets. It is only here until the relay code can be cleaned up.
   void ReflectRelayPackets(SInt64 *ioWakeupTime, CF::Queue *inFreeQueue);
 
-  CF::QueueElem *SendPacketsToOutput(ReflectorOutput *theOutput,
-                                   CF::QueueElem *currentPacket,
-                                   SInt64 currentTime,
-                                   SInt64 bucketDelay,
-                                   bool firstPacket);
+  CF::QueueElem *SendPacketsToOutput(ReflectorOutput *theOutput, CF::QueueElem *currentPacket,
+                                     SInt64 currentTime, SInt64 bucketDelay, bool firstPacket);
 
   UInt32 GetOldestPacketRTPTime(bool *foundPtr);
 
   UInt16 GetFirstPacketRTPSeqNum(bool *foundPtr);
 
-  bool GetFirstPacketInfo(UInt16 *outSeqNumPtr,
-                          UInt32 *outRTPTimePtr,
-                          SInt64 *outArrivalTimePtr);
+  bool GetFirstPacketInfo(UInt16 *outSeqNumPtr, UInt32 *outRTPTimePtr, SInt64 *outArrivalTimePtr);
 
   CF::QueueElem *GetClientBufferNextPacketTime(UInt32 inRTPTime);
 
-  bool GetFirstRTPTimePacket(UInt16 *outSeqNumPtr,
-                             UInt32 *outRTPTimePtr,
-                             SInt64 *outArrivalTimePtr);
+  bool GetFirstRTPTimePacket(UInt16 *outSeqNumPtr, UInt32 *outRTPTimePtr, SInt64 *outArrivalTimePtr);
 
   void RemoveOldPackets(CF::Queue *inFreeQueue);
 
-  CF::QueueElem *GetClientBufferStartPacketOffset(SInt64 offsetMsec,
-                                                bool needKeyFrameFirstPacket = false);
+  CF::QueueElem *GetClientBufferStartPacketOffset(SInt64 offsetMsec, bool needKeyFrameFirstPacket = false);
 
   CF::QueueElem *GetClientBufferStartPacket() {
     return this->GetClientBufferStartPacketOffset(0);
@@ -355,8 +346,7 @@ class ReflectorSender : public CF::Net::UDPDemuxerTask {
   // 关键帧索引及丢帧方案
   CF::QueueElem *NeedRelocateBookMark(CF::QueueElem *currentElem);
 
-  CF::QueueElem *GetNewestKeyFrameFirstPacket(CF::QueueElem *currentElem,
-                                            SInt64 offsetMsec);
+  CF::QueueElem *GetNewestKeyFrameFirstPacket(CF::QueueElem *currentElem, SInt64 offsetMsec);
 
   bool IsKeyFrameFirstPacket(ReflectorPacket *thePacket);
 

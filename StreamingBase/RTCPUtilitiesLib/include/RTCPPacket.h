@@ -42,7 +42,7 @@
 #ifndef __Win32__
 #include <sys/types.h>
 #endif
-#ifndef __WinSock__
+#if !__WinSock__
 #include <netinet/in.h>
 #endif
 

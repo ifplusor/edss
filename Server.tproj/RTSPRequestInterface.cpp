@@ -675,13 +675,11 @@ void *RTSPRequestInterface::GetTruncatedPath(QTSSDictionary *inRequest,
   return NULL;
 }
 
-void *RTSPRequestInterface::GetFileName(QTSSDictionary *inRequest,
-                                        UInt32 * /*outLen*/) {
+void *RTSPRequestInterface::GetFileName(QTSSDictionary *inRequest, UInt32 * /*outLen*/) {
   // This function always gets called
 
   RTSPRequestInterface *theRequest = (RTSPRequestInterface *) inRequest;
-  theRequest->SetVal(qtssRTSPReqFileName,
-                     theRequest->GetValue(qtssRTSPReqFilePath));
+  theRequest->SetVal(qtssRTSPReqFileName, theRequest->GetValue(qtssRTSPReqFilePath));
 
   StrPtrLen *theFileNameParam = theRequest->GetValue(qtssRTSPReqFileName);
 
@@ -707,29 +705,21 @@ void *RTSPRequestInterface::GetFileName(QTSSDictionary *inRequest,
   return NULL;
 }
 
-void *RTSPRequestInterface::GetFileDigit(QTSSDictionary *inRequest,
-                                         UInt32 * /*outLen*/) {
+void *RTSPRequestInterface::GetFileDigit(QTSSDictionary *inRequest, UInt32 * /*outLen*/) {
   // This function always gets called
 
   RTSPRequestInterface *theRequest = (RTSPRequestInterface *) inRequest;
-  theRequest->SetVal(qtssRTSPReqFileDigit,
-                     theRequest->GetValue(qtssRTSPReqAbsoluteURL));
+  theRequest->SetVal(qtssRTSPReqFileDigit, theRequest->GetValue(qtssRTSPReqAbsoluteURL));
 
   StrPtrLen *theFileDigit = theRequest->GetValue(qtssRTSPReqFileDigit);
 
   StrPtrLen theFilePath;
-  (void) QTSS_GetValuePtr(inRequest,
-                          qtssRTSPReqTruncAbsoluteURL,
-                          0,
-                          (void **) &theFilePath.Ptr,
-                          &theFilePath.Len);
+  (void) QTSS_GetValuePtr(inRequest, qtssRTSPReqTruncAbsoluteURL, 0, (void **) &theFilePath.Ptr, &theFilePath.Len);
 
   //UInt32  theFilePathLen = theRequest->GetValue(qtssRTSPReqTruncAbsoluteURL)->Len;
   theFileDigit->Ptr += theFileDigit->Len - 1;
   theFileDigit->Len = 0;
-  while ((StringParser::sDigitMask[(unsigned int) *(*theFileDigit).Ptr] != '\0')
-      &&
-          (theFileDigit->Len <= theFilePath.Len)) {
+  while ((StringParser::sDigitMask[(unsigned int) *(*theFileDigit).Ptr] != '\0') && (theFileDigit->Len <= theFilePath.Len)) {
     theFileDigit->Ptr--;
     theFileDigit->Len++;
   }

@@ -152,26 +152,22 @@ UInt32 SourceInfo::GetNumNewOutputs() {
   return theNumNewOutputs;
 }
 
-bool SourceInfo::SetActiveNTPTimes(UInt32 startTimeNTP,
-                                   UInt32 endTimeNTP) {   // right now only handles earliest start and latest end time.
+// right now only handles earliest start and latest end time.
+bool SourceInfo::SetActiveNTPTimes(UInt32 startTimeNTP, UInt32 endTimeNTP) {
 
   //s_printf("SourceInfo::SetActiveNTPTimes start=%"   _U32BITARG_   " end=%"   _U32BITARG_   "\n",startTimeNTP,endTimeNTP);
   bool accepted = false;
   do {
-    if ((startTimeNTP > 0) && (endTimeNTP > 0)
-        && (endTimeNTP < startTimeNTP))
+    if ((startTimeNTP > 0) && (endTimeNTP > 0) && (endTimeNTP < startTimeNTP))
       break; // not valid NTP time
 
     UInt32 startTimeUnixSecs = 0;
     UInt32 endTimeUnixSecs = 0;
 
-    if (startTimeNTP != 0
-        && IsValidNTPSecs(startTimeNTP)) // allow anything less than 1970
-      startTimeUnixSecs =
-          NTPSecs_to_UnixSecs(startTimeNTP);// convert to 1970 time
+    if (startTimeNTP != 0 && IsValidNTPSecs(startTimeNTP)) // allow anything less than 1970
+      startTimeUnixSecs = NTPSecs_to_UnixSecs(startTimeNTP);// convert to 1970 time
 
-    if (endTimeNTP != 0
-        && !IsValidNTPSecs(endTimeNTP)) // don't allow anything less than 1970
+    if (endTimeNTP != 0 && !IsValidNTPSecs(endTimeNTP)) // don't allow anything less than 1970
       break;
 
     if (endTimeNTP != 0) // convert to 1970 time

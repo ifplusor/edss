@@ -379,9 +379,7 @@ QTSS_Error Register(QTSS_Register_Params *inParams) {
 
 QTSS_Error Initialize(QTSS_Initialize_Params *inParams) {
   // Setup module utils
-  QTSSModuleUtils::Initialize(inParams->inMessages,
-                              inParams->inServer,
-                              inParams->inErrorLogStream);
+  QTSSModuleUtils::Initialize(inParams->inMessages, inParams->inServer, inParams->inErrorLogStream);
   QTAccessFile::Initialize();
   sSessionMap = QTSServerInterface::GetServer()->GetReflectorSessionMap();
   sServerPrefs = inParams->inPrefs;
@@ -413,13 +411,11 @@ QTSS_Error Initialize(QTSS_Initialize_Params *inParams) {
   ReflectorSession::Initialize();
 
   // Report to the server that this module handles DESCRIBE, SETUP, PLAY, PAUSE, and TEARDOWN
-  static QTSS_RTSPMethod sSupportedMethods[] =
-      {qtssDescribeMethod, qtssSetupMethod, qtssTeardownMethod,
-       qtssPlayMethod, qtssPauseMethod, qtssAnnounceMethod,
-       qtssRecordMethod};
-  QTSSModuleUtils::SetupSupportedMethods(inParams->inServer,
-                                         sSupportedMethods,
-                                         7);
+  static QTSS_RTSPMethod sSupportedMethods[] = {
+      qtssDescribeMethod, qtssSetupMethod, qtssTeardownMethod, qtssPlayMethod,
+      qtssPauseMethod, qtssAnnounceMethod, qtssRecordMethod
+  };
+  QTSSModuleUtils::SetupSupportedMethods(inParams->inServer, sSupportedMethods, 7);
 
   RereadPrefs();
 
@@ -446,24 +442,17 @@ char *GetTrimmedKeyWord(char *prefKeyWord) {
 
 void SetMoviesRelativeDir() {
   char *movieFolderString = NULL;
-  (void) QTSS_GetValueAsString(sServerPrefs,
-                               qtssPrefsMovieFolder,
-                               0,
-                               &movieFolderString);
+  (void) QTSS_GetValueAsString(sServerPrefs, qtssPrefsMovieFolder, 0, &movieFolderString);
   CharArrayDeleter deleter(movieFolderString);
 
   ResizeableStringFormatter redirectPath(NULL, 0);
   redirectPath.Put(movieFolderString);
-  if (redirectPath.GetBytesWritten() > 0 &&
-      kPathDelimiterChar
-          != redirectPath.GetBufPtr()[redirectPath.GetBytesWritten() - 1])
+  if (redirectPath.GetBytesWritten() > 0 && kPathDelimiterChar != redirectPath.GetBufPtr()[redirectPath.GetBytesWritten() - 1])
     redirectPath.PutChar(kPathDelimiterChar);
   redirectPath.Put(sBroadcastsRedirectDir);
 
   char *newMovieRelativeDir = new char[redirectPath.GetBytesWritten() + 1];
-  ::memcpy(newMovieRelativeDir,
-           redirectPath.GetBufPtr(),
-           redirectPath.GetBytesWritten());
+  ::memcpy(newMovieRelativeDir, redirectPath.GetBufPtr(), redirectPath.GetBytesWritten());
   newMovieRelativeDir[redirectPath.GetBytesWritten()] = 0;
 
   delete[] sBroadcastsRedirectDir;
@@ -474,141 +463,41 @@ void SetMoviesRelativeDir() {
 QTSS_Error RereadPrefs() {
   //
   // Use the standard GetPref routine to retrieve the correct values for our preferences
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "disable_rtp_play_info",
-                                qtssAttrDataTypeBool16,
-                                &sRTPInfoDisabled,
-                                &sDefaultRTPInfoDisabled,
-                                sizeof(sDefaultRTPInfoDisabled));
+  QTSSModuleUtils::GetAttribute(sPrefs, "disable_rtp_play_info", qtssAttrDataTypeBool16, &sRTPInfoDisabled, &sDefaultRTPInfoDisabled, sizeof(sDefaultRTPInfoDisabled));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "allow_non_sdp_urls",
-                                qtssAttrDataTypeBool16,
-                                &sAllowNonSDPURLs,
-                                &sDefaultAllowNonSDPURLs,
-                                sizeof(sDefaultAllowNonSDPURLs));
+  QTSSModuleUtils::GetAttribute(sPrefs, "allow_non_sdp_urls", qtssAttrDataTypeBool16, &sAllowNonSDPURLs, &sDefaultAllowNonSDPURLs, sizeof(sDefaultAllowNonSDPURLs));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "enable_broadcast_announce",
-                                qtssAttrDataTypeBool16,
-                                &sAnnounceEnabled,
-                                &sDefaultAnnounceEnabled,
-                                sizeof(sDefaultAnnounceEnabled));
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "enable_broadcast_push",
-                                qtssAttrDataTypeBool16,
-                                &sBroadcastPushEnabled,
-                                &sDefaultBroadcastPushEnabled,
-                                sizeof(sDefaultBroadcastPushEnabled));
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "max_broadcast_announce_duration_secs",
-                                qtssAttrDataTypeUInt32,
-                                &sMaxBroadcastAnnounceDuration,
-                                &sDefaultMaxBroadcastAnnounceDuration,
-                                sizeof(sDefaultMaxBroadcastAnnounceDuration));
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "allow_duplicate_broadcasts",
-                                qtssAttrDataTypeBool16,
-                                &sAllowDuplicateBroadcasts,
-                                &sDefaultAllowDuplicateBroadcasts,
-                                sizeof(sDefaultAllowDuplicateBroadcasts));
+  QTSSModuleUtils::GetAttribute(sPrefs, "enable_broadcast_announce", qtssAttrDataTypeBool16, &sAnnounceEnabled, &sDefaultAnnounceEnabled, sizeof(sDefaultAnnounceEnabled));
+  QTSSModuleUtils::GetAttribute(sPrefs, "enable_broadcast_push", qtssAttrDataTypeBool16, &sBroadcastPushEnabled, &sDefaultBroadcastPushEnabled, sizeof(sDefaultBroadcastPushEnabled));
+  QTSSModuleUtils::GetAttribute(sPrefs, "max_broadcast_announce_duration_secs", qtssAttrDataTypeUInt32, &sMaxBroadcastAnnounceDuration, &sDefaultMaxBroadcastAnnounceDuration, sizeof(sDefaultMaxBroadcastAnnounceDuration));
+  QTSSModuleUtils::GetAttribute(sPrefs, "allow_duplicate_broadcasts", qtssAttrDataTypeBool16, &sAllowDuplicateBroadcasts, &sDefaultAllowDuplicateBroadcasts, sizeof(sDefaultAllowDuplicateBroadcasts));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "enforce_static_sdp_port_range",
-                                qtssAttrDataTypeBool16,
-                                &sEnforceStaticSDPPortRange,
-                                &sDefaultEnforceStaticSDPPortRange,
-                                sizeof(sDefaultEnforceStaticSDPPortRange));
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "minimum_static_sdp_port",
-                                qtssAttrDataTypeUInt16,
-                                &sMinimumStaticSDPPort,
-                                &sDefaultMinimumStaticSDPPort,
-                                sizeof(sDefaultMinimumStaticSDPPort));
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "maximum_static_sdp_port",
-                                qtssAttrDataTypeUInt16,
-                                &sMaximumStaticSDPPort,
-                                &sDefaultMaximumStaticSDPPort,
-                                sizeof(sDefaultMaximumStaticSDPPort));
+  QTSSModuleUtils::GetAttribute(sPrefs, "enforce_static_sdp_port_range", qtssAttrDataTypeBool16, &sEnforceStaticSDPPortRange, &sDefaultEnforceStaticSDPPortRange, sizeof(sDefaultEnforceStaticSDPPortRange));
+  QTSSModuleUtils::GetAttribute(sPrefs, "minimum_static_sdp_port", qtssAttrDataTypeUInt16, &sMinimumStaticSDPPort, &sDefaultMinimumStaticSDPPort, sizeof(sDefaultMinimumStaticSDPPort));
+  QTSSModuleUtils::GetAttribute(sPrefs, "maximum_static_sdp_port", qtssAttrDataTypeUInt16, &sMaximumStaticSDPPort, &sDefaultMaximumStaticSDPPort, sizeof(sDefaultMaximumStaticSDPPort));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "kill_clients_when_broadcast_stops",
-                                qtssAttrDataTypeBool16,
-                                &sTearDownClientsOnDisconnect,
-                                &sDefaultTearDownClientsOnDisconnect,
-                                sizeof(sDefaultTearDownClientsOnDisconnect));
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "use_one_SSRC_per_stream",
-                                qtssAttrDataTypeBool16,
-                                &sOneSSRCPerStream,
-                                &sDefaultOneSSRCPerStream,
-                                sizeof(sDefaultOneSSRCPerStream));
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "timeout_stream_SSRC_secs",
-                                qtssAttrDataTypeUInt32,
-                                &sTimeoutSSRCSecs,
-                                &sDefaultTimeoutSSRCSecs,
-                                sizeof(sDefaultTimeoutSSRCSecs));
+  QTSSModuleUtils::GetAttribute(sPrefs, "kill_clients_when_broadcast_stops", qtssAttrDataTypeBool16, &sTearDownClientsOnDisconnect, &sDefaultTearDownClientsOnDisconnect, sizeof(sDefaultTearDownClientsOnDisconnect));
+  QTSSModuleUtils::GetAttribute(sPrefs, "use_one_SSRC_per_stream", qtssAttrDataTypeBool16, &sOneSSRCPerStream, &sDefaultOneSSRCPerStream, sizeof(sDefaultOneSSRCPerStream));
+  QTSSModuleUtils::GetAttribute(sPrefs, "timeout_stream_SSRC_secs", qtssAttrDataTypeUInt32, &sTimeoutSSRCSecs, &sDefaultTimeoutSSRCSecs, sizeof(sDefaultTimeoutSSRCSecs));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "timeout_broadcaster_session_secs",
-                                qtssAttrDataTypeUInt32,
-                                &sBroadcasterSessionTimeoutSecs,
-                                &sDefaultBroadcasterSessionTimeoutSecs,
-                                sizeof(sDefaultTimeoutSSRCSecs));
+  QTSSModuleUtils::GetAttribute(sPrefs, "timeout_broadcaster_session_secs", qtssAttrDataTypeUInt32, &sBroadcasterSessionTimeoutSecs, &sDefaultBroadcasterSessionTimeoutSecs, sizeof(sDefaultTimeoutSSRCSecs));
 
   if (sBroadcasterSessionTimeoutSecs < 30)
     sBroadcasterSessionTimeoutSecs = 30;
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "authenticate_local_broadcast",
-                                qtssAttrDataTypeBool16,
-                                &sAuthenticateLocalBroadcast,
-                                &sDefaultAuthenticateLocalBroadcast,
-                                sizeof(sDefaultAuthenticateLocalBroadcast));
+  QTSSModuleUtils::GetAttribute(sPrefs, "authenticate_local_broadcast", qtssAttrDataTypeBool16, &sAuthenticateLocalBroadcast, &sDefaultAuthenticateLocalBroadcast, sizeof(sDefaultAuthenticateLocalBroadcast));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "disable_overbuffering",
-                                qtssAttrDataTypeBool16,
-                                &sDisableOverbuffering,
-                                &sDefaultDisableOverbuffering,
-                                sizeof(sDefaultDisableOverbuffering));
+  QTSSModuleUtils::GetAttribute(sPrefs, "disable_overbuffering", qtssAttrDataTypeBool16, &sDisableOverbuffering, &sDefaultDisableOverbuffering, sizeof(sDefaultDisableOverbuffering));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "allow_broadcasts",
-                                qtssAttrDataTypeBool16,
-                                &sReflectBroadcasts,
-                                &sDefaultReflectBroadcasts,
-                                sizeof(sDefaultReflectBroadcasts));
+  QTSSModuleUtils::GetAttribute(sPrefs, "allow_broadcasts", qtssAttrDataTypeBool16, &sReflectBroadcasts, &sDefaultReflectBroadcasts, sizeof(sDefaultReflectBroadcasts));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "allow_announced_kill",
-                                qtssAttrDataTypeBool16,
-                                &sAnnouncedKill,
-                                &sDefaultAnnouncedKill,
-                                sizeof(sDefaultAnnouncedKill));
+  QTSSModuleUtils::GetAttribute(sPrefs, "allow_announced_kill", qtssAttrDataTypeBool16, &sAnnouncedKill, &sDefaultAnnouncedKill, sizeof(sDefaultAnnouncedKill));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "enable_play_response_range_header",
-                                qtssAttrDataTypeBool16,
-                                &sPlayResponseRangeHeader,
-                                &sDefaultPlayResponseRangeHeader,
-                                sizeof(sDefaultPlayResponseRangeHeader));
+  QTSSModuleUtils::GetAttribute(sPrefs, "enable_play_response_range_header", qtssAttrDataTypeBool16, &sPlayResponseRangeHeader, &sDefaultPlayResponseRangeHeader, sizeof(sDefaultPlayResponseRangeHeader));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "enable_player_compatibility",
-                                qtssAttrDataTypeBool16,
-                                &sPlayerCompatibility,
-                                &sDefaultPlayerCompatibility,
-                                sizeof(sDefaultPlayerCompatibility));
+  QTSSModuleUtils::GetAttribute(sPrefs, "enable_player_compatibility", qtssAttrDataTypeBool16, &sPlayerCompatibility, &sDefaultPlayerCompatibility, sizeof(sDefaultPlayerCompatibility));
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "compatibility_adjust_sdp_media_bandwidth_percent",
-                                qtssAttrDataTypeUInt32,
-                                &sAdjustMediaBandwidthPercent,
-                                &sAdjustMediaBandwidthPercentDefault,
-                                sizeof(sAdjustMediaBandwidthPercentDefault));
+  QTSSModuleUtils::GetAttribute(sPrefs, "compatibility_adjust_sdp_media_bandwidth_percent", qtssAttrDataTypeUInt32, &sAdjustMediaBandwidthPercent, &sAdjustMediaBandwidthPercentDefault, sizeof(sAdjustMediaBandwidthPercentDefault));
 
   if (sAdjustMediaBandwidthPercent > 100)
     sAdjustMediaBandwidthPercent = 100;
@@ -616,42 +505,27 @@ QTSS_Error RereadPrefs() {
   if (sAdjustMediaBandwidthPercent < 1)
     sAdjustMediaBandwidthPercent = 1;
 
-  QTSSModuleUtils::GetAttribute(sPrefs,
-                                "force_rtp_info_sequence_and_time",
-                                qtssAttrDataTypeBool16,
-                                &sForceRTPInfoSeqAndTime,
-                                &sDefaultForceRTPInfoSeqAndTime,
-                                sizeof(sDefaultForceRTPInfoSeqAndTime));
+  QTSSModuleUtils::GetAttribute(sPrefs, "force_rtp_info_sequence_and_time", qtssAttrDataTypeBool16, &sForceRTPInfoSeqAndTime, &sDefaultForceRTPInfoSeqAndTime, sizeof(sDefaultForceRTPInfoSeqAndTime));
 
   sBroadcasterGroup.Delete();
-  sBroadcasterGroup.Set(QTSSModuleUtils::GetStringAttribute(sPrefs,
-                                                            "BroadcasterGroup",
-                                                            sDefaultsBroadcasterGroup));
+  sBroadcasterGroup.Set(QTSSModuleUtils::GetStringAttribute(sPrefs, "BroadcasterGroup", sDefaultsBroadcasterGroup));
 
   delete[] sRedirectBroadcastsKeyword;
-  char *tempKeyWord = QTSSModuleUtils::GetStringAttribute(sPrefs,
-                                                          "redirect_broadcast_keyword",
-                                                          sDefaultRedirectBroadcastsKeyword);
+  char *tempKeyWord = QTSSModuleUtils::GetStringAttribute(sPrefs, "redirect_broadcast_keyword", sDefaultRedirectBroadcastsKeyword);
 
   sRedirectBroadcastsKeyword = GetTrimmedKeyWord(tempKeyWord);
   delete[] tempKeyWord;
 
   delete[] sBroadcastsRedirectDir;
-  sBroadcastsRedirectDir = QTSSModuleUtils::GetStringAttribute(sPrefs,
-                                                               "redirect_broadcasts_dir",
-                                                               sDefaultBroadcastsRedirectDir);
+  sBroadcastsRedirectDir = QTSSModuleUtils::GetStringAttribute(sPrefs, "redirect_broadcasts_dir", sDefaultBroadcastsRedirectDir);
   if (sBroadcastsRedirectDir && sBroadcastsRedirectDir[0] != kPathDelimiterChar)
     SetMoviesRelativeDir();
 
-  delete[] QTSSModuleUtils::GetStringAttribute(sPrefs, "broadcast_dir_list",
-                                               sDefaultBroadcastsDir); // initialize if there isn't one
-  sBroadcastDirListID =
-      QTSSModuleUtils::GetAttrID(sPrefs, "broadcast_dir_list");
+  delete[] QTSSModuleUtils::GetStringAttribute(sPrefs, "broadcast_dir_list", sDefaultBroadcastsDir); // initialize if there isn't one
+  sBroadcastDirListID = QTSSModuleUtils::GetAttrID(sPrefs, "broadcast_dir_list");
 
   delete[] sIPAllowList;
-  sIPAllowList = QTSSModuleUtils::GetStringAttribute(sPrefs,
-                                                     "ip_allow_list",
-                                                     sLocalLoopBackAddress);
+  sIPAllowList = QTSSModuleUtils::GetStringAttribute(sPrefs, "ip_allow_list", sLocalLoopBackAddress);
   sIPAllowListID = QTSSModuleUtils::GetAttrID(sPrefs, "ip_allow_list");
 
   sBroadcasterSessionTimeoutMilliSecs = sBroadcasterSessionTimeoutSecs * 1000;
@@ -674,28 +548,17 @@ QTSS_Error RereadPrefs() {
       char min[32];
       char max[32];
 
-      if (((sMinimumStaticSDPPort <= minServerPort)
-          && (sMaximumStaticSDPPort >= minServerPort))
-          || ((sMinimumStaticSDPPort >= minServerPort)
-              && (sMinimumStaticSDPPort <= maxServerPort))
-          ) {
+      if (((sMinimumStaticSDPPort <= minServerPort) && (sMaximumStaticSDPPort >= minServerPort))
+          || ((sMinimumStaticSDPPort >= minServerPort) && (sMinimumStaticSDPPort <= maxServerPort))) {
         s_sprintf(min, "%u", minServerPort);
         s_sprintf(max, "%u", maxServerPort);
-        QTSSModuleUtils::LogError(qtssWarningVerbosity,
-                                  sStaticPortsConflictErr,
-                                  0,
-                                  min,
-                                  max);
+        QTSSModuleUtils::LogError(qtssWarningVerbosity, sStaticPortsConflictErr, 0, min, max);
       }
 
       if (sMinimumStaticSDPPort > sMaximumStaticSDPPort) {
         s_sprintf(min, "%u", sMinimumStaticSDPPort);
         s_sprintf(max, "%u", sMaximumStaticSDPPort);
-        QTSSModuleUtils::LogError(qtssWarningVerbosity,
-                                  sInvalidPortRangeErr,
-                                  0,
-                                  min,
-                                  max);
+        QTSSModuleUtils::LogError(qtssWarningVerbosity, sInvalidPortRangeErr, 0, min, max);
       }
     }
   }
@@ -904,8 +767,7 @@ ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams, QTSS_Attrib
       StrPtrLen endOfPath2(&theFullPath.Ptr[theFullPath.Len - sSDPSuffix.Len], sSDPSuffix.Len);
       if (endOfPath2.Equal(sSDPSuffix)) {
         if (resultFilePath != NULL)
-          // TODO(james): no channel?
-          *resultFilePath = theFullPath.GetAsCString();
+          *resultFilePath = theFullPath.GetAsCString(); // NOTE: no channel
         return FindOrCreateSession(&theFullPath, inParams, theChannelNum, NULL, isPush, foundSessionPtr);
       }
     }
@@ -970,6 +832,7 @@ void DoAnnounceAddRequiredSDPLines(QTSS_StandardRTSP_Params *inParams, Resizeabl
       editedSDP->Put(tempBuff);
 
       editedSDP->Put(" IN IP4 ");
+      buffLen = sizeof(tempBuff) - 1;
       (void) QTSS_GetValue(inParams->inClientSession, qtssCliRTSPSessRemoteAddrStr, 0, tempBuff, &buffLen);
       editedSDP->Put(tempBuff, buffLen);
 
@@ -1444,12 +1307,8 @@ bool InfoPortsOK(QTSS_StandardRTSP_Params *inParams, SDPSourceInfo *theInfo, Str
   return isOK;
 }
 
-ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
-                                      QTSS_StandardRTSP_Params *inParams,
-                                      UInt32 inChannel,
-                                      StrPtrLen *inData,
-                                      bool isPush,
-                                      bool *foundSessionPtr) {
+ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Params *inParams, UInt32 inChannel,
+                                      StrPtrLen *inData, bool isPush, bool *foundSessionPtr) {
   // 注意:sSessionMap是一个静态的全局变量,这里Resolve的参数是sdp文件的路径。
   // 也就是说,在同时开启多个窗口播放同一个sdp文件时,都是使用同一个ReflectorSession对象,
   // FindOrCreateSession也不会调用SetupReflectorSession函数,即ReflectorStream、
@@ -1472,9 +1331,7 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
   if (theSessionRef == NULL) {
     // a) 没有根据inPath路径在哈希表sSessionMap中找到对应的ReflectorSession，那么就new一个.
 
-    if (!isPush) {
-      return NULL;
-    }
+    if (!isPush) return NULL;
 
     StrPtrLen theFileData;
     StrPtrLen theFileDeleteData;
@@ -1487,11 +1344,9 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
     }
     CharArrayDeleter fileDataDeleter(theFileDeleteData.Ptr);
 
-    if (theFileData.Len <= 0)
-      return NULL;
+    if (theFileData.Len <= 0) return NULL;
 
-    SDPSourceInfo *theInfo =
-        new SDPSourceInfo(theFileData.Ptr, theFileData.Len); // will make a copy
+    SDPSourceInfo *theInfo = new SDPSourceInfo(theFileData.Ptr, theFileData.Len); // will make a copy
 
     if (!theInfo->IsReflectable()) {
       delete theInfo;
@@ -1508,9 +1363,7 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
     // It is either incoming automatic broadcast setup or a client setup to view broadcast
     // In either case, verify whether the broadcast is allowed, and send forbidden response back
     if (!AllowBroadcast(inParams->inRTSPRequest)) {
-      (void) QTSSModuleUtils::SendErrorResponseWithMessage(inParams->inRTSPRequest,
-                                                           qtssClientForbidden,
-                                                           &sBroadcastNotAllowed);
+      (void) QTSSModuleUtils::SendErrorResponseWithMessage(inParams->inRTSPRequest, qtssClientForbidden, &sBroadcastNotAllowed);
       return NULL;
     }
 
@@ -1523,20 +1376,14 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
       theSetupFlag |= ReflectorSession::kIsPushSession;
 
     theSession = new ReflectorSession(inName, inChannel);
-    if (theSession == NULL) {
-      return NULL;
-    }
+    if (theSession == NULL) return NULL;
 
     theSession->SetHasBufferedStreams(true); // buffer the incoming streams for clients
 
     // SetupReflectorSession stores theInfo in theSession so DONT delete the Info if we fail here, leave it alone.
     // deleting the session will delete the info.
     // 最后调用SetupReflectorSession()方法
-    QTSS_Error theErr = theSession->SetupReflectorSession(theInfo,
-                                                          inParams,
-                                                          theSetupFlag,
-                                                          sOneSSRCPerStream,
-                                                          sTimeoutSSRCSecs);
+    QTSS_Error theErr = theSession->SetupReflectorSession(theInfo, inParams, theSetupFlag, sOneSSRCPerStream, sTimeoutSSRCSecs);
     if (theErr != QTSS_NoErr) {
       //delete theSession;
       SDPCache::GetInstance()->eraseSdpMap(theSession->GetSourceID()->Ptr);
@@ -1557,13 +1404,10 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
       Assert(debug == theSession->GetRef());
     }
   } else {
-    // b) 如果找到了就直接获取theSession = (ReflectorSession*)theSessionRef->GetObject();
+    // b) 如果找到了就直接获取 theSession = (ReflectorSession*)theSessionRef->GetObject();
 
 #ifdef REFLECTORSESSION_DEBUG
-    s_printf(
-        "QTSSReflectorModule.cpp:FindOrCreateSession Session =%p refcount=%"   _U32BITARG_   "\n",
-        theSessionRef,
-        theSessionRef->GetRefCount());
+    s_printf( "QTSSReflectorModule.cpp:FindOrCreateSession Session =%p refcount=%" _U32BITARG_ "\n", theSessionRef, theSessionRef->GetRefCount());
 #endif
     // Check if broadcast is allowed before doing anything else
     // At this point we know it is a definitely a reflector session
@@ -1576,20 +1420,17 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
         break;
       }
 
-      if (foundSessionPtr)
-        *foundSessionPtr = true;
+      if (foundSessionPtr) *foundSessionPtr = true;
 
       StrPtrLen theFileData;
 
       if (inData == NULL) (void) QTSSModuleUtils::ReadEntireFile(inPath.Ptr, &theFileData);
       CharArrayDeleter charArrayDeleter(theFileData.Ptr);
 
-      if (theFileData.Len <= 0)
-        break;
+      if (theFileData.Len <= 0) break;
 
       SDPSourceInfo *theInfo = new SDPSourceInfo(theFileData.Ptr, theFileData.Len);
-      if (theInfo == NULL)
-        break;
+      if (theInfo == NULL) break;
 
       if (!InfoPortsOK(inParams, theInfo, &inPath)) {
         delete theInfo;
@@ -1624,18 +1465,12 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
 }
 
 // ONLY call when performing a setup.
-void DeleteReflectorPushSession(QTSS_StandardRTSP_Params *inParams,
-                                ReflectorSession *theSession,
-                                bool foundSession) {
+void DeleteReflectorPushSession(QTSS_StandardRTSP_Params *inParams, ReflectorSession *theSession, bool foundSession) {
   if (theSession)
     sSessionMap->Release(theSession->GetRef());
 
   ReflectorSession *stopSessionProcessing = NULL;
-  QTSS_Error theErr = QTSS_SetValue(inParams->inClientSession,
-                                    sClientBroadcastSessionAttr,
-                                    0,
-                                    &stopSessionProcessing,
-                                    sizeof(stopSessionProcessing));
+  QTSS_Error theErr = QTSS_SetValue(inParams->inClientSession, sClientBroadcastSessionAttr, 0, &stopSessionProcessing, sizeof(stopSessionProcessing));
   Assert(theErr == QTSS_NoErr);
 
   if (foundSession)
@@ -1652,9 +1487,7 @@ void DeleteReflectorPushSession(QTSS_StandardRTSP_Params *inParams,
   }
 }
 
-QTSS_Error AddRTPStream(ReflectorSession *theSession,
-                        QTSS_StandardRTSP_Params *inParams,
-                        QTSS_RTPStreamObject *newStreamPtr) {
+QTSS_Error AddRTPStream(ReflectorSession *theSession, QTSS_StandardRTSP_Params *inParams, QTSS_RTPStreamObject *newStreamPtr) {
   // Ok, this is completely crazy but I can't think of a better way to do this that's
   // safe so we'll do it this way for now. Because the ReflectorStreams use this session's
   // stream queue, we need to make sure that each ReflectorStream is not reflecting to this
@@ -1745,8 +1578,7 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams) {
   (void) QTSS_GetValueAsString(inParams->inRTSPRequest, qtssRTSPReqFileDigit, 0, &theDigitStr);
   QTSSCharArrayDeleter theDigitStrDeleter(theDigitStr);
   if (theDigitStr == NULL) {
-    if (isPush)
-      DeleteReflectorPushSession(inParams, theSession, foundSession);
+    if (isPush) DeleteReflectorPushSession(inParams, theSession, foundSession);
     return QTSSModuleUtils::SendErrorResponse(inParams->inRTSPRequest, qtssClientBadRequest, sExpectedDigitFilenameErr);
   }
 
@@ -1956,13 +1788,12 @@ bool HaveStreamBuffers(QTSS_StandardRTSP_Params *inParams,
   return haveBufferedStreams;
 }
 
-QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams,
-                  ReflectorSession *inSession) {
+QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSession) {
   // 实际上是调用RTPSession::Play函数,在该函数里会执行“this->Signal(Task::kStartEvent)”
   // 从而导致RTPSession::Run函数运行。
   // 在RTPSession::Run函数里,调用fModule->CallDispatch(QTSS_RTPSendPackets_Role, &theParams)。
   // 在我们分析的播放sdp文件这个情景里,fModule在RTSPSession::Run函数里被
-  // SetPacketSendingModule函数设置成为QTSSReflectorModule,而该Module并不支持
+  // SetPacketSendingModule 函数设置成为QTSSReflectorModule,而该Module并不支持
   // QTSS_RTPSendPackets_Role,所以RTPSession::Run返回 0,从而RTPSession::Run函数不会被
   // TaskThread再次调度。
 
@@ -1971,48 +1802,27 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams,
   UInt32 theLen = 0;
   bool rtpInfoEnabled = false;
 
-  if (inSession == NULL)    // 推送端
-  {
-    if (!sDefaultBroadcastPushEnabled)
-      return QTSS_RequestFailed;
+  if (inSession == NULL) {  // 推送端
+    if (!sDefaultBroadcastPushEnabled) return QTSS_RequestFailed;
 
     theLen = sizeof(inSession);
-    theErr = QTSS_GetValue(inParams->inClientSession,
-                           sClientBroadcastSessionAttr,
-                           0,
-                           &inSession,
-                           &theLen);
-    if (theErr != QTSS_NoErr)
-      return QTSS_RequestFailed;
+    theErr = QTSS_GetValue(inParams->inClientSession, sClientBroadcastSessionAttr, 0, &inSession, &theLen);
+    if (theErr != QTSS_NoErr) return QTSS_RequestFailed;
 
-    theErr = QTSS_SetValue(inParams->inClientSession,
-                           sKillClientsEnabledAttr,
-                           0,
-                           &sTearDownClientsOnDisconnect,
-                           sizeof(sTearDownClientsOnDisconnect));
-    if (theErr != QTSS_NoErr)
-      return QTSS_RequestFailed;
+    theErr = QTSS_SetValue(inParams->inClientSession, sKillClientsEnabledAttr, 0, &sTearDownClientsOnDisconnect, sizeof(sTearDownClientsOnDisconnect));
+    if (theErr != QTSS_NoErr) return QTSS_RequestFailed;
 
     Assert(inSession != NULL);
 
-    theErr = QTSS_SetValue(inParams->inRTSPSession,
-                           sRTSPBroadcastSessionAttr,
-                           0,
-                           &inSession,
-                           sizeof(inSession));
-    if (theErr != QTSS_NoErr)
-      return QTSS_RequestFailed;
+    theErr = QTSS_SetValue(inParams->inRTSPSession, sRTSPBroadcastSessionAttr, 0, &inSession, sizeof(inSession));
+    if (theErr != QTSS_NoErr) return QTSS_RequestFailed;
 
     //s_printf("QTSSReflectorModule:SET for att err=%" _S32BITARG_ " id=%" _S32BITARG_ "\n",theErr,inParams->inRTSPSession);
 
     // this code needs to be cleaned up
     // Check and see if the full path to this file matches an existing ReflectorSession
     StrPtrLen thePathPtr;
-    CharArrayDeleter sdpPath
-        (QTSSModuleUtils::GetFullPath(inParams->inRTSPRequest,
-                                      qtssRTSPReqFilePath,
-                                      &thePathPtr.Len,
-                                      &sSDPSuffix));
+    CharArrayDeleter sdpPath(QTSSModuleUtils::GetFullPath(inParams->inRTSPRequest, qtssRTSPReqFilePath, &thePathPtr.Len, &sSDPSuffix));
 
     thePathPtr.Ptr = sdpPath.GetObject();
 
@@ -2028,9 +1838,7 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams,
     if (thePathPtr.Len > (sSDPSuffix.Len * 2)) {
       // Check and see if there is a .sdp in the file path.
       // If there is, truncate off our extra ".sdp", cuz it isn't needed
-      StrPtrLen endOfPath
-          (&sdpPath.GetObject()[thePathPtr.Len - (sSDPSuffix.Len * 2)],
-           sSDPSuffix.Len);
+      StrPtrLen endOfPath(&sdpPath.GetObject()[thePathPtr.Len - (sSDPSuffix.Len * 2)], sSDPSuffix.Len);
       if (endOfPath.Equal(sSDPSuffix)) {
         sdpPath.GetObject()[thePathPtr.Len - sSDPSuffix.Len] = '\0';
         thePathPtr.Len -= sSDPSuffix.Len;
@@ -2051,13 +1859,8 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams,
 
     RTPSessionOutput **theOutput = NULL;
     theLen = 0;
-    theErr = QTSS_GetValuePtr(inParams->inClientSession,
-                              sOutputAttr,
-                              0,
-                              (void **) &theOutput,
-                              &theLen);
-    if ((theErr != QTSS_NoErr) || (theLen != sizeof(RTPSessionOutput *))
-        || (theOutput == NULL))
+    theErr = QTSS_GetValuePtr(inParams->inClientSession, sOutputAttr, 0, (void **) &theOutput, &theLen);
+    if ((theErr != QTSS_NoErr) || (theLen != sizeof(RTPSessionOutput *)) || (theOutput == NULL))
       return QTSS_RequestFailed;
     (*theOutput)->InitializeStreams();
 
@@ -2066,36 +1869,21 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams,
     // interleaving the data over TCP. This must be set before calling QTSS_Play so the
     // server can use it from within QTSS_Play
     UInt32 bitsPerSecond = inSession->GetBitRate();
-    (void) QTSS_SetValue(inParams->inClientSession,
-                         qtssCliSesMovieAverageBitRate,
-                         0,
-                         &bitsPerSecond,
-                         sizeof(bitsPerSecond));
+    (void) QTSS_SetValue(inParams->inClientSession, qtssCliSesMovieAverageBitRate, 0, &bitsPerSecond, sizeof(bitsPerSecond));
 
     if (sPlayResponseRangeHeader) {
       StrPtrLen temp;
-      theErr = QTSS_GetValuePtr(inParams->inClientSession,
-                                sRTPInfoWaitTimeAttr,
-                                0,
-                                (void **) &temp.Ptr,
-                                &temp.Len);
+      theErr = QTSS_GetValuePtr(inParams->inClientSession, sRTPInfoWaitTimeAttr, 0, (void **) &temp.Ptr, &temp.Len);
       if (theErr != QTSS_NoErr)
-        QTSS_AppendRTSPHeader(inParams->inRTSPRequest,
-                              qtssRangeHeader,
-                              sTheNowRangeHeader.Ptr,
-                              sTheNowRangeHeader.Len);
+        QTSS_AppendRTSPHeader(inParams->inRTSPRequest, qtssRangeHeader, sTheNowRangeHeader.Ptr, sTheNowRangeHeader.Len);
     }
 
     if (sPlayerCompatibility)
-      rtpInfoEnabled =
-          QTSSModuleUtils::HavePlayerProfile(sServerPrefs, inParams,
-                                             QTSSModuleUtils::kRequiresRTPInfoSeqAndTime);
+      rtpInfoEnabled = QTSSModuleUtils::HavePlayerProfile(sServerPrefs, inParams, QTSSModuleUtils::kRequiresRTPInfoSeqAndTime);
 
-    if (sForceRTPInfoSeqAndTime)
-      rtpInfoEnabled = true;
+    if (sForceRTPInfoSeqAndTime) rtpInfoEnabled = true;
 
-    if (sRTPInfoDisabled)
-      rtpInfoEnabled = false;
+    if (sRTPInfoDisabled) rtpInfoEnabled = false;
 
     if (rtpInfoEnabled) {
       flags = qtssPlayRespWriteTrackInfo; //write first timestampe and seq num to rtpinfo
@@ -2103,37 +1891,20 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams,
       bool haveBufferedStreams = HaveStreamBuffers(inParams, inSession);
       if (haveBufferedStreams) { // send the cached rtp time and seq number in the response.
 
-        theErr = QTSS_Play(inParams->inClientSession,
-                           inParams->inRTSPRequest,
-                           qtssPlayRespWriteTrackInfo);
-        if (theErr != QTSS_NoErr)
-          return theErr;
+        theErr = QTSS_Play(inParams->inClientSession, inParams->inRTSPRequest, qtssPlayRespWriteTrackInfo);
+        if (theErr != QTSS_NoErr) return theErr;
       } else {
         SInt32 waitTimeLoopCount = 0;
         theLen = sizeof(waitTimeLoopCount);
-        theErr = QTSS_GetValue(inParams->inClientSession,
-                               sRTPInfoWaitTimeAttr,
-                               0,
-                               &waitTimeLoopCount,
-                               &theLen);
+        theErr = QTSS_GetValue(inParams->inClientSession, sRTPInfoWaitTimeAttr, 0, &waitTimeLoopCount, &theLen);
         if (theErr != QTSS_NoErr)
-          (void) QTSS_SetValue(inParams->inClientSession,
-                               sRTPInfoWaitTimeAttr,
-                               0,
-                               &sWaitTimeLoopCount,
-                               sizeof(sWaitTimeLoopCount));
+          (void) QTSS_SetValue(inParams->inClientSession, sRTPInfoWaitTimeAttr, 0, &sWaitTimeLoopCount, sizeof(sWaitTimeLoopCount));
         else {
           if (waitTimeLoopCount < 1)
-            return QTSSModuleUtils::SendErrorResponseWithMessage(inParams->inRTSPRequest,
-                                                                 qtssClientNotFound,
-                                                                 &sBroadcastNotActive);
+            return QTSSModuleUtils::SendErrorResponseWithMessage(inParams->inRTSPRequest, qtssClientNotFound, &sBroadcastNotActive);
 
           waitTimeLoopCount--;
-          (void) QTSS_SetValue(inParams->inClientSession,
-                               sRTPInfoWaitTimeAttr,
-                               0,
-                               &waitTimeLoopCount,
-                               sizeof(waitTimeLoopCount));
+          (void) QTSS_SetValue(inParams->inClientSession, sRTPInfoWaitTimeAttr, 0, &waitTimeLoopCount, sizeof(waitTimeLoopCount));
 
         }
 
@@ -2143,24 +1914,17 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams,
         return QTSS_NoErr;
       }
     } else {
-      theErr = QTSS_Play(inParams->inClientSession,
-                         inParams->inRTSPRequest,
-                         qtssPlayFlagsAppendServerInfo);
-      if (theErr != QTSS_NoErr)
-        return theErr;
+      theErr = QTSS_Play(inParams->inClientSession, inParams->inRTSPRequest, qtssPlayFlagsAppendServerInfo);
+      if (theErr != QTSS_NoErr) return theErr;
 
     }
 
   }
 
-  (void) QTSS_SendStandardRTSPResponse(inParams->inRTSPRequest,
-                                       inParams->inClientSession,
-                                       flags);
+  (void) QTSS_SendStandardRTSPResponse(inParams->inRTSPRequest, inParams->inClientSession, flags);
 
 #ifdef REFLECTORSESSION_DEBUG
-  s_printf("QTSSReflectorModule.cpp:DoPlay Session =%p refcount=%"   _U32BITARG_   "\n",
-              inSession->GetRef(),
-              inSession->GetRef()->GetRefCount());
+  s_printf("QTSSReflectorModule.cpp:DoPlay Session =%p refcount=%" _U32BITARG_ "\n", inSession->GetRef(), inSession->GetRef()->GetRefCount());
 #endif
 
   return QTSS_NoErr;
@@ -2217,24 +1981,15 @@ QTSS_Error DestroySession(QTSS_ClientSessionClosing_Params *inParams) {
   Core::MutexLocker locker(sSessionMap->GetMutex());
 
   UInt32 theLen = sizeof(theSession);
-  QTSS_Error theErr = QTSS_GetValue(inParams->inClientSession,
-                                    sClientBroadcastSessionAttr,
-                                    0,
-                                    &theSession,
-                                    &theLen);
+  QTSS_Error theErr = QTSS_GetValue(inParams->inClientSession, sClientBroadcastSessionAttr, 0, &theSession, &theLen);
   //s_printf("QTSSReflectorModule.cpp:DestroySession    sClientBroadcastSessionAttr=%"   _U32BITARG_   " theSession=%"   _U32BITARG_   " err=%" _S32BITARG_ " \n",(UInt32)sClientBroadcastSessionAttr, (UInt32)theSession,theErr);
 
   if (theSession != NULL) { // 推送端
     ReflectorSession *deletedSession = NULL;
-    theErr = QTSS_SetValue(inParams->inClientSession,
-                           sClientBroadcastSessionAttr,
-                           0,
-                           &deletedSession,
-                           sizeof(deletedSession));
+    theErr = QTSS_SetValue(inParams->inClientSession, sClientBroadcastSessionAttr, 0, &deletedSession, sizeof(deletedSession));
 
     SourceInfo *theSoureInfo = theSession->GetSourceInfo();
-    if (theSoureInfo == NULL)
-      return QTSS_NoErr;
+    if (theSoureInfo == NULL) return QTSS_NoErr;
 
     UInt32 numStreams = theSession->GetNumStreams();
     SourceInfo::StreamInfo *theStreamInfo = NULL;
@@ -2247,11 +2002,7 @@ QTSS_Error DestroySession(QTSS_ClientSessionClosing_Params *inParams) {
 
     bool killClients = false; // the pref as the default
     UInt32 theLenTemp = sizeof(killClients);
-    (void) QTSS_GetValue(inParams->inClientSession,
-                         sKillClientsEnabledAttr,
-                         0,
-                         &killClients,
-                         &theLenTemp);
+    (void) QTSS_GetValue(inParams->inClientSession, sKillClientsEnabledAttr, 0, &killClients, &theLenTemp);
 
     //s_printf("QTSSReflectorModule.cpp:DestroySession broadcaster theSession=%"   _U32BITARG_   "\n", (UInt32) theSession);
     theSession->RemoveSessionFromOutput(inParams->inClientSession);
@@ -2259,14 +2010,8 @@ QTSS_Error DestroySession(QTSS_ClientSessionClosing_Params *inParams) {
     RemoveOutput(NULL, theSession, killClients);
   } else { // 客户端
     theLen = 0;
-    theErr = QTSS_GetValuePtr(inParams->inClientSession,
-                              sOutputAttr,
-                              0,
-                              (void **) &theOutput,
-                              &theLen);
-    if ((theErr != QTSS_NoErr) || (theLen != sizeof(RTPSessionOutput *))
-        || (theOutput == NULL) ||
-        (*theOutput == NULL))
+    theErr = QTSS_GetValuePtr(inParams->inClientSession, sOutputAttr, 0, (void **) &theOutput, &theLen);
+    if ((theErr != QTSS_NoErr) || (theLen != sizeof(RTPSessionOutput *)) || (theOutput == NULL) || (*theOutput == NULL))
       return QTSS_RequestFailed;
     theSession = (*theOutput)->GetReflectorSession();
 
@@ -2276,11 +2021,7 @@ QTSS_Error DestroySession(QTSS_ClientSessionClosing_Params *inParams) {
     if (outputPtr != NULL) {
       RemoveOutput(outputPtr, theSession, false);
       RTPSessionOutput *theOutput = NULL;
-      (void) QTSS_SetValue(inParams->inClientSession,
-                           sOutputAttr,
-                           0,
-                           &theOutput,
-                           sizeof(theOutput));
+      (void) QTSS_SetValue(inParams->inClientSession, sOutputAttr, 0, &theOutput, sizeof(theOutput));
     }
 
   }
@@ -2480,17 +2221,11 @@ bool InBroadcastDirList(QTSS_RTSPRequestObject inRTSPRequest) {
   bool allowed = false;
 
   char *theURIPathStr;
-  (void) QTSS_GetValueAsString(inRTSPRequest,
-                               qtssRTSPReqFilePath,
-                               0,
-                               &theURIPathStr);
+  (void) QTSS_GetValueAsString(inRTSPRequest, qtssRTSPReqFilePath, 0, &theURIPathStr);
   QTSSCharArrayDeleter requestPathStrDeleter(theURIPathStr);
 
   char *theLocalPathStr;
-  (void) QTSS_GetValueAsString(inRTSPRequest,
-                               qtssRTSPReqLocalPath,
-                               0,
-                               &theLocalPathStr);
+  (void) QTSS_GetValueAsString(inRTSPRequest, qtssRTSPReqLocalPath, 0, &theLocalPathStr);
   StrPtrLenDel requestPath(theLocalPathStr);
 
   char *theRequestPathStr = NULL;
@@ -2506,10 +2241,7 @@ bool InBroadcastDirList(QTSS_RTSPRequestObject inRTSPRequest) {
     return true;
 
   while (!allowed && (index < numValues)) {
-    (void) QTSS_GetValueAsString(sPrefs,
-                                 sBroadcastDirListID,
-                                 index,
-                                 &theBroadcastDirStr);
+    (void) QTSS_GetValueAsString(sPrefs, sBroadcastDirListID, index, &theBroadcastDirStr);
     StrPtrLen theBroadcastDir(theBroadcastDirStr);
 
     if (theBroadcastDir.Len == 0) // an empty dir matches all
