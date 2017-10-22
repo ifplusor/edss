@@ -42,8 +42,7 @@
 static QTSS_CallbacksPtr sCallbacks = NULL;
 static QTSS_StreamRef sErrorLogStream = NULL;
 
-QTSS_Error _stublibrary_main(void *inPrivateArgs,
-                             QTSS_DispatchFuncPtr inDispatchFunc) {
+QTSS_Error _stublibrary_main(void *inPrivateArgs, QTSS_DispatchFuncPtr inDispatchFunc) {
   QTSS_PrivateArgsPtr theArgs = (QTSS_PrivateArgsPtr) inPrivateArgs;
 
   // Setup

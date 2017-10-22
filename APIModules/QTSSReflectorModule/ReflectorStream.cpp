@@ -57,18 +57,18 @@ static bool sDefaultUsePacketReceiveTime = false;
 static UInt32 sDefaultMaxFuturePacketTimeSec = 60;
 static UInt32 sDefaultFirstPacketOffsetMsec = 500;
 
-UInt32                          ReflectorStream::sBucketSize = 16;
+UInt32 ReflectorStream::sBucketSize = 16;
 UInt32 ReflectorStream::sOverBufferInMsec = 10000; // more or less what the client over buffer will be
 UInt32 ReflectorStream::sMaxFuturePacketMSec = 60000; // max packet future time
-UInt32                          ReflectorStream::sMaxPacketAgeMSec = 20000;
+UInt32 ReflectorStream::sMaxPacketAgeMSec = 20000;
 
 UInt32 ReflectorStream::sMaxFuturePacketSec = 60; // max packet future time
-UInt32                          ReflectorStream::sOverBufferInSec = 10;
-UInt32                          ReflectorStream::sBucketDelayInMsec = 73;
-bool                            ReflectorStream::sUsePacketReceiveTime = false;
-UInt32                          ReflectorStream::sFirstPacketOffsetMsec = 500;
+UInt32 ReflectorStream::sOverBufferInSec = 10;
+UInt32 ReflectorStream::sBucketDelayInMsec = 73;
+bool   ReflectorStream::sUsePacketReceiveTime = false;
+UInt32 ReflectorStream::sFirstPacketOffsetMsec = 500;
 
-UInt32                          ReflectorStream::sRelocatePacketAgeMSec = 1000;
+UInt32 ReflectorStream::sRelocatePacketAgeMSec = 1000;
 
 void ReflectorStream::Register() {
   // Add text messages attributes
@@ -271,9 +271,7 @@ void ReflectorStream::AllocateBucketArray(UInt32 inNumBuckets) {
   if (oldArray != NULL) {
     Assert(inNumBuckets > fNumBuckets);
     for (UInt32 y = 0; y < fNumBuckets; y++) {
-      ::memcpy(fOutputArray[y],
-               oldArray[y],
-               sBucketSize * sizeof(ReflectorOutput *));
+      ::memcpy(fOutputArray[y], oldArray[y], sBucketSize * sizeof(ReflectorOutput *));
       delete[] oldArray[y];
     }
     delete[] oldArray;
@@ -281,8 +279,7 @@ void ReflectorStream::AllocateBucketArray(UInt32 inNumBuckets) {
   fNumBuckets = inNumBuckets;
 }
 
-SInt32 ReflectorStream::AddOutput(ReflectorOutput *inOutput,
-                                  SInt32 putInThisBucket) {
+SInt32 ReflectorStream::AddOutput(ReflectorOutput *inOutput, SInt32 putInThisBucket) {
   Core::MutexLocker locker(&fBucketMutex);
 
 #if DEBUG
@@ -324,8 +321,7 @@ SInt32 ReflectorStream::FindBucket() {
     this->AllocateBucketArray(fNumBuckets * 2);
 
   //find the first open spot in the array
-  for (SInt32 putInThisBucket = 0; (UInt32) putInThisBucket < fNumBuckets;
-       putInThisBucket++) {
+  for (SInt32 putInThisBucket = 0; (UInt32) putInThisBucket < fNumBuckets; putInThisBucket++) {
     for (UInt32 y = 0; y < sBucketSize; y++)
       if (fOutputArray[putInThisBucket][y] == NULL)
         return putInThisBucket;
@@ -375,8 +371,7 @@ void ReflectorStream::TearDownAllOutputs() {
   }
 }
 
-QTSS_Error ReflectorStream::BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags,
-                                        bool filterState, UInt32 timeout) {
+QTSS_Error ReflectorStream::BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags, bool filterState, UInt32 timeout) {
   // If the incoming data is RTSP interleaved, we don't need to do anything here
   if (inReflectorSessionFlags & ReflectorSession::kIsPushSession)
     fStreamInfo.fSetupToReceive = true;
@@ -500,10 +495,7 @@ void ReflectorStream::SendReceiverReport() {
   *theEyeWriter = htonl(0) & 0x7fffffff;
 
   //send the packet to the multicast RTCP addr & port for this stream
-  (void) fSockets->GetSocketB()->SendTo(fDestRTCPAddr,
-                                        fDestRTCPPort,
-                                        fReceiverReportBuffer,
-                                        fReceiverReportSize);
+  (void) fSockets->GetSocketB()->SendTo(fDestRTCPAddr, fDestRTCPPort, fReceiverReportBuffer, fReceiverReportSize);
 }
 
 void ReflectorStream::PushPacket(char *packet, UInt32 packetLen, bool isRTCP) {
@@ -521,8 +513,7 @@ void ReflectorStream::PushPacket(char *packet, UInt32 packetLen, bool isRTCP) {
 
       Core::MutexLocker locker(((ReflectorSocket *) (fSockets->GetSocketB()))->GetDemuxer()->GetMutex());
       thePacket->SetPacketData(packet, packetLen);
-      ((ReflectorSocket *) fSockets->GetSocketB())
-          ->ProcessPacket(Core::Time::Milliseconds(), thePacket, 0, 0);
+      ((ReflectorSocket *) fSockets->GetSocketB())->ProcessPacket(Core::Time::Milliseconds(), thePacket, 0, 0);
       ((ReflectorSocket *) fSockets->GetSocketB())->Signal(Thread::Task::kIdleEvent);
     } else {
       //s_printf("ReflectorStream::PushPacket RTP packetlen = %"   _U32BITARG_   "\n",packetLen);
@@ -543,8 +534,7 @@ void ReflectorStream::PushPacket(char *packet, UInt32 packetLen, bool isRTCP) {
       //	}
       //}
 
-      ((ReflectorSocket *) fSockets->GetSocketA())
-          ->ProcessPacket(Core::Time::Milliseconds(), thePacket, 0, 0);
+      ((ReflectorSocket *) fSockets->GetSocketA())->ProcessPacket(Core::Time::Milliseconds(), thePacket, 0, 0);
       ((ReflectorSocket *) fSockets->GetSocketA())->Signal(Thread::Task::kIdleEvent);
     }
   }
@@ -1583,8 +1573,7 @@ SInt64 ReflectorSocket::Run() {
 #if DEBUG
   //make sure that we haven't gotten here prematurely! This wouldn't mess
   //anything up, but it would waste CPU.
-  if (theEvents & Task::kIdleEvent)
-  {
+  if (theEvents & Task::kIdleEvent) {
       SInt32 temp = (SInt32)(fSleepTime - theMilliseconds);
       char tempBuf[20];
       s_sprintf(tempBuf, "%" _S32BITARG_ "", temp);
@@ -1641,9 +1630,7 @@ void ReflectorSocket::FilterInvalidSSRCs(ReflectorPacket *thePacket, bool isRTCP
       }
 
       // this executes whenever an invalid SSRC is found -- maybe the original stream ended and a new one is now active
-      if ((fLastValidSSRCTime + fTimeoutSecs) <
-          currentTime) // fValidSSRC timed out --no packets with this SSRC seen for awhile
-      {
+      if ((fLastValidSSRCTime + fTimeoutSecs) < currentTime) { // fValidSSRC timed out --no packets with this SSRC seen for awhile
         fValidSSRC = 0; // reset the valid SSRC with the next packet's SSRC
         //s_printf("RESET fValidSSRC\n");
       }
@@ -1701,7 +1688,7 @@ bool ReflectorSocket::ProcessPacket(const SInt64 &inMilliseconds, ReflectorPacke
       }
 
       // Find the appropriate ReflectorSender for this packet.
-      // 在 bindSockets 函数里,已经对 Socket A、B 调用 AddSender 注册了 fRTPSender、fRTCPSender
+      // 在 BindSockets 函数里,已经对 Socket A、B 调用 AddSender 注册了 fRTPSender、fRTCPSender
       ReflectorSender *theSender = (ReflectorSender *) this->GetDemuxer()->GetTask(theRemoteAddr, 0);
       // If there is a generic sender for this socket, use it.
       if (theSender == NULL)
@@ -1734,8 +1721,7 @@ bool ReflectorSocket::ProcessPacket(const SInt64 &inMilliseconds, ReflectorPacke
           theSender->fStream->fDestRTCPPort++;
       }
 #else
-      if ((theRemoteAddr != 0) && (theSender->fStream->fDestRTCPAddr == 0))
-      {
+      if ((theRemoteAddr != 0) && (theSender->fStream->fDestRTCPAddr == 0)) {
           // If the source is multicast, this shouldn't be necessary
           Assert(!SocketUtils::IsMulticastIPAddr(theSender->fStream->fStreamInfo.fDestIPAddr));
           Assert(theRemotePort != 0);
@@ -1751,7 +1737,7 @@ bool ReflectorSocket::ProcessPacket(const SInt64 &inMilliseconds, ReflectorPacke
       thePacket->fStreamCountID = ++(theSender->fStream->fPacketCount);
       thePacket->fBucketsSeenThisPacket = 0;
       thePacket->fTimeArrived = inMilliseconds;
-      theSender->fPacketQueue.EnQueue(&thePacket->fQueueElem);
+      theSender->fPacketQueue.EnQueue(&thePacket->fQueueElem); // NOTE: push to sender's packet queue
 
       // TODO:A、对H264视频RTP包进行关键帧过滤，保存最新关键帧首个RTP包指针
       // 1、判断是否为视频H.264 RTP
@@ -1853,19 +1839,15 @@ bool ReflectorSocket::ProcessPacket(const SInt64 &inMilliseconds, ReflectorPacke
 
           // if it was in the past we leave it alone because it will be deleted after processing.
 
-
           //printf("ReflectorSocket::ProcessPacket packetOffsetFromStart=%f\n", (Float32) packetOffsetFromStart / 1000);
         }
-
       }
 
       //printf("ReflectorSocket::GetIncomingData has packet from time=%qd src addr=%"   _U32BITARG_   " src port=%u packetlen=%"   _U32BITARG_   "\n",inMilliseconds, theRemoteAddr,theRemotePort,thePacket->fPacketPtr.Len);
       if (0) //turn on / off buffer size checking --  pref can go here if we find we need to adjust this
         if (theSender->fPacketQueue.GetLength() > maxQSize) { //don't grow memory too big
           char outMessage[256];
-          sprintf(outMessage,
-                  "Packet Queue for port=%d qsize = %" _S32BITARG_ " hit max qSize=%"   _U32BITARG_   "",
-                  theRemotePort, theSender->fPacketQueue.GetLength(), maxQSize);
+          sprintf(outMessage, "Packet Queue for port=%d qsize = %" _S32BITARG_ " hit max qSize=%" _U32BITARG_ "", theRemotePort, theSender->fPacketQueue.GetLength(), maxQSize);
           WarnV(false, outMessage);
         }
 

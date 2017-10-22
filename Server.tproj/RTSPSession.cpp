@@ -251,8 +251,7 @@ SInt64 RTSPSession::Run() {
     // Because of this, we need to track our current state and return to it.
 
     switch (fState) {
-      case kReadingFirstRequest:  // 初始状态
-      {
+      case kReadingFirstRequest: { // 初始状态
         // 从 Socket 中读取数据，并校验格式
         if ((err = fInputStream.ReadRequest()) == QTSS_NoErr) {
           // 返回 QTSS_NoErr 意味着所有数据已经从 Socket 中读出,但尚不能构成一个完整
@@ -351,8 +350,7 @@ SInt64 RTSPSession::Run() {
           return 0;
         }
 
-        if ((err != QTSS_RequestArrived) && (err != E2BIG)
-            && (err != QTSS_BadArgument)) {
+        if ((err != QTSS_RequestArrived) && (err != E2BIG) && (err != QTSS_BadArgument)) {
           //Any other error implies that the input connection has gone away.
           // We should only kill the whole session if we aren't doing HTTP.
           // (If we are doing HTTP, the POST connection can go away)
@@ -375,8 +373,7 @@ SInt64 RTSPSession::Run() {
         // fall thru to kHaveNonTunnelMessage
       }
 
-      case kHaveNonTunnelMessage:  // 说明请求报文格式是正确的，请求已进入受理状态
-      {
+      case kHaveNonTunnelMessage: { // 说明请求报文格式是正确的，请求已进入受理状态
         // should only get here when fInputStream has a full message built.
 
         Assert(fInputStream.GetRequestBuffer());
@@ -540,6 +537,7 @@ SInt64 RTSPSession::Run() {
         }
         fState = kRoutingRequest;
       }
+
       case kRoutingRequest: {
         // 调用注册了 QTSS_RTSPRoute_Role 处理的模块的处理函数
         //
@@ -555,9 +553,7 @@ SInt64 RTSPSession::Run() {
           Assert(fRTPSession != nullptr);
           Core::MutexLocker locker(fRTPSession->GetSessionMutex());
 
-          for (; (fCurrentModule < numModules) &&
-              ((!fRequest->HasResponseBeenSent())
-                  || fModuleState.eventRequested); fCurrentModule++) {
+          for (; (fCurrentModule < numModules) && ((!fRequest->HasResponseBeenSent()) || fModuleState.eventRequested); fCurrentModule++) {
             fModuleState.eventRequested = false;
             fModuleState.idleTime = 0;
             if (fModuleState.globalLockRequested) {
@@ -627,11 +623,7 @@ SInt64 RTSPSession::Run() {
 
         StrPtrLenDel prefRealm(QTSServerInterface::GetServer()->GetPrefs()->GetAuthorizationRealm());
         if (prefRealm.Ptr != nullptr) {
-          fRequest->SetValue(qtssRTSPReqURLRealm,
-                             0,
-                             prefRealm.Ptr,
-                             prefRealm.Len,
-                             kDontObeyReadOnly);
+          fRequest->SetValue(qtssRTSPReqURLRealm, 0, prefRealm.Ptr, prefRealm.Len, kDontObeyReadOnly);
         }
 
         QTSS_RTSPMethod method = fRequest->GetMethod();
@@ -754,6 +746,7 @@ SInt64 RTSPSession::Run() {
         }
         fState = kAuthorizingRequest;
       }
+
       case kAuthorizingRequest: {
         // 调用注册QTSS_RTSPAuthorize_Role模块的处理函数,如果失败,则发送回复并跳出循环
         //

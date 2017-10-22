@@ -230,8 +230,7 @@ UInt8 RTSPSessionInterface::GetTwoChannelNumbers(CF::StrPtrLen *inRTSPSessionID)
 
   //
   // Put this sessionID to the proper place in the map
-  fChNumToSessIDMap[numChannelEntries - 1].Set(inRTSPSessionID->GetAsCString(),
-                                               inRTSPSessionID->Len);
+  fChNumToSessIDMap[numChannelEntries - 1].Set(inRTSPSessionID->GetAsCString(), inRTSPSessionID->Len);
 
   return theChannelNum;
 }

@@ -136,18 +136,16 @@ typedef struct {
   QTSS_StreamRef inErrorLogStream;
   UInt32 outStubLibraryVersion;
   QTSS_DispatchFuncPtr outDispatchFunction;
-
 } QTSS_PrivateArgs, *QTSS_PrivateArgsPtr;
 
 typedef struct {
-  QTSSModule *curModule;  // this structure is setup in each thread
-  QTSS_Role curRole;    // before invoking a module in a role. Sometimes
-  CF::Thread::Task *curTask;    // this info. helps callback implementation
+  QTSSModule *curModule;     // this structure is setup in each thread
+  QTSS_Role curRole;         // before invoking a module in a role. Sometimes
+  CF::Thread::Task *curTask; // this info. helps callback implementation
   bool eventRequested;
-  bool globalLockRequested;    // request event with global lock.
+  bool globalLockRequested;  // request event with global lock.
   bool isGlobalLocked;
-  SInt64 idleTime;   // If a module has requested idle time.
-
+  SInt64 idleTime;           // If a module has requested idle time.
 } QTSS_ModuleState, *QTSS_ModuleStatePtr;
 
 QTSS_StreamRef GetErrorLogStream();

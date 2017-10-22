@@ -305,9 +305,7 @@ void RTPPacketResender::ClearOutstandingPackets() {
   Assert(fPacketsInList == 0);
 }
 
-void RTPPacketResender::AddPacket(void *inRTPPacket,
-                                  UInt32 packetSize,
-                                  SInt32 ageLimit) {
+void RTPPacketResender::AddPacket(void *inRTPPacket, UInt32 packetSize, SInt32 ageLimit) {
   // 在 RTPStream::ReliableRTPWrite 函数(针对 qtssRTPTransportTypeReliableUDP)里,
   // 会调用 AddPacket 登记要发送的数据以及到期 Drop 的时间。
 

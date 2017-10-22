@@ -90,8 +90,7 @@ void RTPSessionInterface::Initialize() {
 }
 
 RTPSessionInterface::RTPSessionInterface()
-    : QTSSDictionary(QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kClientSessionDictIndex),
-                     NULL),
+    : QTSSDictionary(QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kClientSessionDictIndex), NULL),
       Task(),
       fLastQualityCheckTime(0),
       fLastQualityCheckMediaTime(0),
@@ -111,9 +110,7 @@ RTPSessionInterface::RTPSessionInterface()
       fMovieCurrentBitRate(0),
       fRTSPSession(NULL),
       fLastRTSPReqRealStatusCode(200),
-      fTimeoutTask(NULL,
-                   QTSServerInterface::GetServer()->GetPrefs()->GetRTPSessionTimeoutInSecs()
-                       * 1000),
+      fTimeoutTask(NULL, QTSServerInterface::GetServer()->GetPrefs()->GetRTPSessionTimeoutInSecs() * 1000),
       fNumQualityLevels(0),
       fBytesSent(0),
       fPacketsSent(0),
@@ -127,8 +124,7 @@ RTPSessionInterface::RTPSessionInterface()
       fTeardownReason(0),
       fUniqueID(0),
       fTracker(QTSServerInterface::GetServer()->GetPrefs()->IsSlowStartEnabled()),
-      fOverbufferWindow(QTSServerInterface::GetServer()->GetPrefs()->GetSendIntervalInMsec(),
-                        kUInt32_Max,
+      fOverbufferWindow(QTSServerInterface::GetServer()->GetPrefs()->GetSendIntervalInMsec(), kUInt32_Max,
                         QTSServerInterface::GetServer()->GetPrefs()->GetMaxSendAheadTimeInSecs(),
                         QTSServerInterface::GetServer()->GetPrefs()->GetOverbufferRate()),
       fAuthScheme(QTSServerInterface::GetServer()->GetPrefs()->GetAuthScheme()),
@@ -140,9 +136,7 @@ RTPSessionInterface::RTPSessionInterface()
   //(we don't want to get timeouts before the session gets bound)
 
   fTimeoutTask.SetTask(this);
-  fTimeout =
-      QTSServerInterface::GetServer()->GetPrefs()->GetRTPSessionTimeoutInSecs()
-          * 1000;
+  fTimeout = QTSServerInterface::GetServer()->GetPrefs()->GetRTPSessionTimeoutInSecs() * 1000;
   //fUniqueID = (UInt32)atomic_add(&sRTPSessionIDCounter, 1);
   fUniqueID = ++sRTPSessionIDCounter;
 
@@ -155,95 +149,47 @@ RTPSessionInterface::RTPSessionInterface()
   // Setup all dictionary attribute values
 
   // Make sure the dictionary knows about our preallocated memory for the RTP stream array
-  this->SetEmptyVal(qtssCliSesFirstUserAgent,
-                    &fUserAgentBuffer[0],
-                    kUserAgentBufSize);
+  this->SetEmptyVal(qtssCliSesFirstUserAgent, &fUserAgentBuffer[0], kUserAgentBufSize);
   this->SetEmptyVal(qtssCliSesStreamObjects, &fStreamBuffer[0], kStreamBufSize);
-  this->SetEmptyVal(qtssCliSesPresentationURL,
-                    &fPresentationURL[0],
-                    kPresentationURLSize);
-  this->SetEmptyVal(qtssCliSesFullURL,
-                    &fFullRequestURL[0],
-                    kRequestHostNameBufferSize);
-  this->SetEmptyVal(qtssCliSesHostName,
-                    &fRequestHostName[0],
-                    kFullRequestURLBufferSize);
+  this->SetEmptyVal(qtssCliSesPresentationURL, &fPresentationURL[0], kPresentationURLSize);
+  this->SetEmptyVal(qtssCliSesFullURL, &fFullRequestURL[0], kRequestHostNameBufferSize);
+  this->SetEmptyVal(qtssCliSesHostName, &fRequestHostName[0], kFullRequestURLBufferSize);
 
-  this->SetVal(qtssCliSesCreateTimeInMsec,
-               &fSessionCreateTime,
-               sizeof(fSessionCreateTime));
-  this->SetVal(qtssCliSesFirstPlayTimeInMsec,
-               &fFirstPlayTime,
-               sizeof(fFirstPlayTime));
+  this->SetVal(qtssCliSesCreateTimeInMsec, &fSessionCreateTime, sizeof(fSessionCreateTime));
+  this->SetVal(qtssCliSesFirstPlayTimeInMsec, &fFirstPlayTime, sizeof(fFirstPlayTime));
   this->SetVal(qtssCliSesPlayTimeInMsec, &fPlayTime, sizeof(fPlayTime));
-  this->SetVal(qtssCliSesAdjustedPlayTimeInMsec,
-               &fAdjustedPlayTime,
-               sizeof(fAdjustedPlayTime));
+  this->SetVal(qtssCliSesAdjustedPlayTimeInMsec, &fAdjustedPlayTime, sizeof(fAdjustedPlayTime));
   this->SetVal(qtssCliSesRTPBytesSent, &fBytesSent, sizeof(fBytesSent));
   this->SetVal(qtssCliSesRTPPacketsSent, &fPacketsSent, sizeof(fPacketsSent));
   this->SetVal(qtssCliSesState, &fState, sizeof(fState));
-  this->SetVal(qtssCliSesMovieDurationInSecs,
-               &fMovieDuration,
-               sizeof(fMovieDuration));
-  this->SetVal(qtssCliSesMovieSizeInBytes,
-               &fMovieSizeInBytes,
-               sizeof(fMovieSizeInBytes));
+  this->SetVal(qtssCliSesMovieDurationInSecs, &fMovieDuration, sizeof(fMovieDuration));
+  this->SetVal(qtssCliSesMovieSizeInBytes, &fMovieSizeInBytes, sizeof(fMovieSizeInBytes));
   this->SetVal(qtssCliSesLastRTSPSession, &fRTSPSession, sizeof(fRTSPSession));
-  this->SetVal(qtssCliSesMovieAverageBitRate,
-               &fMovieAverageBitRate,
-               sizeof(fMovieAverageBitRate));
-  this->SetEmptyVal(qtssCliRTSPSessRemoteAddrStr,
-                    &fRTSPSessRemoteAddrStr[0],
-                    kIPAddrStrBufSize);
-  this->SetEmptyVal(qtssCliRTSPSessLocalDNS,
-                    &fRTSPSessLocalDNS[0],
-                    kLocalDNSBufSize);
-  this->SetEmptyVal(qtssCliRTSPSessLocalAddrStr,
-                    &fRTSPSessLocalAddrStr[0],
-                    kIPAddrStrBufSize);
+  this->SetVal(qtssCliSesMovieAverageBitRate, &fMovieAverageBitRate, sizeof(fMovieAverageBitRate));
+  this->SetEmptyVal(qtssCliRTSPSessRemoteAddrStr, &fRTSPSessRemoteAddrStr[0], kIPAddrStrBufSize);
+  this->SetEmptyVal(qtssCliRTSPSessLocalDNS, &fRTSPSessLocalDNS[0], kLocalDNSBufSize);
+  this->SetEmptyVal(qtssCliRTSPSessLocalAddrStr, &fRTSPSessLocalAddrStr[0], kIPAddrStrBufSize);
 
-  this->SetEmptyVal(qtssCliRTSPSesUserName,
-                    &fUserNameBuf[0],
-                    RTSPSessionInterface::kMaxUserNameLen);
-  this->SetEmptyVal(qtssCliRTSPSesUserPassword,
-                    &fUserPasswordBuf[0],
-                    RTSPSessionInterface::kMaxUserPasswordLen);
-  this->SetEmptyVal(qtssCliRTSPSesURLRealm,
-                    &fUserRealmBuf[0],
-                    RTSPSessionInterface::kMaxUserRealmLen);
+  this->SetEmptyVal(qtssCliRTSPSesUserName, &fUserNameBuf[0], RTSPSessionInterface::kMaxUserNameLen);
+  this->SetEmptyVal(qtssCliRTSPSesUserPassword, &fUserPasswordBuf[0], RTSPSessionInterface::kMaxUserPasswordLen);
+  this->SetEmptyVal(qtssCliRTSPSesURLRealm, &fUserRealmBuf[0], RTSPSessionInterface::kMaxUserRealmLen);
 
-  this->SetVal(qtssCliRTSPReqRealStatusCode,
-               &fLastRTSPReqRealStatusCode,
-               sizeof(fLastRTSPReqRealStatusCode));
+  this->SetVal(qtssCliRTSPReqRealStatusCode, &fLastRTSPReqRealStatusCode, sizeof(fLastRTSPReqRealStatusCode));
 
-  this->SetVal(qtssCliTeardownReason,
-               &fTeardownReason,
-               sizeof(fTeardownReason));
+  this->SetVal(qtssCliTeardownReason, &fTeardownReason, sizeof(fTeardownReason));
   //   this->SetVal(qtssCliSesCurrentBitRate, &fMovieCurrentBitRate, sizeof(fMovieCurrentBitRate));
   this->SetVal(qtssCliSesCounterID, &fUniqueID, sizeof(fUniqueID));
-  this->SetEmptyVal(qtssCliSesRTSPSessionID,
-                    &fRTSPSessionIDBuf[0],
-                    QTSS_MAX_SESSION_ID_LENGTH + 4);
-  this->SetVal(qtssCliSesFramesSkipped,
-               &fFramesSkipped,
-               sizeof(fFramesSkipped));
-  this->SetVal(qtssCliSesRTCPPacketsRecv,
-               &fTotalRTCPPacketsRecv,
-               sizeof(fTotalRTCPPacketsRecv));
-  this->SetVal(qtssCliSesRTCPBytesRecv,
-               &fTotalRTCPBytesRecv,
-               sizeof(fTotalRTCPBytesRecv));
+  this->SetEmptyVal(qtssCliSesRTSPSessionID, &fRTSPSessionIDBuf[0], QTSS_MAX_SESSION_ID_LENGTH + 4);
+  this->SetVal(qtssCliSesFramesSkipped, &fFramesSkipped, sizeof(fFramesSkipped));
+  this->SetVal(qtssCliSesRTCPPacketsRecv, &fTotalRTCPPacketsRecv, sizeof(fTotalRTCPPacketsRecv));
+  this->SetVal(qtssCliSesRTCPBytesRecv, &fTotalRTCPBytesRecv, sizeof(fTotalRTCPBytesRecv));
 
   this->SetVal(qtssCliSesTimeoutMsec, &fTimeout, sizeof(fTimeout));
 
-  this->SetVal(qtssCliSesOverBufferEnabled,
-               this->GetOverbufferWindow()->OverbufferingEnabledPtr(),
-               sizeof(bool));
+  this->SetVal(qtssCliSesOverBufferEnabled, this->GetOverbufferWindow()->OverbufferingEnabledPtr(), sizeof(bool));
   this->SetVal(qtssCliSesStartedThinning, &fStartedThinning, sizeof(bool));
 
-  this->SetVal(qtssCliSessLastRTSPBandwidth,
-               &fLastRTSPBandwidthHeaderBits,
-               sizeof(fLastRTSPBandwidthHeaderBits));
+  this->SetVal(qtssCliSessLastRTSPBandwidth, &fLastRTSPBandwidthHeaderBits, sizeof(fLastRTSPBandwidthHeaderBits));
 }
 
 void RTPSessionInterface::SetValueComplete(UInt32 inAttrIndex,

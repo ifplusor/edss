@@ -553,9 +553,7 @@ QTSS_Error QTSSCallbacks::QTSS_AppendRTSPHeader(QTSS_RTSPRequestObject inRef,
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_SendStandardRTSPResponse(QTSS_RTSPRequestObject inRTSPRequest,
-                                                        QTSS_Object inRTPInfo,
-                                                        UInt32 inFlags) {
+QTSS_Error QTSSCallbacks::QTSS_SendStandardRTSPResponse(QTSS_RTSPRequestObject inRTSPRequest, QTSS_Object inRTPInfo, UInt32 inFlags) {
   if ((inRTSPRequest == NULL) || (inRTPInfo == NULL))
     return QTSS_BadArgument;
 
@@ -567,8 +565,7 @@ QTSS_Error QTSSCallbacks::QTSS_SendStandardRTSPResponse(QTSS_RTSPRequestObject i
       // but a caller typically won't be adding a stream for a 304 response, we have the policy of
       // making the caller pass in the QTSS_ClientSessionObject instead. That means we need to do
       // different things here depending...
-      if (((RTSPRequestInterface *) inRTSPRequest)->GetStatus()
-          == qtssRedirectNotModified)
+      if (((RTSPRequestInterface *) inRTSPRequest)->GetStatus() == qtssRedirectNotModified)
         (void) ((RTPSession *) inRTPInfo)->DoSessionSetupResponse((RTSPRequestInterface *) inRTSPRequest);
       else {
         if (inFlags & qtssSetupRespDontWriteSSRC)
@@ -596,25 +593,17 @@ QTSS_Error QTSSCallbacks::QTSS_SendStandardRTSPResponse(QTSS_RTSPRequestObject i
   return QTSS_BadArgument;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_AddRTPStream(QTSS_ClientSessionObject inClientSession,
-                                            QTSS_RTSPRequestObject inRTSPRequest,
-                                            QTSS_RTPStreamObject *outStream,
-                                            QTSS_AddStreamFlags inFlags) {
-  if ((inClientSession == NULL) || (inRTSPRequest == NULL)
-      || (outStream == NULL))
+QTSS_Error QTSSCallbacks::QTSS_AddRTPStream(QTSS_ClientSessionObject inClientSession, QTSS_RTSPRequestObject inRTSPRequest,
+                                            QTSS_RTPStreamObject *outStream, QTSS_AddStreamFlags inFlags) {
+  if ((inClientSession == NULL) || (inRTSPRequest == NULL) || (outStream == NULL))
     return QTSS_BadArgument;
-  return ((RTPSession *) inClientSession)->AddStream((RTSPRequestInterface *) inRTSPRequest,
-                                                     (RTPStream **) outStream,
-                                                     inFlags);
+  return ((RTPSession *) inClientSession)->AddStream((RTSPRequestInterface *) inRTSPRequest, (RTPStream **) outStream, inFlags);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_Play(QTSS_ClientSessionObject inClientSession,
-                                    QTSS_RTSPRequestObject inRTSPRequest,
-                                    QTSS_PlayFlags inPlayFlags) {
+QTSS_Error QTSSCallbacks::QTSS_Play(QTSS_ClientSessionObject inClientSession, QTSS_RTSPRequestObject inRTSPRequest, QTSS_PlayFlags inPlayFlags) {
   if (inClientSession == NULL)
     return QTSS_BadArgument;
-  return ((RTPSession *) inClientSession)->Play((RTSPRequestInterface *) inRTSPRequest,
-                                                inPlayFlags);
+  return ((RTPSession *) inClientSession)->Play((RTSPRequestInterface *) inRTSPRequest, inPlayFlags);
 }
 
 QTSS_Error QTSSCallbacks::QTSS_Pause(QTSS_ClientSessionObject inClientSession) {

@@ -134,7 +134,8 @@ class QTSSCallbacks {
 
   // RTP ROUTINES
 
-  static QTSS_Error QTSS_AddRTPStream(QTSS_ClientSessionObject inClientSession, QTSS_RTSPRequestObject inRTSPRequest, QTSS_RTPStreamObject *outStream, QTSS_AddStreamFlags inFlags);
+  static QTSS_Error QTSS_AddRTPStream(QTSS_ClientSessionObject inClientSession, QTSS_RTSPRequestObject inRTSPRequest,
+                                      QTSS_RTPStreamObject *outStream, QTSS_AddStreamFlags inFlags);
   static QTSS_Error QTSS_Play(QTSS_ClientSessionObject inClientSession, QTSS_RTSPRequestObject inRTSPRequest, QTSS_PlayFlags inPlayFlags);
   static QTSS_Error QTSS_Pause(QTSS_ClientSessionObject inClientSession);
   static QTSS_Error QTSS_Teardown(QTSS_ClientSessionObject inClientSession);

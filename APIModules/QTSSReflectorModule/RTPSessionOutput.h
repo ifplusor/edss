@@ -46,10 +46,7 @@ class RTPSessionOutput : public ReflectorOutput {
   // Adds some dictionary attributes
   static void Register();
 
-  RTPSessionOutput(QTSS_ClientSessionObject inRTPSession,
-                   ReflectorSession *inReflectorSession,
-                   QTSS_Object serverPrefs,
-                   QTSS_AttributeID inCookieAddrID);
+  RTPSessionOutput(QTSS_ClientSessionObject inRTPSession, ReflectorSession *inReflectorSession, QTSS_Object serverPrefs, QTSS_AttributeID inCookieAddrID);
   virtual ~RTPSessionOutput() {}
 
   ReflectorSession *GetReflectorSession() { return fReflectorSession; }
@@ -58,14 +55,8 @@ class RTPSessionOutput : public ReflectorOutput {
   // This writes the packet out to the proper QTSS_RTPStreamObject.
   // If this function returns QTSS_WouldBlock, timeToSendThisPacketAgain will
   // be set to # of msec in which the packet can be sent, or -1 if unknown
-  virtual QTSS_Error WritePacket(CF::StrPtrLen *inPacketData,
-                                 void *inStreamCookie,
-                                 UInt32 inFlags,
-                                 SInt64 packetLatenessInMSec,
-                                 SInt64 *timeToSendThisPacketAgain,
-                                 UInt64 *packetIDPtr,
-                                 SInt64 *arrivalTimeMSec,
-                                 bool firstPacket);
+  virtual QTSS_Error WritePacket(CF::StrPtrLen *inPacketData, void *inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec,
+                                 SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSec, bool firstPacket);
   virtual void TearDown();
 
   SInt64 GetReflectorSessionInitTime() { return fReflectorSession->GetInitTimeMS(); }
@@ -90,72 +81,24 @@ class RTPSessionOutput : public ReflectorOutput {
 
   UInt16 GetPacketSeqNumber(CF::StrPtrLen *inPacket);
   void SetPacketSeqNumber(CF::StrPtrLen *inPacket, UInt16 inSeqNumber);
-  bool PacketShouldBeThinned(QTSS_RTPStreamObject inStream,
-                             CF::StrPtrLen *inPacket);
+  bool PacketShouldBeThinned(QTSS_RTPStreamObject inStream, CF::StrPtrLen *inPacket);
   bool FilterPacket(QTSS_RTPStreamObject *theStreamPtr, CF::StrPtrLen *inPacket);
 
   UInt32 GetPacketRTPTime(CF::StrPtrLen *packetStrPtr);
-  inline bool PacketMatchesStream(void *inStreamCookie,
-                                  QTSS_RTPStreamObject *theStreamPtr);
-  bool PacketReadyToSend(QTSS_RTPStreamObject *theStreamPtr,
-                         SInt64 *currentTimePtr,
-                         UInt32 inFlags,
-                         UInt64 *packetIDPtr,
-                         SInt64 *timeToSendThisPacketAgainPtr);
-  bool PacketAlreadySent(QTSS_RTPStreamObject *theStreamPtr,
-                         UInt32 inFlags,
-                         UInt64 *packetIDPtr);
-  QTSS_Error TrackRTCPBaseTime(QTSS_RTPStreamObject *theStreamPtr,
-                               CF::StrPtrLen *inPacketStrPtr,
-                               SInt64 *currentTimePtr,
-                               UInt32 inFlags,
-                               SInt64 *packetLatenessInMSec,
-                               SInt64 *timeToSendThisPacketAgain,
-                               UInt64 *packetIDPtr,
-                               SInt64 *arrivalTimeMSecPtr);
-  QTSS_Error RewriteRTCP(QTSS_RTPStreamObject *theStreamPtr,
-                         CF::StrPtrLen *inPacketStrPtr,
-                         SInt64 *currentTimePtr,
-                         UInt32 inFlags,
-                         SInt64 *packetLatenessInMSec,
-                         SInt64 *timeToSendThisPacketAgain,
-                         UInt64 *packetIDPtr,
-                         SInt64 *arrivalTimeMSecPtr);
-  QTSS_Error TrackRTPPackets(QTSS_RTPStreamObject *theStreamPtr,
-                             CF::StrPtrLen *inPacketStrPtr,
-                             SInt64 *currentTimePtr,
-                             UInt32 inFlags,
-                             SInt64 *packetLatenessInMSec,
-                             SInt64 *timeToSendThisPacketAgain,
-                             UInt64 *packetIDPtr,
-                             SInt64 *arrivalTimeMSecPtr);
-  QTSS_Error TrackRTCPPackets(QTSS_RTPStreamObject *theStreamPtr,
-                              CF::StrPtrLen *inPacketStrPtr,
-                              SInt64 *currentTimePtr,
-                              UInt32 inFlags,
-                              SInt64 *packetLatenessInMSec,
-                              SInt64 *timeToSendThisPacketAgain,
-                              UInt64 *packetIDPtr,
-                              SInt64 *arrivalTimeMSecPtr);
-  QTSS_Error TrackPackets(QTSS_RTPStreamObject *theStreamPtr,
-                          CF::StrPtrLen *inPacketStrPtr,
-                          SInt64 *currentTimePtr,
-                          UInt32 inFlags,
-                          SInt64 *packetLatenessInMSec,
-                          SInt64 *timeToSendThisPacketAgain,
-                          UInt64 *packetIDPtr,
-                          SInt64 *arrivalTimeMSecPtr);
+  inline bool PacketMatchesStream(void *inStreamCookie, QTSS_RTPStreamObject *theStreamPtr);
+  bool PacketReadyToSend(QTSS_RTPStreamObject *theStreamPtr, SInt64 *currentTimePtr, UInt32 inFlags, UInt64 *packetIDPtr, SInt64 *timeToSendThisPacketAgainPtr);
+  bool PacketAlreadySent(QTSS_RTPStreamObject *theStreamPtr, UInt32 inFlags, UInt64 *packetIDPtr);
+  QTSS_Error TrackRTCPBaseTime(QTSS_RTPStreamObject *theStreamPtr, CF::StrPtrLen *inPacketStrPtr, SInt64 *currentTimePtr, UInt32 inFlags, SInt64 *packetLatenessInMSec, SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSecPtr);
+  QTSS_Error RewriteRTCP(QTSS_RTPStreamObject *theStreamPtr, CF::StrPtrLen *inPacketStrPtr, SInt64 *currentTimePtr, UInt32 inFlags, SInt64 *packetLatenessInMSec, SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSecPtr);
+  QTSS_Error TrackRTPPackets(QTSS_RTPStreamObject *theStreamPtr, CF::StrPtrLen *inPacketStrPtr, SInt64 *currentTimePtr, UInt32 inFlags, SInt64 *packetLatenessInMSec, SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSecPtr);
+  QTSS_Error TrackRTCPPackets(QTSS_RTPStreamObject *theStreamPtr, CF::StrPtrLen *inPacketStrPtr, SInt64 *currentTimePtr, UInt32 inFlags, SInt64 *packetLatenessInMSec, SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSecPtr);
+  QTSS_Error TrackPackets(QTSS_RTPStreamObject *theStreamPtr, CF::StrPtrLen *inPacketStrPtr, SInt64 *currentTimePtr, UInt32 inFlags, SInt64 *packetLatenessInMSec, SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSecPtr);
 };
 
-bool RTPSessionOutput::PacketMatchesStream(void *inStreamCookie,
-                                           QTSS_RTPStreamObject *theStreamPtr) {
+bool RTPSessionOutput::PacketMatchesStream(void *inStreamCookie, QTSS_RTPStreamObject *theStreamPtr) {
   void **theStreamCookie = NULL;
   UInt32 theLen = 0;
-  (void) QTSS_GetValuePtr(*theStreamPtr,
-                          fCookieAttrID,
-                          0,
-                          (void **) &theStreamCookie,
-                          &theLen);
+  (void) QTSS_GetValuePtr(*theStreamPtr, fCookieAttrID, 0, (void **) &theStreamCookie, &theLen);
 
   if ((theStreamCookie != NULL) && (*theStreamCookie == inStreamCookie))
     return true;

@@ -124,8 +124,7 @@ class ReflectorPacket {
  private:
 
   enum {
-    kMaxReflectorPacketSize =
-    2060    //jm 5/02 increased from 2048 by 12 bytes for test bytes appended to packets
+    kMaxReflectorPacketSize = 2060    //jm 5/02 increased from 2048 by 12 bytes for test bytes appended to packets
   };
 
   UInt32 fBucketsSeenThisPacket;
@@ -230,8 +229,7 @@ class ReflectorSocket
     return (this->GetDemuxer()->GetHashTable()->GetNumEntries() > 0);
   }
 
-  bool ProcessPacket(const SInt64 &inMilliseconds, ReflectorPacket *thePacket,
-                     UInt32 theRemoteAddr, UInt16 theRemotePort);
+  bool ProcessPacket(const SInt64 &inMilliseconds, ReflectorPacket *thePacket, UInt32 theRemoteAddr, UInt16 theRemotePort);
 
   ReflectorPacket *GetPacket();
 
@@ -397,7 +395,7 @@ class ReflectorStream {
     // A unicast broadcast can also be identified by source IP address. If
     // you are attempting to demux by source IP, this ID will not guarentee
     // uniqueness and special care should be used.
-        kStreamIDSize = sizeof(UInt32) + sizeof(UInt16)
+    kStreamIDSize = sizeof(UInt32) + sizeof(UInt16)
   };
 
   // Uses a StreamInfo to generate a unique ID
@@ -422,10 +420,7 @@ class ReflectorStream {
   // Call this to initialize the reflector sockets. Uses the QTSS_RTSPRequestObject
   // if provided to report any errors that occur
   // Passes the QTSS_ClientSessionObject to the socket so the socket can update the session if needed.
-  QTSS_Error BindSockets(QTSS_StandardRTSP_Params *inParams,
-                         UInt32 inReflectorSessionFlags,
-                         bool filterState,
-                         UInt32 timeout);
+  QTSS_Error BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags, bool filterState, UInt32 timeout);
 
   // This stream reflects packets from the broadcast to specific ReflectorOutputs.
   // You attach outputs to ReflectorStreams this way. You can force the ReflectorStream

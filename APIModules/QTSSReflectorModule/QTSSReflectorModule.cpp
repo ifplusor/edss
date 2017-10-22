@@ -204,12 +204,8 @@ static QTSS_Error DoAnnounce(QTSS_StandardRTSP_Params *inParams);
 
 static QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams);
 
-ReflectorSession *FindOrCreateSession(StrPtrLen *inName,
-                                      QTSS_StandardRTSP_Params *inParams,
-                                      UInt32 inChannel = 0,
-                                      StrPtrLen *inData = NULL,
-                                      bool isPush = false,
-                                      bool *foundSessionPtr = NULL);
+ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Params *inParams, UInt32 inChannel = 0,
+                                      StrPtrLen *inData = NULL, bool isPush = false, bool *foundSessionPtr = NULL);
 
 static QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams);
 
@@ -219,11 +215,8 @@ static QTSS_Error DestroySession(QTSS_ClientSessionClosing_Params *inParams);
 
 static void RemoveOutput(ReflectorOutput *inOutput, ReflectorSession *inSession, bool killClients);
 
-static ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams,
-                                        QTSS_AttributeID inPathType,
-                                        bool isPush = false,
-                                        bool *foundSessionPtr = NULL,
-                                        char **resultFilePath = NULL);
+static ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams, QTSS_AttributeID inPathType, bool isPush = false,
+                                        bool *foundSessionPtr = NULL, char **resultFilePath = NULL);
 
 static QTSS_Error RereadPrefs();
 
@@ -263,17 +256,17 @@ QTSS_Error QTSSReflectorModule_Main(void *inPrivateArgs) {
 QTSS_Error QTSSReflectorModuleDispatch(QTSS_Role inRole,
                                        QTSS_RoleParamPtr inParams) {
   switch (inRole) {
-    case QTSS_Register_Role:            return Register(&inParams->regParams);
-    case QTSS_Initialize_Role:          return Initialize(&inParams->initParams);
-    case QTSS_RereadPrefs_Role:         return RereadPrefs();
-    case QTSS_RTSPRoute_Role:           return RedirectBroadcast(&inParams->rtspRouteParams);
-    case QTSS_RTSPPreProcessor_Role:    return ProcessRTSPRequest(&inParams->rtspRequestParams);
-    case QTSS_RTSPIncomingData_Role:    return ProcessRTPData(&inParams->rtspIncomingDataParams);
-    case QTSS_ClientSessionClosing_Role:return DestroySession(&inParams->clientSessionClosingParams);
-    case QTSS_Shutdown_Role:            return Shutdown();
-    case QTSS_RTSPAuthorize_Role:       return ReflectorAuthorizeRTSPRequest(&inParams->rtspRequestParams);
-    case QTSS_Interval_Role:            return IntervalRole();
-    case Easy_GetDeviceStream_Role:     return GetDeviceStream(&inParams->easyGetDeviceStreamParams);
+    case QTSS_Register_Role:             return Register(&inParams->regParams);
+    case QTSS_Initialize_Role:           return Initialize(&inParams->initParams);
+    case QTSS_RereadPrefs_Role:          return RereadPrefs();
+    case QTSS_RTSPRoute_Role:            return RedirectBroadcast(&inParams->rtspRouteParams);
+    case QTSS_RTSPPreProcessor_Role:     return ProcessRTSPRequest(&inParams->rtspRequestParams);
+    case QTSS_RTSPIncomingData_Role:     return ProcessRTPData(&inParams->rtspIncomingDataParams);
+    case QTSS_ClientSessionClosing_Role: return DestroySession(&inParams->clientSessionClosingParams);
+    case QTSS_Shutdown_Role:             return Shutdown();
+    case QTSS_RTSPAuthorize_Role:        return ReflectorAuthorizeRTSPRequest(&inParams->rtspRequestParams);
+    case QTSS_Interval_Role:             return IntervalRole();
+    case Easy_GetDeviceStream_Role:      return GetDeviceStream(&inParams->easyGetDeviceStreamParams);
     default:break;
   }
   return QTSS_NoErr;
@@ -575,8 +568,7 @@ QTSS_Error Shutdown() {
   return QTSS_NoErr;
 }
 
-QTSS_Error IntervalRole() // not used
-{
+QTSS_Error IntervalRole() { // not used
   (void) QTSS_SetIntervalRoleTimer(0); // turn off
 
   return QTSS_NoErr;
@@ -589,7 +581,7 @@ QTSS_Error ProcessRTPData(QTSS_IncomingData_Params *inParams) {
   //s_printf("QTSSReflectorModule:ProcessRTPData inRTSPSession=%"   _U32BITARG_   " inClientSession=%"   _U32BITARG_   "\n",inParams->inRTSPSession, inParams->inClientSession);
   ReflectorSession *theSession = NULL;
   UInt32 theLen = sizeof(theSession);
-  QTSS_Error theErr = QTSS_GetValue(inParams->inRTSPSession, sRTSPBroadcastSessionAttr, 0, &theSession, &theLen);
+  QTSS_Error theErr = QTSS_GetValue(inParams->inRTSPSession, sRTSPBroadcastSessionAttr, 0, &theSession, &theLen); // set in DoPlay()
 
   //s_printf("QTSSReflectorModule.cpp:ProcessRTPData    sClientBroadcastSessionAttr=%"   _U32BITARG_   " theSession=%"   _U32BITARG_   " err=%" _S32BITARG_ " \n",sClientBroadcastSessionAttr, theSession,theErr);
   if (theSession == NULL || theErr != QTSS_NoErr)
@@ -630,8 +622,7 @@ QTSS_Error ProcessRTPData(QTSS_IncomingData_Params *inParams) {
     //s_printf("QTSSReflectorModule.cpp:ProcessRTPData channel=%u theSoureInfo=%"   _U32BITARG_   " packetLen=%"   _U32BITARG_   " packetDatalen=%u\n",(UInt16) packetChannel,theSoureInfo,inParams->inPacketLen,packetDataLen);
 
     if (1) {
-      UInt32 inIndex = packetChannel
-          / 2; // one stream per every 2 channels rtcp channel handled below
+      UInt32 inIndex = packetChannel / 2; // one stream per every 2 channels rtcp channel handled below
       if (inIndex < numStreams) {
         ReflectorStream *theStream = theSession->GetStreamByIndex(inIndex);
         if (theStream == NULL) return QTSS_Unimplemented;
@@ -660,8 +651,7 @@ QTSS_Error ProcessRTSPRequest(QTSS_StandardRTSP_Params *inParams) {
   QTSS_RTSPMethod *theMethod = NULL;
   //s_printf("QTSSReflectorModule:ProcessRTSPRequest inClientSession=%"   _U32BITARG_   "\n", (UInt32) inParams->inClientSession);
   UInt32 theLen = 0;
-  if ((QTSS_GetValuePtr(inParams->inRTSPRequest, qtssRTSPReqMethod, 0, (void **) &theMethod, &theLen) != QTSS_NoErr)
-      || (theLen != sizeof(QTSS_RTSPMethod))) {
+  if ((QTSS_GetValuePtr(inParams->inRTSPRequest, qtssRTSPReqMethod, 0, (void **) &theMethod, &theLen) != QTSS_NoErr) || (theLen != sizeof(QTSS_RTSPMethod))) {
     Assert(0);
     return QTSS_RequestFailed;
   }
@@ -696,7 +686,8 @@ QTSS_Error ProcessRTSPRequest(QTSS_StandardRTSP_Params *inParams) {
   return QTSS_NoErr;
 }
 
-ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams, QTSS_AttributeID inPathType, bool isPush, bool *foundSessionPtr, char **resultFilePath) {
+ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams, QTSS_AttributeID inPathType, bool isPush,
+                                 bool *foundSessionPtr, char **resultFilePath) {
   // 调用FindOrCreateSession来对哈希表sSessionMap进行查询。
 
   char *theFileNameStr = NULL;
@@ -1065,11 +1056,8 @@ QTSS_Error DoAnnounce(QTSS_StandardRTSP_Params *inParams) {
   return QTSS_SendStandardRTSPResponse(inParams->inRTSPRequest, inParams->inClientSession, 0);
 }
 
-void DoDescribeAddRequiredSDPLines(QTSS_StandardRTSP_Params *inParams,
-                                   ReflectorSession *theSession,
-                                   QTSS_TimeVal modDate,
-                                   ResizeableStringFormatter *editedSDP,
-                                   StrPtrLen *theSDPPtr) {
+void DoDescribeAddRequiredSDPLines(QTSS_StandardRTSP_Params *inParams, ReflectorSession *theSession, QTSS_TimeVal modDate,
+                                   ResizeableStringFormatter *editedSDP, StrPtrLen *theSDPPtr) {
   SDPContainer checkedSDPContainer;
   checkedSDPContainer.SetSDPBuffer(theSDPPtr);
   if (!checkedSDPContainer.HasReqLines()) {
@@ -1420,7 +1408,7 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
         break;
       }
 
-      if (foundSessionPtr) *foundSessionPtr = true;
+      if (foundSessionPtr != NULL) *foundSessionPtr = true;
 
       StrPtrLen theFileData;
 
@@ -1789,8 +1777,7 @@ bool HaveStreamBuffers(QTSS_StandardRTSP_Params *inParams,
 }
 
 QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSession) {
-  // 实际上是调用RTPSession::Play函数,在该函数里会执行“this->Signal(Task::kStartEvent)”
-  // 从而导致RTPSession::Run函数运行。
+  // 实际上是调用RTPSession::Play函数,在该函数里会执行“this->Signal(Task::kStartEvent)”,从而导致RTPSession::Run函数运行。
   // 在RTPSession::Run函数里,调用fModule->CallDispatch(QTSS_RTPSendPackets_Role, &theParams)。
   // 在我们分析的播放sdp文件这个情景里,fModule在RTSPSession::Run函数里被
   // SetPacketSendingModule 函数设置成为QTSSReflectorModule,而该Module并不支持
@@ -1825,7 +1812,6 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSessio
     CharArrayDeleter sdpPath(QTSSModuleUtils::GetFullPath(inParams->inRTSPRequest, qtssRTSPReqFilePath, &thePathPtr.Len, &sSDPSuffix));
 
     thePathPtr.Ptr = sdpPath.GetObject();
-
 
     // remove trackID designation from the path if it is there
     char *trackStr = thePathPtr.FindString("/trackID=");
@@ -1890,7 +1876,6 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSessio
 
       bool haveBufferedStreams = HaveStreamBuffers(inParams, inSession);
       if (haveBufferedStreams) { // send the cached rtp time and seq number in the response.
-
         theErr = QTSS_Play(inParams->inClientSession, inParams->inRTSPRequest, qtssPlayRespWriteTrackInfo);
         if (theErr != QTSS_NoErr) return theErr;
       } else {
@@ -1905,7 +1890,6 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSessio
 
           waitTimeLoopCount--;
           (void) QTSS_SetValue(inParams->inClientSession, sRTPInfoWaitTimeAttr, 0, &waitTimeLoopCount, sizeof(waitTimeLoopCount));
-
         }
 
         //s_printf("QTSSReflectorModule:DoPlay  wait 100ms waitTimeLoopCount=%ld\n", waitTimeLoopCount);
@@ -1916,9 +1900,7 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSessio
     } else {
       theErr = QTSS_Play(inParams->inClientSession, inParams->inRTSPRequest, qtssPlayFlagsAppendServerInfo);
       if (theErr != QTSS_NoErr) return theErr;
-
     }
-
   }
 
   (void) QTSS_SendStandardRTSPResponse(inParams->inRTSPRequest, inParams->inClientSession, flags);
@@ -1933,8 +1915,7 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSessio
 bool KillSession(StrPtrLen *sdpPathStr, bool killClients) {
   Ref *theSessionRef = sSessionMap->Resolve(sdpPathStr);
   if (theSessionRef != NULL) {
-    ReflectorSession
-        *theSession = (ReflectorSession *) theSessionRef->GetObject();
+    ReflectorSession *theSession = (ReflectorSession *) theSessionRef->GetObject();
     RemoveOutput(NULL, theSession, killClients);
     (void) QTSS_Teardown(theSession->GetBroadcasterSession());
     return true;
@@ -1944,12 +1925,10 @@ bool KillSession(StrPtrLen *sdpPathStr, bool killClients) {
 
 void KillCommandPathInList() {
   char filePath[128] = "";
-  ResizeableStringFormatter commandPath((char *) filePath,
-                                        sizeof(filePath)); // ResizeableStringFormatter is safer and more efficient than StringFormatter for most paths.
+  ResizeableStringFormatter commandPath((char *) filePath, sizeof(filePath)); // ResizeableStringFormatter is safer and more efficient than StringFormatter for most paths.
   Core::MutexLocker locker(sSessionMap->GetMutex());
 
-  for (RefHashTableIter theIter(sSessionMap->GetHashTable());
-       !theIter.IsDone(); theIter.Next()) {
+  for (RefHashTableIter theIter(sSessionMap->GetHashTable()); !theIter.IsDone(); theIter.Next()) {
     Ref *theRef = theIter.GetCurrent();
     if (theRef == NULL)
       continue;
@@ -1961,9 +1940,7 @@ void KillCommandPathInList() {
 
     char *theCommandPath = commandPath.GetBufPtr();
     QTSS_Object outFileObject;
-    QTSS_Error err = QTSS_OpenFileObject(theCommandPath,
-                                         qtssOpenFileNoFlags,
-                                         &outFileObject);
+    QTSS_Error err = QTSS_OpenFileObject(theCommandPath, qtssOpenFileNoFlags, &outFileObject);
     if (err == QTSS_NoErr) {
       (void) QTSS_CloseFileObject(outFileObject);
       ::unlink(theCommandPath);

@@ -602,15 +602,9 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request,
 
   // Get the URL for this track
   fStreamURLPtr.Len = kMaxStreamURLSizeInBytes;
-  if (request->GetValue(qtssRTSPReqFileName,
-                        0,
-                        fStreamURLPtr.Ptr,
-                        &fStreamURLPtr.Len) != QTSS_NoErr)
-    return QTSSModuleUtils::SendErrorResponse(request,
-                                              qtssClientBadRequest,
-                                              qtssMsgFileNameTooLong);
-  fStreamURL[fStreamURLPtr.Len] =
-      '\0';//just in case someone wants to use string routines
+  if (request->GetValue(qtssRTSPReqFileName, 0, fStreamURLPtr.Ptr, &fStreamURLPtr.Len) != QTSS_NoErr)
+    return QTSSModuleUtils::SendErrorResponse(request, qtssClientBadRequest, qtssMsgFileNameTooLong);
+  fStreamURL[fStreamURLPtr.Len] = '\0';//just in case someone wants to use string routines
 
   //
   // Store the late-tolerance value that came out of hte x-RTP-Options header,
@@ -626,21 +620,18 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request,
   fNetworkMode = request->GetNetworkMode();
   //
   // Only allow reliable UDP if it is enabled
-  if ((fTransportType == qtssRTPTransportTypeReliableUDP) &&
-      (!QTSServerInterface::GetServer()->GetPrefs()->IsReliableUDPEnabled()))
+  if ((fTransportType == qtssRTPTransportTypeReliableUDP) && (!QTSServerInterface::GetServer()->GetPrefs()->IsReliableUDPEnabled()))
     fTransportType = qtssRTPTransportTypeUDP;
 
   //
   // Check to see if we are inside a valid reliable UDP directory
   if ((fTransportType == qtssRTPTransportTypeReliableUDP) &&
-      (!QTSServerInterface::GetServer()->GetPrefs()->IsPathInsideReliableUDPDir(
-          request->GetValue(qtssRTSPReqFilePath))))
+      (!QTSServerInterface::GetServer()->GetPrefs()->IsPathInsideReliableUDPDir(request->GetValue(qtssRTSPReqFilePath))))
     fTransportType = qtssRTPTransportTypeUDP;
 
   //
   // Check to see if caller is forcing raw UDP transport
-  if ((fTransportType == qtssRTPTransportTypeReliableUDP)
-      && (inFlags & qtssASFlagsForceUDPTransport))
+  if ((fTransportType == qtssRTPTransportTypeReliableUDP) && (inFlags & qtssASFlagsForceUDPTransport))
     fTransportType = qtssRTPTransportTypeUDP;
 
   //
@@ -677,25 +668,19 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request,
     // Sending data to other addresses could be used in malicious ways, therefore
     // it is up to the module as to whether this sort of request might be allowed
     if (!(inFlags & qtssASFlagsAllowDestination))
-      return QTSSModuleUtils::SendErrorResponse(request,
-                                                qtssClientBadRequest,
-                                                qtssMsgAltDestNotAllowed);
+      return QTSSModuleUtils::SendErrorResponse(request, qtssClientBadRequest, qtssMsgAltDestNotAllowed);
     fRemoteAddr = request->GetDestAddr();
   }
   fRemoteRTPPort = request->GetClientPortA();
   fRemoteRTCPPort = request->GetClientPortB();
 
   if ((fRemoteRTPPort == 0) || (fRemoteRTCPPort == 0))
-    return QTSSModuleUtils::SendErrorResponse(request,
-                                              qtssClientBadRequest,
-                                              qtssMsgNoClientPortInTransport);
+    return QTSSModuleUtils::SendErrorResponse(request, qtssClientBadRequest, qtssMsgNoClientPortInTransport);
 
   //make sure that the client is advertising an even-numbered RTP port,
   //and that the RTCP port is actually one greater than the RTP port
   if ((fRemoteRTPPort & 1) != 0)
-    return QTSSModuleUtils::SendErrorResponse(request,
-                                              qtssClientBadRequest,
-                                              qtssMsgRTPPortMustBeEven);
+    return QTSSModuleUtils::SendErrorResponse(request, qtssClientBadRequest, qtssMsgRTPPortMustBeEven);
 
   // comment out check below. This allows the rtcp port to be non-contiguous with the rtp port.
   //   if (fRemoteRTCPPort != (fRemoteRTPPort + 1))
@@ -704,8 +689,7 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request,
   // Find the right source address for this stream. If it isn't specified in the
   // RTSP request, assume it is the same interface as for the RTSP request.
   UInt32 sourceAddr = request->GetSession()->GetSocket()->GetLocalAddr();
-  if ((request->GetSourceAddr() != INADDR_ANY)
-      && (Net::SocketUtils::IsLocalIPAddr(request->GetSourceAddr())))
+  if ((request->GetSourceAddr() != INADDR_ANY) && (Net::SocketUtils::IsLocalIPAddr(request->GetSourceAddr())))
     sourceAddr = request->GetSourceAddr();
 
   // if the transport is TCP or RUDP, then we only want one session quality level instead of a per stream one
@@ -719,10 +703,7 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request,
   // a dedicated set of sockets
   if (Net::SocketUtils::IsMulticastIPAddr(fRemoteAddr)) {
     // 重新调用 CreateUDPSocketPair 创建 socket 对,并设置 socket 属性
-    fSockets =
-        QTSServerInterface::GetServer()->GetSocketPool()->CreateUDPSocketPair(
-            sourceAddr,
-            0);
+    fSockets = QTSServerInterface::GetServer()->GetSocketPool()->CreateUDPSocketPair( sourceAddr, 0);
 
     if (fSockets != NULL) {
       //Set options on both sockets. Not really sure why we need to specify an
@@ -735,25 +716,16 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request,
       if (err == QTSS_NoErr)
         err = fSockets->GetSocketB()->SetMulticastInterface(fSockets->GetSocketB()->GetLocalAddr());
       if (err != QTSS_NoErr)
-        return QTSSModuleUtils::SendErrorResponse(request,
-                                                  qtssServerInternal,
-                                                  qtssMsgCantSetupMulticast);
+        return QTSSModuleUtils::SendErrorResponse(request, qtssServerInternal, qtssMsgCantSetupMulticast);
     }
   } else {
     // 从 fUDPQueue 队列里根据本地的地址、端口号寻找 UDP Socket 对。
     // 记得我们以前曾经创建过 udp socket 对。
-    fSockets =
-        QTSServerInterface::GetServer()->GetSocketPool()->GetUDPSocketPair(
-            sourceAddr,
-            0,
-            fRemoteAddr,
-            fRemoteRTCPPort);
+    fSockets = QTSServerInterface::GetServer()->GetSocketPool()->GetUDPSocketPair( sourceAddr, 0, fRemoteAddr, fRemoteRTCPPort);
   }
 
   if (fSockets == NULL)
-    return QTSSModuleUtils::SendErrorResponse(request,
-                                              qtssServerInternal,
-                                              qtssMsgOutOfPorts);
+    return QTSSModuleUtils::SendErrorResponse(request, qtssServerInternal, qtssMsgOutOfPorts);
 
   else if (fTransportType == qtssRTPTransportTypeReliableUDP) {
     //
@@ -765,13 +737,10 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request,
     fTracker = fSession->GetBandwidthTracker();
 
     fResender.SetBandwidthTracker(fTracker);
-    fResender.SetDestination(fSockets->GetSocketA(),
-                             fRemoteAddr,
-                             fRemoteRTPPort);
+    fResender.SetDestination(fSockets->GetSocketA(), fRemoteAddr, fRemoteRTPPort);
 
 #if RTP_PACKET_RESENDER_DEBUGGING
-    if (QTSServerInterface::GetServer()->GetPrefs()->IsAckLoggingEnabled())
-    {
+    if (QTSServerInterface::GetServer()->GetPrefs()->IsAckLoggingEnabled()) {
         char        url[256];
         char        logfile[256];
         s_sprintf(logfile, "resend_log_%"   _U32BITARG_   "", fSession->GetRTSPSession()->GetSessionID());
@@ -799,10 +768,7 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request,
   Assert(fSockets->GetSocketB()->GetDemuxer() != NULL);
   // 设置 UDPSocket::fDemuxer::fRemoteAddr、UDPSocket::fDemuxer::fRemotePort。同时调用
   // UDPSocket::fDemuxer::fHashTable::Add 添加 RTPStream 对象(即:this)
-  QTSS_Error err = fSockets->GetSocketB()->GetDemuxer()->RegisterTask(
-      fRemoteAddr,
-      fRemoteRTCPPort,
-      this);
+  QTSS_Error err = fSockets->GetSocketB()->GetDemuxer()->RegisterTask(fRemoteAddr, fRemoteRTCPPort, this);
   //errors should only be returned if there is a routing problem, there should be none
   Assert(err == QTSS_NoErr);
   return QTSS_NoErr;
@@ -1057,10 +1023,8 @@ QTSS_Error RTPStream::InterleavedWrite(void *inBuffer,
 
 //SendRetransmits must be called from a fSession mutex protected caller
 void RTPStream::SendRetransmits() {
-
   if (fTransportType == qtssRTPTransportTypeReliableUDP)
     fResender.ResendDueEntries();
-
 }
 
 //ReliableRTPWrite must be called from a fSession mutex protected caller
@@ -1148,25 +1112,19 @@ void RTPStream::SetThinningParams() {
   QTSServerPrefs *thePrefs = QTSServerInterface::GetServer()->GetPrefs();
 
   if (fPayloadType == qtssVideoPayloadType)
-    fDropAllPacketsForThisStreamDelay =
-        thePrefs->GetDropAllVideoPacketsTimeInMsec() - toleranceAdjust;
+    fDropAllPacketsForThisStreamDelay = thePrefs->GetDropAllVideoPacketsTimeInMsec() - toleranceAdjust;
   else
-    fDropAllPacketsForThisStreamDelay =
-        thePrefs->GetDropAllPacketsTimeInMsec() - toleranceAdjust;
+    fDropAllPacketsForThisStreamDelay = thePrefs->GetDropAllPacketsTimeInMsec() - toleranceAdjust;
 
-  fThinAllTheWayDelay =
-      thePrefs->GetThinAllTheWayTimeInMsec() - toleranceAdjust;
+  fThinAllTheWayDelay = thePrefs->GetThinAllTheWayTimeInMsec() - toleranceAdjust;
   fAlwaysThinDelay = thePrefs->GetAlwaysThinTimeInMsec() - toleranceAdjust;
-  fStartThinningDelay =
-      thePrefs->GetStartThinningTimeInMsec() - toleranceAdjust;
-  fStartThickingDelay =
-      thePrefs->GetStartThickingTimeInMsec() - toleranceAdjust;
+  fStartThinningDelay = thePrefs->GetStartThinningTimeInMsec() - toleranceAdjust;
+  fStartThickingDelay = thePrefs->GetStartThickingTimeInMsec() - toleranceAdjust;
   fThickAllTheWayDelay = thePrefs->GetThickAllTheWayTimeInMsec();
   fQualityCheckInterval = thePrefs->GetQualityCheckIntervalInMsec();
   fSession->fLastQualityCheckTime = 0;
   fSession->fLastQualityCheckMediaTime = 0;
   fSession->fStartedThinning = false;
-
 }
 
 void RTPStream::SetInitialMaxQualityLevel() {
