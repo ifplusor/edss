@@ -84,45 +84,24 @@ void ReflectorStream::Register() {
 
 void ReflectorStream::Initialize(QTSS_ModulePrefsObject inPrefs) {
 
-  QTSSModuleUtils::GetAttribute(inPrefs,
-                                "reflector_bucket_offset_delay_msec",
-                                qtssAttrDataTypeUInt32,
-                                &ReflectorStream::sBucketDelayInMsec,
-                                &sDefaultBucketDelayInMsec,
-                                sizeof(sBucketDelayInMsec));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_bucket_offset_delay_msec", qtssAttrDataTypeUInt32, &ReflectorStream::sBucketDelayInMsec,
+                                &sDefaultBucketDelayInMsec, sizeof(sBucketDelayInMsec));
 
-  QTSSModuleUtils::GetAttribute(inPrefs,
-                                "reflector_buffer_size_sec",
-                                qtssAttrDataTypeUInt32,
-                                &ReflectorStream::sOverBufferInSec,
-                                &sDefaultOverBufferInSec,
-                                sizeof(sDefaultOverBufferInSec));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_buffer_size_sec", qtssAttrDataTypeUInt32, &ReflectorStream::sOverBufferInSec,
+                                &sDefaultOverBufferInSec, sizeof(sDefaultOverBufferInSec));
 
-  QTSSModuleUtils::GetAttribute(inPrefs,
-                                "reflector_use_in_packet_receive_time",
-                                qtssAttrDataTypeBool16,
-                                &ReflectorStream::sUsePacketReceiveTime,
-                                &sDefaultUsePacketReceiveTime,
-                                sizeof(sDefaultUsePacketReceiveTime));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_use_in_packet_receive_time", qtssAttrDataTypeBool16, &ReflectorStream::sUsePacketReceiveTime,
+                                &sDefaultUsePacketReceiveTime, sizeof(sDefaultUsePacketReceiveTime));
 
-  QTSSModuleUtils::GetAttribute(inPrefs,
-                                "reflector_in_packet_max_receive_sec",
-                                qtssAttrDataTypeUInt32,
-                                &ReflectorStream::sMaxFuturePacketSec,
-                                &sDefaultMaxFuturePacketTimeSec,
-                                sizeof(sDefaultMaxFuturePacketTimeSec));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_in_packet_max_receive_sec", qtssAttrDataTypeUInt32, &ReflectorStream::sMaxFuturePacketSec,
+                                &sDefaultMaxFuturePacketTimeSec, sizeof(sDefaultMaxFuturePacketTimeSec));
 
-  QTSSModuleUtils::GetAttribute(inPrefs,
-                                "reflector_rtp_info_offset_msec",
-                                qtssAttrDataTypeUInt32,
-                                &ReflectorStream::sFirstPacketOffsetMsec,
-                                &sDefaultFirstPacketOffsetMsec,
-                                sizeof(sDefaultFirstPacketOffsetMsec));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_rtp_info_offset_msec", qtssAttrDataTypeUInt32, &ReflectorStream::sFirstPacketOffsetMsec,
+                                &sDefaultFirstPacketOffsetMsec, sizeof(sDefaultFirstPacketOffsetMsec));
 
   ReflectorStream::sOverBufferInMsec = sOverBufferInSec * 1000;
   ReflectorStream::sMaxFuturePacketMSec = sMaxFuturePacketSec * 1000;
-  ReflectorStream::sMaxPacketAgeMSec = (UInt32) (sOverBufferInMsec
-      * 10.0); //allow a little time before deleting.
+  ReflectorStream::sMaxPacketAgeMSec = (UInt32) (sOverBufferInMsec * 10.0); //allow a little time before deleting.
   if (ReflectorStream::sMaxPacketAgeMSec == 0)
     ReflectorStream::sMaxPacketAgeMSec = 10000;
 }
@@ -131,9 +110,7 @@ void ReflectorStream::GenerateSourceID(SourceInfo::StreamInfo *inInfo,
                                        char *ioBuffer) {
 
   ::memcpy(ioBuffer, &inInfo->fSrcIPAddr, sizeof(inInfo->fSrcIPAddr));
-  ::memcpy(&ioBuffer[sizeof(inInfo->fSrcIPAddr)],
-           &inInfo->fPort,
-           sizeof(inInfo->fPort));
+  ::memcpy(&ioBuffer[sizeof(inInfo->fSrcIPAddr)], &inInfo->fPort, sizeof(inInfo->fPort));
 }
 
 ReflectorStream::ReflectorStream(SourceInfo::StreamInfo *inInfo)
@@ -404,6 +381,7 @@ QTSS_Error ReflectorStream::BindSockets(QTSS_StandardRTSP_Params *inParams, UInt
   } else {
     // 注意 GetUDPSocketPair 搜索 socket 对的条件。对于指定了 IP、Port 的情况,
     // QTSServer::SetupUDPSockets 创建的 socket 对显然无法满足要求,所以这里会再次创建 socket 对。
+    // NOTE: fStreamInfo.fDestIPAddr 是从 sdp 的 c 行解析, fStreamInfo.fPort 是从 m 行解析
     if (isMulticastDest) {
       fSockets = sSocketPool.GetUDPSocketPair(INADDR_ANY, fStreamInfo.fPort, fStreamInfo.fSrcIPAddr, 0);
     } else {
@@ -1132,7 +1110,6 @@ QueueElem *ReflectorSender::SendPacketsToOutput(ReflectorOutput *theOutput, Queu
 
     count++;
     qIter.Next();
-
   }
 
   // 注意:如果 WritePacket 返回为 QTSS_WouldBlock,则 lastPacket 不为空。
@@ -1552,6 +1529,15 @@ void ReflectorSocket::RemoveSender(ReflectorSender *inSender) {
   Assert(err == QTSS_NoErr);
 }
 
+/*
+ * ReflectorSocket::Run() -> ReflectorSender::ReflectPackets() -> ReflectorSender::SendPacketsToOutput() -> ReflectorOutput::WritePacket()
+ * 当 ReflectorSocket 接受到推流上来的数据后，会启动 Task。
+ * 在 ReflectorSocket::Run() 中，遍历 fSenderQueue，并调用每个 Sender 的 ReflectPackets()
+ * 在 ReflectorSender::ReflectPackets() 中，遍历与 fStream 相关联的 ReflectorOutput，并对 Output 调用 SendPacketsToOutput()
+ * 在 ReflectorSender::SendPacketsToOutput() 中，遍历 fPacketQueue，并对每个 Packet 调用 Output 的 WritePacket()
+ * 在 RTPSessionOutput::WritePacket() 中，通过 StreamCookie 在与 Output 对应的 ClientSession 中找到正确的 RTPStream，
+ *     调用 QTSS_Write() 将 Packet 通过 RTPStream 发送出去
+ */
 SInt64 ReflectorSocket::Run() {
   // We want to make sure we can't get idle events WHILE we are inside
   // this function. That will cause us to run the queues unnecessarily

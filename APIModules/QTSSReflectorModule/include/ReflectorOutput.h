@@ -52,10 +52,7 @@ class ReflectorOutput {
 
   virtual ~ReflectorOutput() {
     if (fBookmarkedPacketsElemsArray) {
-      ::memset(fBookmarkedPacketsElemsArray,
-               0,
-               sizeof(CF::QueueElem *) * fNumBookmarks);
-
+      ::memset(fBookmarkedPacketsElemsArray, 0, sizeof(CF::QueueElem *) * fNumBookmarks);
       delete[] fBookmarkedPacketsElemsArray;
     }
   }
@@ -107,14 +104,8 @@ class ReflectorOutput {
   // packetLateness is how many MSec's late this packet is in being delivered ( will be < 0 if its early )
   // If this function returns QTSS_WouldBlock, timeToSendThisPacketAgain will
   // be set to # of msec in which the packet can be sent, or -1 if unknown
-  virtual QTSS_Error WritePacket(CF::StrPtrLen *inPacket,
-                                 void *inStreamCookie,
-                                 UInt32 inFlags,
-                                 SInt64 packetLatenessInMSec,
-                                 SInt64 *timeToSendThisPacketAgain,
-                                 UInt64 *packetIDPtr,
-                                 SInt64 *arrivalTimeMSec,
-                                 bool firstPacket) = 0;
+  virtual QTSS_Error WritePacket(CF::StrPtrLen *inPacket, void *inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec,
+                                 SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSec, bool firstPacket) = 0;
 
   virtual void TearDown() = 0;
 

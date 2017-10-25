@@ -71,7 +71,7 @@ class RTPSessionOutput : public ReflectorOutput {
 
   QTSS_ClientSessionObject fClientSession;
   ReflectorSession *fReflectorSession;
-  QTSS_AttributeID fCookieAttrID;
+  QTSS_AttributeID fCookieAttrID; // is sStreamCookieAttr that defined in QTSSReflectorModule
   UInt32 fBufferDelayMSecs;
   SInt64 fBaseArrivalTime;
   bool fIsUDP;
@@ -105,4 +105,5 @@ bool RTPSessionOutput::PacketMatchesStream(void *inStreamCookie, QTSS_RTPStreamO
 
   return false;
 }
+
 #endif //__RTSP_REFLECTOR_OUTPUT_H__

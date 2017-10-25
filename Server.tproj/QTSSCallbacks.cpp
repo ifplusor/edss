@@ -222,8 +222,7 @@ QTSS_Error QTSSCallbacks::QTSS_TypeToTypeString(const QTSS_AttrDataType inType, 
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_TypeStringToType(char *inTypeString,
-                                                QTSS_AttrDataType *outType) {
+QTSS_Error QTSSCallbacks::QTSS_TypeStringToType(char *inTypeString, QTSS_AttrDataType *outType) {
   if ((inTypeString == NULL) || (outType == NULL))
     return QTSS_BadArgument;
 
@@ -231,20 +230,11 @@ QTSS_Error QTSSCallbacks::QTSS_TypeStringToType(char *inTypeString,
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_StringToValue(char *inValueAsString,
-                                             const QTSS_AttrDataType inType,
-                                             void *ioBuffer,
-                                             UInt32 *ioBufSize) {
-  return QTSSDataConverter::StringToValue(inValueAsString,
-                                          inType,
-                                          ioBuffer,
-                                          ioBufSize);
+QTSS_Error QTSSCallbacks::QTSS_StringToValue(char *inValueAsString, const QTSS_AttrDataType inType, void *ioBuffer, UInt32 *ioBufSize) {
+  return QTSSDataConverter::StringToValue(inValueAsString, inType, ioBuffer, ioBufSize);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_ValueToString(void *inValue,
-                                             const UInt32 inValueLen,
-                                             const QTSS_AttrDataType inType,
-                                             char **outString) {
+QTSS_Error QTSSCallbacks::QTSS_ValueToString(void *inValue, const UInt32 inValueLen, const QTSS_AttrDataType inType, char **outString) {
   if ((inValue == NULL) || (outString == NULL))
     return QTSS_BadArgument;
 
@@ -252,28 +242,21 @@ QTSS_Error QTSSCallbacks::QTSS_ValueToString(void *inValue,
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::
-QTSS_SetValue(QTSS_Object inDictionary, QTSS_AttributeID inID, UInt32 inIndex, const void *inBuffer, UInt32 inLen) {
+QTSS_Error QTSSCallbacks::QTSS_SetValue(QTSS_Object inDictionary, QTSS_AttributeID inID, UInt32 inIndex, const void *inBuffer, UInt32 inLen) {
   if ((inDictionary == NULL) || ((inBuffer == NULL) && (inLen > 0))
       || (inID == qtssIllegalAttrID))
     return QTSS_BadArgument;
   return ((QTSSDictionary *) inDictionary)->SetValue(inID, inIndex, inBuffer, inLen);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_SetValuePtr(QTSS_Object inDictionary,
-                                           QTSS_AttributeID inID,
-                                           const void *inBuffer,
-                                           UInt32 inLen) {
+QTSS_Error QTSSCallbacks::QTSS_SetValuePtr(QTSS_Object inDictionary, QTSS_AttributeID inID, const void *inBuffer, UInt32 inLen) {
   if ((inDictionary == NULL) || ((inBuffer == NULL) && (inLen > 0)))
     return QTSS_BadArgument;
   return ((QTSSDictionary *) inDictionary)->SetValuePtr(inID, inBuffer, inLen);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_CreateObject(QTSS_Object inDictionary,
-                                            QTSS_AttributeID inID,
-                                            QTSS_ObjectType inType,
-                                            UInt32 *outIndex,
-                                            QTSS_Object *outCreatedObject) {
+QTSS_Error QTSSCallbacks::QTSS_CreateObject(QTSS_Object inDictionary, QTSS_AttributeID inID, QTSS_ObjectType inType,
+                                            UInt32 *outIndex, QTSS_Object *outCreatedObject) {
   if ((inDictionary == NULL) || (outCreatedObject == NULL) || (outIndex == NULL)
       || (inID == qtssIllegalAttrID))
     return QTSS_BadArgument;
@@ -287,15 +270,10 @@ QTSS_Error QTSSCallbacks::QTSS_CreateObject(QTSS_Object inDictionary,
     theMap = QTSSDictionaryMap::GetMap(theDictionaryIndex);
   }
 
-  return ((QTSSDictionary *) inDictionary)->CreateObjectValue(inID,
-                                                              outIndex,
-                                                              (QTSSDictionary **) outCreatedObject,
-                                                              theMap);
+  return ((QTSSDictionary *) inDictionary)->CreateObjectValue(inID, outIndex, (QTSSDictionary **) outCreatedObject, theMap);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_GetNumValues(QTSS_Object inObject,
-                                            QTSS_AttributeID inID,
-                                            UInt32 *outNumValues) {
+QTSS_Error QTSSCallbacks::QTSS_GetNumValues(QTSS_Object inObject, QTSS_AttributeID inID, UInt32 *outNumValues) {
   if ((inObject == NULL) || (outNumValues == NULL)
       || (inID == qtssIllegalAttrID))
     return QTSS_BadArgument;
@@ -304,8 +282,7 @@ QTSS_Error QTSSCallbacks::QTSS_GetNumValues(QTSS_Object inObject,
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_GetNumAttributes(QTSS_Object inObject,
-                                                UInt32 *outNumValues) {
+QTSS_Error QTSSCallbacks::QTSS_GetNumAttributes(QTSS_Object inObject, UInt32 *outNumValues) {
 
   if (outNumValues == NULL)
     return QTSS_BadArgument;
@@ -329,20 +306,14 @@ QTSS_Error QTSSCallbacks::QTSS_GetNumAttributes(QTSS_Object inObject,
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_RemoveValue(QTSS_Object inObject,
-                                           QTSS_AttributeID inID,
-                                           UInt32 inIndex) {
+QTSS_Error QTSSCallbacks::QTSS_RemoveValue(QTSS_Object inObject, QTSS_AttributeID inID, UInt32 inIndex) {
   if (inObject == NULL)
     return QTSS_BadArgument;
 
   return ((QTSSDictionary *) inObject)->RemoveValue(inID, inIndex);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_Write(QTSS_StreamRef inStream,
-                                     void *inBuffer,
-                                     UInt32 inLen,
-                                     UInt32 *outLenWritten,
-                                     UInt32 inFlags) {
+QTSS_Error QTSSCallbacks::QTSS_Write(QTSS_StreamRef inStream, void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, UInt32 inFlags) {
   if (inStream == NULL)
     return QTSS_BadArgument;
   QTSS_Error theErr =
@@ -359,17 +330,10 @@ QTSS_Error QTSSCallbacks::QTSS_Write(QTSS_StreamRef inStream,
     return theErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_WriteV(QTSS_StreamRef inStream,
-                                      iovec *inVec,
-                                      UInt32 inNumVectors,
-                                      UInt32 inTotalLength,
-                                      UInt32 *outLenWritten) {
+QTSS_Error QTSSCallbacks::QTSS_WriteV(QTSS_StreamRef inStream, iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength, UInt32 *outLenWritten) {
   if (inStream == NULL)
     return QTSS_BadArgument;
-  QTSS_Error theErr = ((QTSSStream *) inStream)->WriteV(inVec,
-                                                        inNumVectors,
-                                                        inTotalLength,
-                                                        outLenWritten);
+  QTSS_Error theErr = ((QTSSStream *) inStream)->WriteV(inVec, inNumVectors, inTotalLength, outLenWritten);
 
   // Server internally propogates POSIX errorcodes such as EAGAIN and ENOTCONN up to this
   // level. The API guarentees that no POSIX errors get returned, so we have QTSS_Errors
