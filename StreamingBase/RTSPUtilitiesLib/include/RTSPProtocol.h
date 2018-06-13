@@ -94,12 +94,7 @@ class RTSPProtocol {
     return sVersionString[version];
   }
 
-  static bool ParseRTSPURL(char const *url,
-                           char *username,
-                           char *password,
-                           char *ip,
-                           UInt16 *port,
-                           char const **urlSuffix = NULL);
+  static bool ParseRTSPURL(char const *url, char *username, char *password, char *ip, UInt16 *port, char const **urlSuffix = NULL);
 
  private:
 

@@ -96,11 +96,7 @@ QTSS_ServerState StartServer(XMLPrefsParser *inPrefsSource,
   if (qtssShuttingDownState == inInitialState)
     createListeners = false;
 
-  sServer->Initialize(inPrefsSource,
-                      inMessagesSource,
-                      inPortOverride,
-                      createListeners,
-                      sAbsolutePath);
+  sServer->Initialize(inPrefsSource, inMessagesSource, inPortOverride, createListeners, sAbsolutePath);
 
   if (inInitialState == qtssShuttingDownState) {
     sServer->InitModules(inInitialState);
@@ -144,9 +140,7 @@ QTSS_ServerState StartServer(XMLPrefsParser *inPrefsSource,
 
     numThreads = numShortTaskThreads + numBlockingThreads;
     //s_printf("Add threads shortask=%lu blocking=%lu\n",numShortTaskThreads, numBlockingThreads);
-    CF::Thread::TaskThreadPool::SetNumShortTaskThreads(numShortTaskThreads);
-    CF::Thread::TaskThreadPool::SetNumBlockingTaskThreads(numBlockingThreads);
-    CF::Thread::TaskThreadPool::AddThreads(numThreads);
+    CF::Thread::TaskThreadPool::CreateThreads(numShortTaskThreads, numBlockingThreads);
     sServer->InitNumThreads(numThreads);
 
 #if DEBUG
@@ -649,13 +643,9 @@ void RunServer() {
     if (num % 5 == 0) {
       num = 0;
 
-      UInt32 numModules =
-          QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisTTLRole);
-      for (UInt32 currentModule = 0; currentModule < numModules;
-           currentModule++) {
-        QTSSModule *theModule =
-            QTSServerInterface::GetModule(QTSSModule::kRedisTTLRole,
-                                          currentModule);
+      UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisTTLRole);
+      for (UInt32 currentModule = 0; currentModule < numModules; currentModule++) {
+        QTSSModule *theModule = QTSServerInterface::GetModule(QTSSModule::kRedisTTLRole, currentModule);
         (void) theModule->CallDispatch(Easy_RedisTTL_Role, NULL);
       }
     }
@@ -684,11 +674,7 @@ void RunServer() {
       //
       // start the shutdown process
       theServerState = qtssShuttingDownState;
-      (void) QTSS_SetValue(QTSServerInterface::GetServer(),
-                           qtssSvrState,
-                           0,
-                           &theServerState,
-                           sizeof(theServerState));
+      (void) QTSS_SetValue(QTSServerInterface::GetServer(), qtssSvrState, 0, &theServerState, sizeof(theServerState));
 
       if (sServer->SigIntSet())
         restartServer = true;
@@ -703,9 +689,7 @@ void RunServer() {
   // Kill all the sessions and wait for them to die,
   // but don't wait more than 5 seconds
   sServer->KillAllRTPSessions();
-  for (UInt32 shutdownWaitCount = 0;
-       (sServer->GetNumRTPSessions() > 0) && (shutdownWaitCount < 5);
-       shutdownWaitCount++)
+  for (UInt32 shutdownWaitCount = 0; (sServer->GetNumRTPSessions() > 0) && (shutdownWaitCount < 5); shutdownWaitCount++)
     CF::Core::Thread::Sleep(1000);
 
   //Now, make sure that the server can't do any work

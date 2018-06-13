@@ -78,8 +78,7 @@ void QTSSCallbacks::QTSS_ConvertToUnixTime(SInt64 *inQTSS_MilliSecondsPtr,
 }
 
 QTSS_Error QTSSCallbacks::QTSS_AddRole(QTSS_Role inRole) {
-  QTSS_ModuleState *theState = (QTSS_ModuleState *)
-      Core::Thread::GetMainThreadData();
+  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 
@@ -118,15 +117,10 @@ QTSS_Error QTSSCallbacks::QTSS_CreateObjectType(QTSS_ObjectType *outType) {
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_AddAttribute(QTSS_ObjectType inType,
-                                            const char *inName,
-                                            void *inUnused) {
+QTSS_Error QTSSCallbacks::QTSS_AddAttribute(QTSS_ObjectType inType, const char *inName, void *inUnused) {
   //
   // This call is deprecated, make the new call with sensible default arguments
-  return QTSSCallbacks::QTSS_AddStaticAttribute(inType,
-                                                inName,
-                                                inUnused,
-                                                qtssAttrDataTypeUnknown);
+  return QTSSCallbacks::QTSS_AddStaticAttribute(inType, inName, inUnused, qtssAttrDataTypeUnknown);
 }
 
 QTSS_Error QTSSCallbacks::
@@ -153,8 +147,8 @@ QTSS_Error QTSSCallbacks::QTSS_AddInstanceAttribute(QTSS_Object inObject, const 
   if ((inObject == NULL) || (inAttrName == NULL))
     return QTSS_BadArgument;
 
-  return ((QTSSDictionary *) inObject)
-      ->AddInstanceAttribute(inAttrName, NULL, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModeDelete | qtssAttrModePreempSafe);
+  return ((QTSSDictionary *) inObject)->AddInstanceAttribute(
+      inAttrName, NULL, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModeDelete | qtssAttrModePreempSafe);
 }
 
 QTSS_Error QTSSCallbacks::QTSS_RemoveInstanceAttribute(QTSS_Object inObject, QTSS_AttributeID inID) {
@@ -243,8 +237,7 @@ QTSS_Error QTSSCallbacks::QTSS_ValueToString(void *inValue, const UInt32 inValue
 }
 
 QTSS_Error QTSSCallbacks::QTSS_SetValue(QTSS_Object inDictionary, QTSS_AttributeID inID, UInt32 inIndex, const void *inBuffer, UInt32 inLen) {
-  if ((inDictionary == NULL) || ((inBuffer == NULL) && (inLen > 0))
-      || (inID == qtssIllegalAttrID))
+  if ((inDictionary == NULL) || ((inBuffer == NULL) && (inLen > 0)) || (inID == qtssIllegalAttrID))
     return QTSS_BadArgument;
   return ((QTSSDictionary *) inDictionary)->SetValue(inID, inIndex, inBuffer, inLen);
 }
@@ -449,8 +442,7 @@ QTSS_Error QTSSCallbacks::QTSS_DestroySocketStream(QTSS_StreamRef inStream) {
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_AddService(const char *inServiceName,
-                                          QTSS_ServiceFunctionPtr inFunctionPtr) {
+QTSS_Error QTSSCallbacks::QTSS_AddService(const char *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr) {
   QTSS_ModuleState *theState = (QTSS_ModuleState *)
       Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
@@ -471,25 +463,21 @@ QTSS_Error QTSSCallbacks::QTSS_AddService(const char *inServiceName,
                    qtssAttrModeRead);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_IDForService(const char *inTag,
-                                            QTSS_ServiceID *outID) {
+QTSS_Error QTSSCallbacks::QTSS_IDForService(const char *inTag, QTSS_ServiceID *outID) {
   return QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kServiceDictIndex)->
       GetAttrID(inTag, outID);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_DoService(QTSS_ServiceID inID,
-                                         QTSS_ServiceFunctionArgsPtr inArgs) {
+QTSS_Error QTSSCallbacks::QTSS_DoService(QTSS_ServiceID inID, QTSS_ServiceFunctionArgsPtr inArgs) {
   // Make sure that the service ID is in fact valid
 
-  QTSSDictionaryMap
-      *theMap = QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kServiceDictIndex);
+  QTSSDictionaryMap *theMap = QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kServiceDictIndex);
   SInt32 theIndex = theMap->ConvertAttrIDToArrayIndex(inID);
   if (theIndex < 0)
     return QTSS_IllegalService;
 
   // Get the service function
-  QTSS_ServiceFunctionPtr
-      theFunction = (QTSS_ServiceFunctionPtr) theMap->GetAttrFunction(theIndex);
+  QTSS_ServiceFunctionPtr theFunction = (QTSS_ServiceFunctionPtr) theMap->GetAttrFunction(theIndex);
 
   // Invoke it, return the result.
   return (theFunction)(inArgs);
@@ -503,10 +491,8 @@ QTSS_Error QTSSCallbacks::QTSS_SendRTSPHeaders(QTSS_RTSPRequestObject inRef) {
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_AppendRTSPHeader(QTSS_RTSPRequestObject inRef,
-                                                QTSS_RTSPHeader inHeader,
-                                                char *inValue,
-                                                UInt32 inValueLen) {
+QTSS_Error QTSSCallbacks::
+QTSS_AppendRTSPHeader(QTSS_RTSPRequestObject inRef, QTSS_RTSPHeader inHeader, char *inValue, UInt32 inValueLen) {
   if ((inRef == NULL) || (inValue == NULL))
     return QTSS_BadArgument;
   if (inHeader >= qtssNumHeaders)
@@ -529,9 +515,9 @@ QTSS_Error QTSSCallbacks::QTSS_SendStandardRTSPResponse(QTSS_RTSPRequestObject i
       // but a caller typically won't be adding a stream for a 304 response, we have the policy of
       // making the caller pass in the QTSS_ClientSessionObject instead. That means we need to do
       // different things here depending...
-      if (((RTSPRequestInterface *) inRTSPRequest)->GetStatus() == qtssRedirectNotModified)
+      if (((RTSPRequestInterface *) inRTSPRequest)->GetStatus() == qtssRedirectNotModified) {
         (void) ((RTPSession *) inRTPInfo)->DoSessionSetupResponse((RTSPRequestInterface *) inRTSPRequest);
-      else {
+      } else {
         if (inFlags & qtssSetupRespDontWriteSSRC)
           ((RTPStream *) inRTPInfo)->DisableSSRC();
         else
@@ -544,8 +530,7 @@ QTSS_Error QTSSCallbacks::QTSS_SendStandardRTSPResponse(QTSS_RTSPRequestObject i
     }
     case qtssPlayMethod:
     case qtssRecordMethod:
-      ((RTPSession *) inRTPInfo)->SendPlayResponse((RTSPRequestInterface *) inRTSPRequest,
-                                                   inFlags);
+      ((RTPSession *) inRTPInfo)->SendPlayResponse((RTSPRequestInterface *) inRTSPRequest, inFlags);
       return QTSS_NoErr;
     case qtssPauseMethod:((RTPSession *) inRTPInfo)->SendPauseResponse((RTSPRequestInterface *) inRTSPRequest);
       return QTSS_NoErr;
@@ -723,9 +708,8 @@ QTSS_Error QTSSCallbacks::QTSS_Authenticate(const char *inAuthUserName,
                                             QTSS_ActionFlags inAuthRequestAction,
                                             QTSS_AuthScheme inAuthScheme,
                                             QTSS_RTSPRequestObject ioAuthRequestObject) {
-  if ((inAuthUserName == NULL) || (inAuthResourceLocalPath == NULL)
-      || (inAuthMoviesDir == NULL) ||
-      (ioAuthRequestObject == NULL))
+  if ((inAuthUserName == NULL) || (inAuthResourceLocalPath == NULL) ||
+      (inAuthMoviesDir == NULL) || (ioAuthRequestObject == NULL))
     return QTSS_BadArgument;
   if (inAuthRequestAction == qtssActionFlagsNoFlags)
     return QTSS_BadArgument;
@@ -736,44 +720,19 @@ QTSS_Error QTSSCallbacks::QTSS_Authenticate(const char *inAuthUserName,
   // There is no session attached to it, so just pass in NULL for the RTSPSession
   RTSPRequestInterface *request = (RTSPRequestInterface *) ioAuthRequestObject;
   // Set all the attributes required by the authentication module, using the input values
-  (void) request->SetValue(qtssRTSPReqUserName,
-                           0,
-                           inAuthUserName,
-                           ::strlen(inAuthUserName),
-                           QTSSDictionary::kDontObeyReadOnly);
-  (void) request->SetValue(qtssRTSPReqLocalPath,
-                           0,
-                           inAuthResourceLocalPath,
-                           ::strlen(inAuthResourceLocalPath),
-                           QTSSDictionary::kDontObeyReadOnly);
-  (void) request->SetValue(qtssRTSPReqRootDir,
-                           0,
-                           inAuthMoviesDir,
-                           ::strlen(inAuthMoviesDir),
-                           QTSSDictionary::kNoFlags);
-  (void) request->SetValue(qtssRTSPReqAction,
-                           0,
-                           (const void *) &inAuthRequestAction,
-                           sizeof(QTSS_ActionFlags),
-                           QTSSDictionary::kNoFlags);
-  (void) request->SetValue(qtssRTSPReqAuthScheme,
-                           0,
-                           (const void *) &inAuthScheme,
-                           sizeof(QTSS_AuthScheme),
-                           QTSSDictionary::kDontObeyReadOnly);
+  (void) request->SetValue(qtssRTSPReqUserName, 0, inAuthUserName, ::strlen(inAuthUserName), QTSSDictionary::kDontObeyReadOnly);
+  (void) request->SetValue(qtssRTSPReqLocalPath, 0, inAuthResourceLocalPath, ::strlen(inAuthResourceLocalPath), QTSSDictionary::kDontObeyReadOnly);
+  (void) request->SetValue(qtssRTSPReqRootDir, 0, inAuthMoviesDir, ::strlen(inAuthMoviesDir), QTSSDictionary::kNoFlags);
+  (void) request->SetValue(qtssRTSPReqAction, 0, (const void *) &inAuthRequestAction, sizeof(QTSS_ActionFlags), QTSSDictionary::kNoFlags);
+  (void) request->SetValue(qtssRTSPReqAuthScheme, 0, (const void *) &inAuthScheme, sizeof(QTSS_AuthScheme), QTSSDictionary::kDontObeyReadOnly);
   QTSSUserProfile *profile = request->GetUserProfile();
-  (void) profile->SetValue(qtssUserName,
-                           0,
-                           inAuthUserName,
-                           ::strlen(inAuthUserName),
-                           QTSSDictionary::kDontObeyReadOnly);
+  (void) profile->SetValue(qtssUserName, 0, inAuthUserName, ::strlen(inAuthUserName), QTSSDictionary::kDontObeyReadOnly);
 
 
   // Because this is a role being executed from inside a callback, we need to
   // make sure that QTSS_RequestEvent will not work.
   Thread::Task *curTask = NULL;
-  QTSS_ModuleState *theState = (QTSS_ModuleState *)
-      Core::Thread::GetMainThreadData();
+  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 
@@ -787,11 +746,9 @@ QTSS_Error QTSSCallbacks::QTSS_Authenticate(const char *inAuthUserName,
   QTSS_Error theErr = QTSS_RequestFailed;
 
   UInt32 x = 0;
-  UInt32 numModules =
-      QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAthnRole);
+  UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRTSPAthnRole);
   QTSSModule *theModulePtr = NULL;
-  bool allowedDefault =
-      QTSServerInterface::GetServer()->GetPrefs()->GetAllowGuestDefault();
+  bool allowedDefault = QTSServerInterface::GetServer()->GetPrefs()->GetAllowGuestDefault();
   bool allowed = allowedDefault; //server pref?
   bool hasUser = false;
   bool handled = false;
@@ -803,44 +760,28 @@ QTSS_Error QTSSCallbacks::QTSS_Authenticate(const char *inAuthUserName,
     request->SetHasUser(false);
     request->SetAuthHandled(false);
 
-    debug_printf(
-          " QTSSCallbacks::QTSS_Authenticate calling module module = %lu numModules=%lu\n",
-          x,
-          numModules);
+    debug_printf(" QTSSCallbacks::QTSS_Authenticate calling module module = %lu numModules=%lu\n",
+                 x, numModules);
     theModulePtr = QTSServerInterface::GetModule(QTSSModule::kRTSPAthnRole, x);
     theErr = QTSS_NoErr;
     if (theModulePtr) {
-      theErr = theModulePtr->CallDispatch(QTSS_RTSPAuthenticate_Role,
-                                          &theAuthenticationParams);
-      debug_printf(
-            " QTSSCallbacks::QTSS_Authorize calling module module = %lu numModules=%lu ModuleError=%ld\n",
-            x,
-            numModules,
-            theErr);
+      theErr = theModulePtr->CallDispatch(QTSS_RTSPAuthenticate_Role, &theAuthenticationParams);
+      debug_printf(" QTSSCallbacks::QTSS_Authorize calling module module = %lu numModules=%lu ModuleError=%ld\n",
+                   x, numModules, theErr);
     } else {
-      debug_printf(
-            " QTSSCallbacks::QTSS_Authorize calling module module = %lu is NULL! numModules=%lu\n",
-            x,
-            numModules);
+      debug_printf(" QTSSCallbacks::QTSS_Authorize calling module module = %lu is NULL! numModules=%lu\n",
+                   x, numModules);
       continue;
     }
     allowed = request->GetAllowed();
     hasUser = request->GetHasUser();
     handled = request->GetAuthHandled();
-    debug_printf(
-          "QTSSCallbacks::QTSS_Authenticate allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",
-          allowedDefault,
-          allowed,
-          hasUser,
-          handled);
+    debug_printf("QTSSCallbacks::QTSS_Authenticate allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",
+                 allowedDefault, allowed, hasUser, handled);
 
-    if (hasUser
-        || handled) //See RTSPSession.cpp::Run state=kAuthenticatingRequest
-    {
-      debug_printf(
-            " QTSSCallbacks::QTSS_Authenticate skipping other modules fCurrentModule = %lu numModules=%lu\n",
-            x,
-            numModules);
+    if (hasUser || handled) { //See RTSPSession.cpp::Run state=kAuthenticatingRequest
+      debug_printf(" QTSSCallbacks::QTSS_Authenticate skipping other modules fCurrentModule = %lu numModules=%lu\n",
+                   x, numModules);
       break;
     }
   }
@@ -854,8 +795,7 @@ QTSS_Error QTSSCallbacks::QTSS_Authenticate(const char *inAuthUserName,
 }
 
 QTSS_Error QTSSCallbacks::QTSS_Authorize(QTSS_RTSPRequestObject inAuthRequestObject,
-                                         char **outAuthRealm,
-                                         bool *outAuthUserAllowed) {
+                                         char **outAuthRealm, bool *outAuthUserAllowed) {
   RTSPRequestInterface *request = (RTSPRequestInterface *) inAuthRequestObject;
   if (request == NULL)
     return QTSS_BadArgument;

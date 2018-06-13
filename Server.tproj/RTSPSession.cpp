@@ -22,11 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       RTSPSession.cpp
-
-    Contains:   Implemenation of RTSPSession objects
-*/
+/**
+ * @file RTSPSession.cpp
+ *
+ * Implementation of RTSPSession objects
+ */
 #define __RTSP_HTTP_DEBUG__ 0
 #define __RTSP_HTTP_VERBOSE__ 0
 #define __RTSP_AUTH_DEBUG__ 0
@@ -112,24 +112,26 @@ StrPtrLen RTSPSession::sHTTPResponseHeaderPtr(sHTTPResponseHeaderBuf, kMaxHTTPRe
 char RTSPSession::sHTTPResponseNoServerHeaderBuf[kMaxHTTPResponseLen];
 StrPtrLen RTSPSession::sHTTPResponseNoServerHeaderPtr(sHTTPResponseNoServerHeaderBuf, kMaxHTTPResponseLen);
 
-// stock reponse with place holder for server header and optional "x-server-ip-address" header ( %s%s%s for  "x-server-ip-address" + ip address + \r\n )
+// stock response with place holder for server header and
+// optional "x-server-ip-address" header ( %s%s%s for  "x-server-ip-address" + ip address + \r\n )
 // the optional version must be generated at runtime to include a valid IP address for the actual interface
-char *RTSPSession::sHTTPResponseFormatStr =
+const char *RTSPSession::sHTTPResponseFormatStr =
     "HTTP/1.0 200 OK\r\n"
-        "%s%s%s%s\r\n"
-        "Connection: close\r\n"
-        "Date: Thu, 19 Aug 1982 18:30:00 GMT\r\n"
-        "Cache-Control: no-store\r\n"
-        "Pragma: no-cache\r\n"
-        "Content-Type: application/x-rtsp-tunnelled\r\n\r\n";
-char *RTSPSession::sHTTPNoServerResponseFormatStr =
+    "%s%s%s%s\r\n"
+    "Connection: close\r\n"
+    "Date: Thu, 19 Aug 1982 18:30:00 GMT\r\n"
+    "Cache-Control: no-store\r\n"
+    "Pragma: no-cache\r\n"
+    "Content-Type: application/x-rtsp-tunnelled\r\n\r\n";
+
+const char *RTSPSession::sHTTPNoServerResponseFormatStr =
     "HTTP/1.0 200 OK\r\n"
-        "%s%s%s%s"
-        "Connection: close\r\n"
-        "Date: Thu, 19 Aug 1982 18:30:00 GMT\r\n"
-        "Cache-Control: no-store\r\n"
-        "Pragma: no-cache\r\n"
-        "Content-Type: application/x-rtsp-tunnelled\r\n\r\n";
+    "%s%s%s%s"
+    "Connection: close\r\n"
+    "Date: Thu, 19 Aug 1982 18:30:00 GMT\r\n"
+    "Cache-Control: no-store\r\n"
+    "Pragma: no-cache\r\n"
+    "Content-Type: application/x-rtsp-tunnelled\r\n\r\n";
 
 void RTSPSession::Initialize() {
   sHTTPProxyTunnelMap = new RefTable(RefTable::kDefaultTableSize);
@@ -190,6 +192,7 @@ RTSPSession::RTSPSession(bool doReportHTTPConnectionAddress)
   fLastRTPSessionIDPtr.Set(fLastRTPSessionID, 0);
   Assert(fLastRTPSessionIDPtr.Ptr == &fLastRTPSessionID[0]);
 
+  // NOTE: why set static var??
   (void) QTSS_IDForAttr(qtssClientSessionObjectType, sBroadcasterSessionName, &sClientBroadcastSessionAttr);
 }
 
@@ -254,11 +257,6 @@ SInt64 RTSPSession::Run() {
       case kReadingFirstRequest: { // 初始状态
         // 从 Socket 中读取数据，并校验格式
         if ((err = fInputStream.ReadRequest()) == QTSS_NoErr) {
-          // 返回 QTSS_NoErr 意味着所有数据已经从 Socket 中读出,但尚不能构成一个完整
-          // 的请求,因此必须等待更多的数据到达,
-          // 我们从 ReadRequest 代码可以知道,只有当对 socket 端口 recv 返回 EAGAIN 时,
-          // ReadRequest 才会返回 QTSS_NoErr。
-
           // If the RequestStream returns QTSS_NoErr, it means
           // that we've read all outstanding data off the socket,
           // and still don't have a full request. Wait for more data.
@@ -279,6 +277,7 @@ SInt64 RTSPSession::Run() {
 
         if (err == QTSS_RequestArrived)
           fState = kHTTPFilteringRequest;
+
         // If we get an E2BIG, it means our buffer was overfilled.
         // In that case, we can just jump into the following state, and
         // the code their does a check for this error and returns an error.
@@ -292,7 +291,7 @@ SInt64 RTSPSession::Run() {
         HTTP_TRACE("RTSPSession::Run kHTTPFilteringRequest\n")
 
         fState = kHaveNonTunnelMessage; // assume it's not a tunnel setup message
-        // prefilter will set correct tunnel state if it is.
+        // pre-filter will set correct tunnel state if it is.
         // 对于非Http连接的情况,会返回QTSS_NoErr。但是返回QTSS_NoErr,并不表示
         // 一定是非Http连接。而且对于Http连接(RTSP经过Http代理)情况,
         // PreFilterForHTTPProxyTunnel可能会更改fState值。
@@ -379,10 +378,10 @@ SInt64 RTSPSession::Run() {
         Assert(fInputStream.GetRequestBuffer());
 
         if (fRequest == nullptr) {
-          //printf("RTSPRequest size########## %d\n",sizeof(RTSPRequest));
           fRequest = new RTSPRequest(this);
+        } else {
+          fRequest->ReInit(this);
         }
-        fRequest->ReInit(this);
 
         fRoleParams.rtspRequestParams.inRTSPRequest = fRequest;
         fRoleParams.rtspRequestParams.inRTSPHeaders = fRequest->GetHeaderDictionary();
@@ -401,9 +400,6 @@ SInt64 RTSPSession::Run() {
         // this point, reset it to 0 (we can then just let it increment
         // until the next request comes in)
         fOutputStream.ResetBytesWritten();
-
-        // 如果err == E2BIG或者QTSS_BadArgument,调用SendErrorResponse, fState赋值为
-        // kPostProcessingRequest。否则fState赋值为kFilteringRequest。
 
         // Check for an overfilled buffer, and return an error.
         if (err == E2BIG) {
@@ -437,25 +433,23 @@ SInt64 RTSPSession::Run() {
         // QTSSDemoSMILModule 模块(?)、
         // QTSSHttpFileModule 模块 (A module for HTTP file transfer of files and for on-the-fly ref movie creation.)
         //
-        // 可以添加二次开发模块!
+        // NOTE: 可以添加二次开发模块!
 
         // We received something so auto refresh
         // The need to auto refresh is because the api doesn't allow a module to refresh at this point
-        // 重置fTimeoutTask的到时时间
         fTimeoutTask.RefreshTimeout();
 
         //
         // Before we even do this, check to see if this is a *data* packet,
         // in which case this isn't an RTSP request, so we don't need to go
-        // through any of the remaining steps
-
-        // 在readRequest函数里,只有碰到“$”,才会认为是 interleaved packet
+        // through any of the remaining step
         if (fInputStream.IsDataPacket()) {
           // 在 handleIncomingDataPacket 里,除了调用 RTPSession 的
           // ProcessIncomingInterleavedData 函数外,还会调用已注册
           // QTSS_RTSPIncomingData_Role 模块的处理函数。(系统的
           // QTSSReflectorModule 模块提供该 Role 的处理)
-          // 这里可以进行二次开发!
+          //
+          // NOTE: 这里可以进行二次开发!
           this->HandleIncomingDataPacket();
 
           fState = kCleaningUp;
@@ -525,7 +519,6 @@ SInt64 RTSPSession::Run() {
           break;
         } else {
           // Otherwise, this is a normal request, so parse it and get the RTPSession.
-          // 建立用于管理数据传输的RTPSession类对象,根据请求消息中的方法做处理。
           this->SetupRequest();
         }
 
@@ -649,16 +642,14 @@ SInt64 RTSPSession::Run() {
         }
 
         if (fRequest->GetAuthScheme() == qtssAuthNone) {
-          QTSS_AuthScheme scheme =
-              QTSServerInterface::GetServer()->GetPrefs()->GetAuthScheme();
+          QTSS_AuthScheme scheme = QTSServerInterface::GetServer()->GetPrefs()->GetAuthScheme();
           if (scheme == qtssAuthBasic)
             fRequest->SetAuthScheme(qtssAuthBasic);
           else if (scheme == qtssAuthDigest)
             fRequest->SetAuthScheme(qtssAuthDigest);
 
           if (scheme == qtssAuthDigest)
-            debug_printf(
-                  "RTSPSession.cpp:kAuthenticatingRequest  scheme == qtssAuthDigest\n");
+            debug_printf("RTSPSession.cpp:kAuthenticatingRequest  scheme == qtssAuthDigest\n");
         }
 
         // Setup the authentication param block
@@ -685,7 +676,7 @@ SInt64 RTSPSession::Run() {
           fRequest->SetAllowed(allowedDefault);
           fRequest->SetHasUser(false);
           fRequest->SetAuthHandled(false);
-          debug_printf( "RTSPSession.cpp:kAuthenticatingRequest  fCurrentModule = %lu numModules=%lu\n", fCurrentModule, numModules);
+          debug_printf("RTSPSession.cpp:kAuthenticatingRequest  fCurrentModule = %lu numModules=%lu\n", fCurrentModule, numModules);
 
           fModuleState.eventRequested = false;
           fModuleState.idleTime = 0;
@@ -717,19 +708,13 @@ SInt64 RTSPSession::Run() {
           allowed = fRequest->GetAllowed();
           hasUser = fRequest->GetHasUser();
           handled = fRequest->GetAuthHandled();
-          debug_printf(
-                "RTSPSession::Run Role(kAuthenticatingRequest) allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",
-                allowedDefault,
-                allowed,
-                hasUser,
-                handled);
+          debug_printf("RTSPSession::Run Role(kAuthenticatingRequest) allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",
+                       allowedDefault, allowed, hasUser, handled);
           if (handled) wasHandled = handled;
 
           if (hasUser || handled) {
-            debug_printf(
-                  "RTSPSession.cpp::Run(kAuthenticatingRequest)  skipping other modules fCurrentModule = %lu numModules=%lu\n",
-                  fCurrentModule,
-                  numModules);
+            debug_printf("RTSPSession.cpp::Run(kAuthenticatingRequest)  skipping other modules fCurrentModule = %lu numModules=%lu\n",
+                         fCurrentModule, numModules);
             break;
           }
 
@@ -782,10 +767,8 @@ SInt64 RTSPSession::Run() {
         for (; (fCurrentModule < numModules) && ((!fRequest->HasResponseBeenSent()) || fModuleState.eventRequested); fCurrentModule++) {
           fRequest->SetHasUser(false);
           fRequest->SetAuthHandled(false);
-          debug_printf(
-                "RTSPSession.cpp:kAuthorizingRequest  BEFORE DISPATCH fCurrentModule = %lu numModules=%lu\n",
-                fCurrentModule,
-                numModules);
+          debug_printf("RTSPSession.cpp:kAuthorizingRequest  BEFORE DISPATCH fCurrentModule = %lu numModules=%lu\n",
+                       fCurrentModule, numModules);
 
           fModuleState.eventRequested = false;
           fModuleState.idleTime = 0;
@@ -794,13 +777,12 @@ SInt64 RTSPSession::Run() {
             fModuleState.isGlobalLocked = true;
           }
 
-          theModule = QTSServerInterface::GetModule(QTSSModule::kRTSPAuthRole,
-                                                    fCurrentModule);
+          theModule = QTSServerInterface::GetModule(QTSSModule::kRTSPAuthRole, fCurrentModule);
           if (nullptr == theModule)
             continue;
 
           if (__RTSP_AUTH_DEBUG__) {
-            theModule->GetValue(qtssModName)->PrintStr( "QTSSModule::CallDispatch ENTER module=", "\n");
+            theModule->GetValue(qtssModName)->PrintStr("QTSSModule::CallDispatch ENTER module=", "\n");
           }
 
           (void) theModule->CallDispatch(QTSS_RTSPAuthorize_Role, &fRoleParams);
@@ -823,18 +805,12 @@ SInt64 RTSPSession::Run() {
           allowed = fRequest->GetAllowed();
           hasUser = fRequest->GetHasUser();
           handled = fRequest->GetAuthHandled();
-          debug_printf(
-                "RTSPSession::Run Role(kAuthorizingRequest) allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",
-                allowedDefault,
-                allowed,
-                hasUser,
-                handled);
+          debug_printf("RTSPSession::Run Role(kAuthorizingRequest) allowedDefault =%d allowed= %d hasUser = %d handled=%d \n",
+                allowedDefault, allowed, hasUser, handled);
 
           if (!allowed && !handled) { //old module break on !allowed
-            debug_printf(
-                  "RTSPSession.cpp::Run(kAuthorizingRequest)  skipping other modules fCurrentModule = %lu numModules=%lu\n",
-                  fCurrentModule,
-                  numModules);
+            debug_printf("RTSPSession.cpp::Run(kAuthorizingRequest)  skipping other modules fCurrentModule = %lu numModules=%lu\n",
+                  fCurrentModule, numModules);
             break;
           }
           if (!allowed && hasUser && handled) { //new module break on !allowed
@@ -1374,18 +1350,19 @@ QTSS_Error RTSPSession::PreFilterForHTTPProxyTunnel() {
   fState = kWaitingToBindHTTPTunnel;
   QTSS_RTSPSessionType theOtherSessionType = qtssRTSPSession;
 
-  if (fHTTPMethod == kHTTPMethodPost)// HTTP POST请求
-  { HTTP_TRACE("RTSPSession is a POST request.\n")
+  if (fHTTPMethod == kHTTPMethodPost) { // HTTP POST请求
+    HTTP_TRACE("RTSPSession is a POST request.\n")
+
     fSessionType = qtssRTSPHTTPInputSession;
     theOtherSessionType = qtssRTSPHTTPSession;
-  } else if (fHTTPMethod == kHTTPMethodGet)// HTTP GET请求
-  { HTTP_TRACE("RTSPSession is a GET request.\n")
+  } else if (fHTTPMethod == kHTTPMethodGet) { // HTTP GET请求
+    HTTP_TRACE("RTSPSession is a GET request.\n")
+
     // we're session O (outptut)  the POST half is session 1 ( input )
     fSessionType = qtssRTSPHTTPSession;
     theOtherSessionType = qtssRTSPHTTPInputSession;
 
-    bool showServerInfo =
-        QTSServerInterface::GetServer()->GetPrefs()->GetRTSPServerInfoEnabled();
+    bool showServerInfo = QTSServerInterface::GetServer()->GetPrefs()->GetRTSPServerInfoEnabled();
     if (fDoReportHTTPConnectionAddress) {
       // contruct a 200 OK header with an "x-server-ip-address" header
 
@@ -1396,10 +1373,7 @@ QTSS_Error RTSPSession::PreFilterForHTTPProxyTunnel() {
       // get a copy of the local IP address from the dictionary
       // 从字典中得到本地ip地址
 
-      this->GetValue(qtssRTSPSesLocalAddrStr,
-                     0,
-                     localIPAddr.Ptr,
-                     &localIPAddr.Len);
+      this->GetValue(qtssRTSPSesLocalAddrStr, 0, localIPAddr.Ptr, &localIPAddr.Len);
       Assert(localIPAddr.Len < sizeof(localIPAddrBuf));
       localIPAddrBuf[localIPAddr.Len] = 0;
 
@@ -1407,29 +1381,17 @@ QTSS_Error RTSPSession::PreFilterForHTTPProxyTunnel() {
       char *headerFieldPtr = "";
       if (showServerInfo) {
         headerFieldPtr = QTSServerInterface::GetServerHeader().Ptr;
-        s_sprintf(responseHeaderBuf,
-                     sHTTPResponseFormatStr,
-                     "X-server-ip-address: ",
-                     localIPAddrBuf,
-                     "\r\n",
-                     headerFieldPtr);
+        s_sprintf(responseHeaderBuf, sHTTPResponseFormatStr, "X-server-ip-address: ", localIPAddrBuf, "\r\n", headerFieldPtr);
       } else {
-        s_sprintf(responseHeaderBuf,
-                     sHTTPNoServerResponseFormatStr,
-                     "X-server-ip-address: ",
-                     localIPAddrBuf,
-                     "\r\n",
-                     headerFieldPtr);
+        s_sprintf(responseHeaderBuf, sHTTPNoServerResponseFormatStr, "X-server-ip-address: ", localIPAddrBuf, "\r\n", headerFieldPtr);
       }
       Assert(::strlen(responseHeaderBuf) < kMaxHTTPResponseLen);
       fOutputStream.Put(responseHeaderBuf);
-    } else // use the premade stopck version
-    {
+    } else { // use the premade stopck version
       if (showServerInfo)
         fOutputStream.Put(sHTTPResponseHeaderPtr);  // 200 OK just means we connected...
       else
         fOutputStream.Put(sHTTPResponseNoServerHeaderPtr);  // 200 OK just means we connected...
-
     }
   } else Assert(0);
 
@@ -1437,8 +1399,7 @@ QTSS_Error RTSPSession::PreFilterForHTTPProxyTunnel() {
   // session with a matching magic number, it resolves it and returns that Ref.
   // If it returns nullptr, something bad has happened, and we should just kill the session.
 
-  Ref *rtspSessionRef =
-      this->RegisterRTSPSessionIntoHTTPProxyTunnelMap(theOtherSessionType);
+  Ref *rtspSessionRef = this->RegisterRTSPSessionIntoHTTPProxyTunnelMap(theOtherSessionType);
 
   // Something went wrong (usually we get here because there is a session with this magic
   // number, and that session is currently doing something
@@ -1454,8 +1415,7 @@ QTSS_Error RTSPSession::PreFilterForHTTPProxyTunnel() {
   }
 
   RefReleaser theRefReleaser(sHTTPProxyTunnelMap, rtspSessionRef); // auto release this ref
-  RTSPSession *theOtherSession = (RTSPSession *)
-      theRefReleaser.GetRef()->GetObject();
+  RTSPSession *theOtherSession = (RTSPSession *) theRefReleaser.GetRef()->GetObject();
 
   // We must lock down this session, for we (may) be manipulating its socket & input
   // stream, and therefore it cannot be in the process of reading data or processing a request.
@@ -1473,16 +1433,13 @@ QTSS_Error RTSPSession::PreFilterForHTTPProxyTunnel() {
 
     // Attempt to bind to this GET connection
     // this will reset our state on success.
-    HTTP_TRACE_ONE(
-        "RTSPSession POST snarfed a donor session successfuly (%s).\n",
-        fProxySessionID)
+    HTTP_TRACE_ONE("RTSPSession POST snarfed a donor session successfuly (%s).\n", fProxySessionID)
     fState = kSocketHasBeenBoundIntoHTTPTunnel;
     theOtherSession->fState = kReadingRequest;
     theOtherSession->Signal(kReadEvent);
   } else if (fHTTPMethod == kHTTPMethodGet) {
-    Assert(theOtherSession->fState == kWaitingToBindHTTPTunnel);HTTP_TRACE_ONE(
-        "RTSPSession GET snarfed a donor session successfuly (%s).\n",
-        fProxySessionID)
+    Assert(theOtherSession->fState == kWaitingToBindHTTPTunnel);
+    HTTP_TRACE_ONE("RTSPSession GET snarfed a donor session successfuly (%s).\n", fProxySessionID)
 
     // take the input session's socket. This also grabs the other session's input stream
     this->SnarfInputSocket(theOtherSession);
@@ -1614,9 +1571,7 @@ void RTSPSession::CheckAuthentication() {
           UInt32 bufSize = sizeof(ncValue);
           StrPtrLenDel tempString(nonceCount->GetAsCString());
           tempString.ToUpper();
-          QTSSDataConverter::ConvertCHexStringToBytes(tempString.Ptr,
-                                                      &ncValue,
-                                                      &bufSize);
+          QTSSDataConverter::ConvertCHexStringToBytes(tempString.Ptr, &ncValue, &bufSize);
           ncValue = ntohl(ncValue);
 
         }
@@ -1627,29 +1582,13 @@ void RTSPSession::CheckAuthentication() {
         }
 
         // allocates memory for requestDigest.Ptr
-        CalcRequestDigest(userPassword,
-                          nonce,
-                          nonceCount,
-                          cNonce,
-                          &sAuthQop,
-                          &method,
-                          digestUri,
-                          &emptyStr,
-                          &requestDigest);
+        CalcRequestDigest(userPassword, nonce, nonceCount, cNonce, &sAuthQop, &method, digestUri, &emptyStr, &requestDigest);
         // If they are equal, check if nonce used by client is same as the one sent by the server
 
       }   // For No qop
       else if (qop == RTSPSessionInterface::kNoQop) {
         // allocates memory for requestDigest->Ptr
-        CalcRequestDigest(userPassword,
-                          nonce,
-                          &emptyStr,
-                          &emptyStr,
-                          &emptyStr,
-                          &method,
-                          digestUri,
-                          &emptyStr,
-                          &requestDigest);
+        CalcRequestDigest(userPassword, nonce, &emptyStr, &emptyStr, &emptyStr, &method, digestUri, &emptyStr, &requestDigest);
       }
 
       // hA1 is allocated memory
@@ -1675,16 +1614,8 @@ void RTSPSession::CheckAuthentication() {
   if (!fRequest->GetAuthHandled()) {
     if ((!authenticated) || (authenticated && (fRequest->GetStale()))) {
       debug_printf("erasing username from profile\n");
-      (void) profile->SetValue(qtssUserName,
-                               0,
-                               sEmptyStr.Ptr,
-                               sEmptyStr.Len,
-                               QTSSDictionary::kDontObeyReadOnly);
-      (void) profile->SetValue(qtssUserPassword,
-                               0,
-                               sEmptyStr.Ptr,
-                               sEmptyStr.Len,
-                               QTSSDictionary::kDontObeyReadOnly);
+      (void) profile->SetValue(qtssUserName, 0, sEmptyStr.Ptr, sEmptyStr.Len, QTSSDictionary::kDontObeyReadOnly);
+      (void) profile->SetValue(qtssUserPassword, 0, sEmptyStr.Ptr, sEmptyStr.Len, QTSSDictionary::kDontObeyReadOnly);
       (void) profile->SetNumValues(qtssUserGroups, 0);
     }
   }
@@ -1702,14 +1633,12 @@ bool RTSPSession::ParseOptionsResponse() {
 
 void RTSPSession::SetupRequest() {
   // First parse the request
-  // 首先调用 fRequest->Parse 分析 RTSP 请求
   QTSS_Error theErr = fRequest->Parse();
   if (theErr != QTSS_NoErr) return;
 
   // let's also refresh RTP session timeout so that it's kept alive in sync with the RTSP session.
   //
   // Attempt to find the RTP session for this request.
-  // 查找该请求的RTPSession
   RefTable *theMap = QTSServerInterface::GetServer()->GetRTPSessionMap();
   theErr = this->FindRTPSession(theMap);
 
@@ -1721,16 +1650,13 @@ void RTSPSession::SetupRequest() {
     if (headerBits != 0)
       (void) fRTPSession->SetValue(qtssCliSessLastRTSPBandwidth, (UInt32) 0, &headerBits, sizeof(headerBits), QTSSDictionary::kDontObeyReadOnly);
   }
+
   QTSS_RTSPStatusCode statusCode = qtssSuccessOK;
   char *body = nullptr;
   UInt32 bodySizeBytes = 0;
 
-  // 在上面的 Parse 函数里已经调用 RTSPProtocol::GetMethod 设置 fMethod
-
-  // If this is an OPTIONS request, don't even bother letting modules see it. Just
-  // send a standard OPTIONS response, and be done.
-  // OPTIONS请求，简单发回标准OPTIONS响应，将系统支持的方法添加到头部(在DoInitRole里已经把各个模块登记的支持方法汇总了)
-  // 注意:这里并没有实际的通过 socket 发送出去,只是和 fOutputStream 相关联
+  // If this is an OPTIONS request, don't even bother letting modules see it.
+  // Just send a standard OPTIONS response, and be done.
   if (fRequest->GetMethod() == qtssOptionsMethod) { // OPTIONS请求
     StrPtrLen *cSeqPtr = fRequest->GetHeaderDictionary()->GetValue(qtssCSeqHeader);
     if (cSeqPtr == nullptr || cSeqPtr->Len == 0) {
@@ -1792,9 +1718,8 @@ void RTSPSession::SetupRequest() {
     // let modules handle it if they want it.
   }
 
-  // If this is a DESCRIBE request, make sure there is no SessionID. This is not allowed,
-  // and may screw up modules if we let them see this request.
-  // DESCRIBE请求，必须保证已经没有了SessionID
+  // If this is a DESCRIBE request, make sure there is no SessionID.
+  // This is not allowed, and may screw up modules if we let them see this request.
   if (fRequest->GetMethod() == qtssDescribeMethod) {
     if (fRequest->GetHeaderDictionary()->GetValue(qtssSessionHeader)->Len > 0) {
       (void) QTSSModuleUtils::SendErrorResponse(fRequest, qtssClientHeaderFieldNotValid, qtssMsgNoSesIDOnDescribe);
@@ -1803,7 +1728,6 @@ void RTSPSession::SetupRequest() {
   }
 
   // If we don't have an RTP session yet, create one...
-  // 如果未查找到RTPSession，建立一个新的RTPSession
   if (fRTPSession == nullptr) {
     theErr = this->CreateNewRTPSession(theMap);
     // 由于server的状态、最大连接数限制、最大带宽限制等原因，RTPSession的创建可能失败。
@@ -1822,10 +1746,8 @@ void RTSPSession::SetupRequest() {
   // Check to see if this is a "ping" PLAY request (a PLAY request while already
   // playing with no Range header). If so, just send back a 200 OK response and do nothing.
   // No need to go to modules to do this, because this is an RFC documented behavior
-  if ((fRequest->GetMethod() == qtssPlayMethod)
-      && (fRTPSession->GetSessionState() == qtssPlayingState)
-      && (fRequest->GetStartTime() == -1)
-      && (fRequest->GetStopTime() == -1)) {
+  if ((fRequest->GetMethod() == qtssPlayMethod) && (fRTPSession->GetSessionState() == qtssPlayingState) &&
+      (fRequest->GetStartTime() == -1) && (fRequest->GetStopTime() == -1)) {
     fRequest->SendHeader();
     fRTPSession->RefreshTimeout();
     return;
@@ -1885,13 +1807,10 @@ QTSS_Error RTSPSession::FindRTPSession(RefTable *inRefTable) {
   StrPtrLen *theSessionID = fRequest->GetHeaderDictionary()->GetValue(qtssSessionHeader);
   if (theSessionID != nullptr && theSessionID->Len > 0) {
     Ref *theRef = inRefTable->Resolve(theSessionID);
-
     if (theRef != nullptr)
       fRTPSession = (RTPSession *) theRef->GetObject();
-  }
-
-  // If there wasn't a session ID in the headers, look for one in the RTSP session itself
-  if ((theSessionID == nullptr || theSessionID->Len == 0) && fLastRTPSessionIDPtr.Len > 0) {
+  } else if (fLastRTPSessionIDPtr.Len > 0) {
+    // If there wasn't a session ID in the headers, look for one in the RTSP session itself
     Ref *theRef = inRefTable->Resolve(&fLastRTPSessionIDPtr);
     if (theRef != nullptr)
       fRTPSession = (RTPSession *) theRef->GetObject();
@@ -1908,8 +1827,8 @@ QTSS_Error RTSPSession::CreateNewRTPSession(RefTable *inRefTable) {
   // Then, we need to pass the session onto one of the modules
 
   // First of all, ask the server if it's ok to add a new session
-  // 根据几个情况来判断是否可以添加新的RTPSession。
-  // 1、server的状态; 2、最大连接数限制; 3、最大带宽限制。
+  // 根据以下几个情况来判断是否可以添加新的RTPSession:
+  //     1、server的状态; 2、最大连接数限制; 3、最大带宽限制。
   QTSS_Error theErr = this->IsOkToAddNewRTPSession();
   if (theErr != QTSS_NoErr) return theErr;
 
@@ -2078,8 +1997,8 @@ QTSS_Error RTSPSession::IsOkToAddNewRTPSession() {
 
   //we may want to deny this connection for a couple of different reasons
   //if the server is refusing new connections
-  if ((theServerState == qtssRefusingConnectionsState) || (theServerState == qtssIdleState)
-      || (theServerState == qtssFatalErrorState) || (theServerState == qtssShuttingDownState))
+  if ((theServerState == qtssRefusingConnectionsState) || (theServerState == qtssIdleState) ||
+      (theServerState == qtssFatalErrorState) || (theServerState == qtssShuttingDownState))
     return QTSSModuleUtils::SendErrorResponse(fRequest, qtssServerUnavailable, qtssMsgRefusingConnections);
 
   //if the max connection limit has been hit
@@ -2088,8 +2007,7 @@ QTSS_Error RTSPSession::IsOkToAddNewRTPSession() {
 
   //if the max bandwidth limit has been hit
   SInt32 maxKBits = theServer->GetPrefs()->GetMaxKBitsBandwidth();
-  if ((maxKBits > -1)
-      && (theServer->GetCurBandwidthInBits() >= ((UInt32) maxKBits * 1024)))
+  if ((maxKBits > -1) && (theServer->GetCurBandwidthInBits() >= ((UInt32) maxKBits * 1024)))
     return QTSSModuleUtils::SendErrorResponse(fRequest, qtssClientNotEnoughBandwidth, qtssMsgTooMuchThruput);
 
   //if the server is too loaded down (CPU too high, whatever)

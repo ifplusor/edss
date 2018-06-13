@@ -68,7 +68,7 @@ QTSS_Error RTSPRequestStream::ReadRequest() {
     // is check whether there is any lingering data in the stream. If there is, the parent
     // session believes that is part of a new request
     if (fRequestPtr != NULL) {
-      fRequestPtr = NULL;//flag that we no longer have a complete request
+      fRequestPtr = NULL; // flag that we no longer have a complete request
 
       // Take all the retreated leftover data and move it to the beginning of the buffer
       if ((fRetreatBytes > 0) && (fRequest.Len > 0))
@@ -109,7 +109,7 @@ QTSS_Error RTSPRequestStream::ReadRequest() {
         Assert(fEncodedBytesRemaining == 0);
       } else {
         // We don't have any new data, get some from the socket...
-        // 注意我们的 socket 端口是 non blocking
+        // NOTE: the socket is non blocking
         QTSS_Error sockErr = fSocket->Read(&fRequestBuffer[fCurOffset], (kRequestBufferSizeInBytes - fCurOffset) - 1, &newOffset);
         // assume the client is dead if we get an error back
         if (sockErr == EAGAIN)
@@ -138,8 +138,21 @@ QTSS_Error RTSPRequestStream::ReadRequest() {
 
     // See if this is an interleaved data packet
     if ('$' == *(fRequest.Ptr)) {
+      /*
+       * rtsp interleaved frame layer
+       *
+       *   dollar sign   channel identifier   data length
+       * +-------------+--------------------+-------------+
+       * |     0x24    |       0x02         |  0x01 0x8d  |
+       * +-------------+--------------------+-------------+
+       *      1 byte          1 byte             2 byte
+       */
+
+      // check header length
       if (fRequest.Len < 4)
         continue;
+
+      // check packet length
       UInt16 *dataLenP = (UInt16 *) fRequest.Ptr;
       UInt32 interleavedPacketLen = ntohs(dataLenP[1]) + 4;
       if (interleavedPacketLen > fRequest.Len)
@@ -153,6 +166,7 @@ QTSS_Error RTSPRequestStream::ReadRequest() {
       fIsDataPacket = true;
       return QTSS_RequestArrived;
     }
+    // else
     fIsDataPacket = false;
 
     if (fPrintRTSP) {
@@ -189,8 +203,7 @@ QTSS_Error RTSPRequestStream::ReadRequest() {
       str.PrintStrEOL("\n\r\n", "\n");// print the request but stop on \n\r\n and add a \n afterwards.
     }
 
-    // use a StringParser object to search for a double EOL, which signifies the end of
-    // the header.
+    // use a StringParser object to search for a double EOL, which signifies the end of the header.
     bool weAreDone = false;
     CF::StringParser headerParser(&fRequest);
 
@@ -310,8 +323,7 @@ QTSS_Error RTSPRequestStream::DecodeIncomingData(char *inSrcData,
     Assert((encodedBytesConsumed & 3) == 0);
     Assert((bytesToDecode & 3) == 0);
 
-    UInt32 bytesDecoded = Base64decode(fRequest.Ptr + fRequest.Len,
-                                       inSrcData + encodedBytesConsumed);
+    UInt32 bytesDecoded = Base64decode(fRequest.Ptr + fRequest.Len, inSrcData + encodedBytesConsumed);
 
     // If bytesDecoded is 0, we will end up being in an endless loop. The
     // base64 must be corrupt, so let's just return an error and abort

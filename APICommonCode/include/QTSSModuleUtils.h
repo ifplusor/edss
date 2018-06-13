@@ -22,12 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       QTSSModuleUtils.h
-
-    Contains:   Utility routines for modules to use.
-                    
-*/
+/**
+ * @file QTSSModuleUtils.h
+ *
+ * Utility routines for modules to use.
+ */
 
 
 #ifndef _QTSS_MODULE_UTILS_H_
@@ -40,7 +39,7 @@
 
 class QTSSModuleUtils {
  public:
-  // compatibiltiy features for certain players
+  // compatibility features for certain players
 
   enum {
     kRequiresRTPInfoSeqAndTime = 0,
@@ -49,9 +48,7 @@ class QTSSModuleUtils {
     kDelayRTPStreamsUntilAfterRTSPResponse = 3,
   };
 
-  static void Initialize(QTSS_TextMessagesObject inMessages,
-                         QTSS_ServerObject inServer,
-                         QTSS_StreamRef inErrorLog);
+  static void Initialize(QTSS_TextMessagesObject inMessages, QTSS_ServerObject inServer, QTSS_StreamRef inErrorLog);
 
   // Read the complete contents of the file at inPath into the StrPtrLen.
   // This function allocates memory for the file data.
@@ -62,9 +59,7 @@ class QTSSModuleUtils {
 
   // If your module supports RTSP methods, call this function from your QTSS_Initialize
   // role to tell the server what those methods are.
-  static void SetupSupportedMethods(QTSS_Object inServer,
-                                    QTSS_RTSPMethod *inMethodArray,
-                                    UInt32 inNumMethods);
+  static void SetupSupportedMethods(QTSS_Object inServer, QTSS_RTSPMethod *inMethodArray, UInt32 inNumMethods);
 
   // Using a message out of the text messages dictionary is a common
   // way to log errors to the error log. Here is a function to
@@ -77,9 +72,7 @@ class QTSSModuleUtils {
                        char *inArg2 = NULL);
 
   static void LogErrorStr(QTSS_ErrorVerbosity inVerbosity, char *inMessage);
-  static void LogPrefErrorStr(QTSS_ErrorVerbosity inVerbosity,
-                              char *preference,
-                              char *inMessage);
+  static void LogPrefErrorStr(QTSS_ErrorVerbosity inVerbosity, char *preference, char *inMessage);
 
   // This function constructs a C-string of the full path to the file being requested.
   // You may opt to append an optional suffix, or pass in NULL. You are responsible
@@ -142,9 +135,7 @@ class QTSSModuleUtils {
 
   // Called by SendDescribeResponse to coalesce iovec to a buffer
   // Allocates memory - remember to delete it!
-  static char *CoalesceVectors(iovec *inVec,
-                               UInt32 inNumVectors,
-                               UInt32 inTotalLength);
+  static char *CoalesceVectors(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength);
 
   //
   // SEARCH FOR A SPECIFIC MODULE OBJECT
@@ -198,17 +189,14 @@ class QTSSModuleUtils {
   // allocated buffer with the attribute value inside it.
   //
   // Pass in NULL for the default value or an empty string if the default is not known.
-  static char *GetStringAttribute(QTSS_Object inObject,
-                                  char *inAttributeName,
-                                  char *inDefaultValue);
+  static char *GetStringAttribute(QTSS_Object inObject, char *inAttributeName, char *inDefaultValue);
 
   //
   // GET ATTR ID
   //
   // Given an attribute in an object, returns its attribute ID
   // or qtssIllegalAttrID if it isn't found.
-  static QTSS_AttributeID GetAttrID(QTSS_Object inObject,
-                                    char *inAttributeName);
+  static QTSS_AttributeID GetAttrID(QTSS_Object inObject, char *inAttributeName);
 
   //
   //
@@ -222,8 +210,7 @@ class QTSSModuleUtils {
   static char *GetMoviesRootDir_Copy(QTSS_RTSPRequestObject theRTSPRequest);
   static QTSS_UserProfileObject GetUserProfileObject(QTSS_RTSPRequestObject theRTSPRequest);
   static QTSS_AttrRights GetRights(QTSS_UserProfileObject theUserProfileObject);
-  static char *GetExtendedRights(QTSS_UserProfileObject theUserProfileObject,
-                                 UInt32 index);
+  static char *GetExtendedRights(QTSS_UserProfileObject theUserProfileObject, UInt32 index);
 
   static char *GetUserName_Copy(QTSS_UserProfileObject inUserProfile);
   static char **GetGroupsArray_Copy(QTSS_UserProfileObject inUserProfile,
@@ -268,6 +255,7 @@ class QTSSModuleUtils {
 
   //
   // Used in the implementation of the above functions
+
   static QTSS_AttributeID CheckAttributeDataType(QTSS_Object inObject,
                                                  char *inAttributeName,
                                                  QTSS_AttrDataType inType,

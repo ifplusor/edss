@@ -7,13 +7,7 @@
 #pragma comment(lib,"DbgHelp.lib")
 
 
-
-
 void CreateDumpFile(LPCSTR lpstrDumpFilePathName, EXCEPTION_POINTERS *pException);
-
-
-
-
 
 
 #endif

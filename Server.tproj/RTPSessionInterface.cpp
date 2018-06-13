@@ -228,14 +228,11 @@ QTSS_Error RTPSessionInterface::DoSessionSetupResponse(RTSPRequestInterface *inR
   // This function appends a session header to the SETUP response, and
   // checks to see if it is a 304 Not Modified. If it is, it sends the entire
   // response and returns an error
-  if (QTSServerInterface::GetServer()->GetPrefs()->GetRTSPTimeoutInSecs()
-      > 0)  // adv the timeout
-    inRequest->AppendSessionHeaderWithTimeout(this->GetValue(
-        qtssCliSesRTSPSessionID),
+  if (QTSServerInterface::GetServer()->GetPrefs()->GetRTSPTimeoutInSecs() > 0)  // adv the timeout
+    inRequest->AppendSessionHeaderWithTimeout(this->GetValue(qtssCliSesRTSPSessionID),
                                               QTSServerInterface::GetServer()->GetPrefs()->GetRTSPTimeoutAsString());
   else
-    inRequest->AppendSessionHeaderWithTimeout(this->GetValue(
-        qtssCliSesRTSPSessionID), NULL); // no timeout in resp.
+    inRequest->AppendSessionHeaderWithTimeout(this->GetValue(qtssCliSesRTSPSessionID), NULL); // no timeout in resp.
 
   if (inRequest->GetStatus() == qtssRedirectNotModified) {
     (void) inRequest->SendHeader();

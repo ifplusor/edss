@@ -143,9 +143,7 @@ QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo *inInfo, QTSS_Stan
   fLocalSDP.Delete();
   fLocalSDP.Ptr = inInfo->GetLocalSDP(&fLocalSDP.Len);
 
-  if (fStreamArray != nullptr) {
-    delete fStreamArray; // keep the array list synchronized with the source info.
-  }
+  delete fStreamArray; // keep the array list synchronized with the source info.
 
   // 音视频分为两个流,对于每个流,创建 ReflectorStream 对象。
   fStreamArray = new ReflectorStream *[fSourceInfo->GetNumStreams()];
@@ -185,10 +183,8 @@ void ReflectorSession::AddBroadcasterClientSession(QTSS_StandardRTSP_Params *inP
   for (UInt32 x = 0; x < fSourceInfo->GetNumStreams(); x++) {
     if (fStreamArray[x] != nullptr) {
       //s_printf("AddBroadcasterSession=%"   _U32BITARG_   "\n",inParams->inClientSession);
-      ((ReflectorSocket *) fStreamArray[x]->GetSocketPair()->GetSocketA())->AddBroadcasterSession(
-          inParams->inClientSession);
-      ((ReflectorSocket *) fStreamArray[x]->GetSocketPair()->GetSocketB())->AddBroadcasterSession(
-          inParams->inClientSession);
+      ((ReflectorSocket *) fStreamArray[x]->GetSocketPair()->GetSocketA())->AddBroadcasterSession(inParams->inClientSession);
+      ((ReflectorSocket *) fStreamArray[x]->GetSocketPair()->GetSocketB())->AddBroadcasterSession(inParams->inClientSession);
     }
   }
   fBroadcasterSession = inParams->inClientSession;
@@ -197,7 +193,7 @@ void ReflectorSession::AddBroadcasterClientSession(QTSS_StandardRTSP_Params *inP
 void ReflectorSession::AddOutput(ReflectorOutput *inOutput, bool isClient) {
   Assert(fSourceInfo->GetNumStreams() > 0);
 
-  // We need to make sure that this output goes into the same bucket for each ReflectorStream.
+  // We need to make sure that this output goes into the 'same bucket' for each ReflectorStream.
   SInt32 bucket = -1;
   SInt32 lastBucket = -1;
 
@@ -206,9 +202,9 @@ void ReflectorSession::AddOutput(ReflectorOutput *inOutput, bool isClient) {
     UInt32 x = 0;
     for (; x < fSourceInfo->GetNumStreams(); x++) {
       bucket = fStreamArray[x]->AddOutput(inOutput, bucket);
-      if (bucket == -1)   // If this output couldn't be added to this bucket,
+      if (bucket == -1) {  // If this output couldn't be added to this bucket,
         break;          // break and try again
-      else {
+      } else {
         lastBucket = bucket; // Remember the last successful bucket placement.
         if (isClient)
           fStreamArray[x]->IncEyeCount();
@@ -227,8 +223,9 @@ void ReflectorSession::AddOutput(ReflectorOutput *inOutput, bool isClient) {
       // Because there was an error, we need to start the whole process over again,
       // this time starting from a higher bucket
       lastBucket = bucket = lastBucket + 1;
-    } else
+    } else {
       break;
+    }
   }
   //(void)atomic_add(&fNumOutputs, 1);
   ++fNumOutputs;

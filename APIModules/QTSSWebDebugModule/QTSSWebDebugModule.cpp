@@ -36,7 +36,7 @@
 
 static QTSS_AttributeID sStateAttr = qtssIllegalAttrID;
 
-static StrPtrLen sRequestHeader("GET /debug HTTP");
+static CF::StrPtrLen sRequestHeader("GET /debug HTTP");
 
 #if MEMORY_DEBUGGING
 static char*        sResponseHeader = "HTTP/1.0 200 OK\r\nServer: TimeShare/1.0\r\nConnection: Close\r\nContent-Type: text/html\r\n\r\n";
@@ -69,10 +69,7 @@ QTSS_Error Register(QTSS_Register_Params *inParams) {
 
   // Register an attribute
   static char *sStateName = "QTSSWebDebugModuleState";
-  (void) QTSS_AddStaticAttribute(qtssRTSPRequestObjectType,
-                                 sStateName,
-                                 NULL,
-                                 qtssAttrDataTypeUInt32);
+  (void) QTSS_AddStaticAttribute(qtssRTSPRequestObjectType, sStateName, NULL, qtssAttrDataTypeUInt32);
   (void) QTSS_IDForAttr(qtssRTSPRequestObjectType, sStateName, &sStateAttr);
 
   // Tell the server our name!
@@ -85,11 +82,7 @@ QTSS_Error Register(QTSS_Register_Params *inParams) {
 QTSS_Error Filter(QTSS_Filter_Params *inParams) {
   UInt32 theLen = 0;
   char *theFullRequest = NULL;
-  (void) QTSS_GetValuePtr(inParams->inRTSPRequest,
-                          qtssRTSPReqFullRequest,
-                          0,
-                          (void **) &theFullRequest,
-                          &theLen);
+  (void) QTSS_GetValuePtr(inParams->inRTSPRequest, qtssRTSPReqFullRequest, 0, (void **) &theFullRequest, &theLen);
 
   if ((theFullRequest == NULL) || (theLen < sRequestHeader.Len))
     return QTSS_NoErr;

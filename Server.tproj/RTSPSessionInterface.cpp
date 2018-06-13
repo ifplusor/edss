@@ -45,33 +45,29 @@ std::atomic_uint RTSPSessionInterface::sSessionIDCounter{kFirstRTSPSessionID};
 bool                  RTSPSessionInterface::sDoBase64Decoding = true;
 UInt32 RTSPSessionInterface::sOptionsRequestBody[kMaxRandomDataSize / sizeof(UInt32)];
 
-QTSSAttrInfoDict::AttrInfo  RTSPSessionInterface::sAttributes[] =
-    {   /*fields:   fAttrName, fFuncPtr, fAttrDataType, fAttrPermission */
-        /* 0  */{"qtssRTSPSesID", nullptr, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 1  */{"qtssRTSPSesLocalAddr", SetupParams, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
-        /* 2  */{"qtssRTSPSesLocalAddrStr", SetupParams, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
-        /* 3  */{"qtssRTSPSesLocalDNS", SetupParams, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
-        /* 4  */{"qtssRTSPSesRemoteAddr", SetupParams, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
-        /* 5  */{"qtssRTSPSesRemoteAddrStr", SetupParams, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
-        /* 6  */{"qtssRTSPSesEventCntxt", nullptr, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 7  */{"qtssRTSPSesType", nullptr, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 8  */{"qtssRTSPSesStreamRef", nullptr, qtssAttrDataTypeQTSS_StreamRef, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 9  */{"qtssRTSPSesLastUserName", nullptr, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 10 */{"qtssRTSPSesLastUserPassword", nullptr, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 11 */{"qtssRTSPSesLastURLRealm", nullptr, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 12 */{"qtssRTSPSesLocalPort", SetupParams, qtssAttrDataTypeUInt16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
-        /* 13 */{"qtssRTSPSesRemotePort", SetupParams, qtssAttrDataTypeUInt16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
-        /* 14 */{"qtssRTSPSesLastDigestChallenge", nullptr, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe}
-    };
+QTSSAttrInfoDict::AttrInfo RTSPSessionInterface::sAttributes[] = {
+    /*fields:   fAttrName, fFuncPtr, fAttrDataType, fAttrPermission */
+    /* 0  */{"qtssRTSPSesID", nullptr, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 1  */{"qtssRTSPSesLocalAddr", SetupParams, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
+    /* 2  */{"qtssRTSPSesLocalAddrStr", SetupParams, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
+    /* 3  */{"qtssRTSPSesLocalDNS", SetupParams, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
+    /* 4  */{"qtssRTSPSesRemoteAddr", SetupParams, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
+    /* 5  */{"qtssRTSPSesRemoteAddrStr", SetupParams, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
+    /* 6  */{"qtssRTSPSesEventCntxt", nullptr, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 7  */{"qtssRTSPSesType", nullptr, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 8  */{"qtssRTSPSesStreamRef", nullptr, qtssAttrDataTypeQTSS_StreamRef, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 9  */{"qtssRTSPSesLastUserName", nullptr, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 10 */{"qtssRTSPSesLastUserPassword", nullptr, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 11 */{"qtssRTSPSesLastURLRealm", nullptr, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 12 */{"qtssRTSPSesLocalPort", SetupParams, qtssAttrDataTypeUInt16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
+    /* 13 */{"qtssRTSPSesRemotePort", SetupParams, qtssAttrDataTypeUInt16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
+    /* 14 */{"qtssRTSPSesLastDigestChallenge", nullptr, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe}
+};
 
 void RTSPSessionInterface::Initialize() {
+  QTSSDictionaryMap *theMap = QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kRTSPSessionDictIndex);
   for (UInt32 x = 0; x < qtssRTSPSesNumParams; x++)
-    QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kRTSPSessionDictIndex)->
-        SetAttribute(x,
-                     sAttributes[x].fAttrName,
-                     sAttributes[x].fFuncPtr,
-                     sAttributes[x].fAttrDataType,
-                     sAttributes[x].fAttrPermission);
+    theMap->SetAttribute( x, sAttributes[x].fAttrName, sAttributes[x].fFuncPtr, sAttributes[x].fAttrDataType, sAttributes[x].fAttrPermission);
 
   // DJM PROTOTYPE
   ::srand((unsigned int) CF::Core::Time::Microseconds());
@@ -151,8 +147,7 @@ void RTSPSessionInterface::DecrementObjectHolderCount() {
     this->Signal(kKillEvent);
 }
 
-QTSS_Error RTSPSessionInterface::Write(void *inBuffer, UInt32 inLength,
-                                       UInt32 *outLenWritten, UInt32 inFlags) {
+QTSS_Error RTSPSessionInterface::Write(void *inBuffer, UInt32 inLength, UInt32 *outLenWritten, UInt32 inFlags) {
   UInt32 sendType = RTSPResponseStream::kDontBuffer;
   if ((inFlags & qtssWriteFlagsBufferData) != 0)
     sendType = RTSPResponseStream::kAlwaysBuffer;
@@ -163,15 +158,9 @@ QTSS_Error RTSPSessionInterface::Write(void *inBuffer, UInt32 inLength,
   return fOutputStream.WriteV(theVec, 2, inLength, outLenWritten, sendType);
 }
 
-QTSS_Error RTSPSessionInterface::WriteV(iovec *inVec,
-                                        UInt32 inNumVectors,
-                                        UInt32 inTotalLength,
-                                        UInt32 *outLenWritten) {
-  return fOutputStream.WriteV(inVec,
-                              inNumVectors,
-                              inTotalLength,
-                              outLenWritten,
-                              RTSPResponseStream::kDontBuffer);
+QTSS_Error RTSPSessionInterface::
+WriteV(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength, UInt32 *outLenWritten) {
+  return fOutputStream.WriteV(inVec, inNumVectors, inTotalLength, outLenWritten, RTSPResponseStream::kDontBuffer);
 }
 
 QTSS_Error RTSPSessionInterface::Read(void *ioBuffer, UInt32 inLength, UInt32 *outLenRead) {

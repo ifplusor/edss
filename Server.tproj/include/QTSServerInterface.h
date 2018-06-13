@@ -320,13 +320,10 @@ class QTSServerInterface : public QTSSDictionary {
   static QTSSModule *GetModule(QTSSModule::RoleIndex inRole, UInt32 inIndex) {
     Assert(inRole < QTSSModule::kNumRoles);
     Assert(inIndex < sNumModulesInRole[inRole]);
-    if (inRole >= QTSSModule::kNumRoles) //index out of bounds, shouldn't happen
-    {
+    if (inRole >= QTSSModule::kNumRoles) { //index out of bounds, shouldn't happen
       return NULL;
     }
-    if (inIndex
-        >= sNumModulesInRole[inRole]) //index out of bounds, shouldn't happen
-    {
+    if (inIndex >= sNumModulesInRole[inRole]) { //index out of bounds, shouldn't happen
       return NULL;
     }
     return sModuleArray[inRole][inIndex];
@@ -334,11 +331,8 @@ class QTSServerInterface : public QTSSDictionary {
 
   //
   // We need to override this. This is how we implement the QTSS_StateChange_Role
-  virtual void SetValueComplete(UInt32 inAttrIndex,
-                                QTSSDictionaryMap *inMap,
-                                UInt32 inValueIndex,
-                                void *inNewValue,
-                                UInt32 inNewValueLen);
+  virtual void SetValueComplete(UInt32 inAttrIndex, QTSSDictionaryMap *inMap, UInt32 inValueIndex,
+                                void *inNewValue, UInt32 inNewValueLen);
 
   //
   // ERROR LOGGING

@@ -71,8 +71,7 @@ bool XMLParser::ParseFile(char *errorBuffer, int errorBufferSize) {
   StringParser theParser(&theDataPtr);
 
   fRootTag = new XMLTag();
-  bool result =
-      fRootTag->ParseTag(&theParser, fVerifier, errorBuffer, errorBufferSize);
+  bool result = fRootTag->ParseTag(&theParser, fVerifier, errorBuffer, errorBufferSize);
   if (!result) {
     // got error parsing file
     delete fRootTag;
@@ -197,27 +196,19 @@ UInt8 XMLTag::sNonNameMask[] =
         1, 1, 1, 1, 1, 1             //250-255
     };
 
-XMLTag::XMLTag() :
-    fTag(NULL),
-    fValue(NULL),
-    fElem(NULL) {
+XMLTag::XMLTag() : fTag(NULL), fValue(NULL), fElem(NULL) {
   fElem = this;
 }
 
-XMLTag::XMLTag(char *tagName) :
-    fTag(NULL),
-    fValue(NULL),
-    fElem(NULL) {
+XMLTag::XMLTag(char *tagName) : fTag(NULL), fValue(NULL), fElem(NULL) {
   fElem = this;
   StrPtrLen temp(tagName);
   fTag = temp.GetAsCString();
 }
 
 XMLTag::~XMLTag() {
-  if (fTag)
-    delete[] fTag;
-  if (fValue)
-    delete[] fValue;
+  if (fTag) delete[] fTag;
+  if (fValue) delete[] fValue;
 
   QueueElem *elem;
   while ((elem = fAttributes.DeQueue()) != NULL) {
@@ -235,44 +226,34 @@ XMLTag::~XMLTag() {
 }
 
 void XMLTag::ConsumeIfComment(StringParser *parser) {
-  if ((parser->GetDataRemaining() > 2) && ((*parser)[1] == '-')
-      && ((*parser)[2] == '-')) {
+  if ((parser->GetDataRemaining() > 2) && ((*parser)[0] == '!') && ((*parser)[1] == '-') && ((*parser)[2] == '-')) {
     // this is a comment, so skip to end of comment
-    parser->ConsumeLength(NULL, 2); // skip '--'
+    parser->ConsumeLength(NULL, 3); // skip '!--'
 
     // look for -->
-    while ((parser->GetDataRemaining() > 2) && ((parser->PeekFast() != '-') ||
-        ((*parser)[1] != '-') || ((*parser)[2] != '>'))) {
+    while ((parser->GetDataRemaining() > 2) &&
+        ((parser->PeekFast() != '-') || ((*parser)[1] != '-') || ((*parser)[2] != '>'))) {
       if (parser->PeekFast() == '-') parser->ConsumeLength(NULL, 1);
       parser->ConsumeUntil(NULL, '-');
     }
 
     if (parser->GetDataRemaining() > 2)
-      parser->ConsumeLength(NULL,
-                            3); // consume -->
+      parser->ConsumeLength(NULL, 3); // consume -->
   }
 }
 
-bool XMLTag::ParseTag(StringParser *parser,
-                      DTDVerifier *verifier,
-                      char *errorBuffer,
-                      int errorBufferSize) {
+bool XMLTag::ParseTag(StringParser *parser, DTDVerifier *verifier, char *errorBuffer, int errorBufferSize) {
   while (true) {
     if (!parser->GetThru(NULL, '<')) {
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Couldn't find a valid tag");
+        s_snprintf(errorBuffer, errorBufferSize, "Couldn't find a valid tag");
       return false;   // couldn't find beginning of tag
     }
 
     char c = parser->PeekFast();
     if (c == '/') {
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "End tag with no begin tag on line %d",
-                      parser->GetCurrentLineNumber());
+        s_snprintf(errorBuffer, errorBufferSize, "End tag with no begin tag on line %d", parser->GetCurrentLineNumber());
       return false;   // we shouldn't be seeing a close tag here
     }
 
@@ -289,17 +270,12 @@ bool XMLTag::ParseTag(StringParser *parser,
   parser->ConsumeUntil(&temp, sNonNameMask);
   if (temp.Len == 0) {
     if (errorBuffer != NULL) {
-      if (parser->GetDataRemaining() == 0)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Unexpected end of file on line %d",
-                      parser->GetCurrentLineNumber());
-      else
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Unexpected character (%c) on line %d",
-                      parser->PeekFast(),
-                      parser->GetCurrentLineNumber());
+      if (parser->GetDataRemaining() == 0) {
+        s_snprintf(errorBuffer, errorBufferSize, "Unexpected end of file on line %d", parser->GetCurrentLineNumber());
+      } else {
+        s_snprintf(errorBuffer, errorBufferSize, "Unexpected character (%c) on line %d",
+                   parser->PeekFast(), parser->GetCurrentLineNumber());
+      }
     }
     return false;   // bad file
   }
@@ -314,17 +290,12 @@ bool XMLTag::ParseTag(StringParser *parser,
     parser->ConsumeUntil(&temp, sNonNameMask);
     if (temp.Len == 0) {
       if (errorBuffer != NULL) {
-        if (parser->GetDataRemaining() == 0)
-          s_snprintf(errorBuffer,
-                        errorBufferSize,
-                        "Unexpected end of file on line %d",
-                        parser->GetCurrentLineNumber());
-        else
-          s_snprintf(errorBuffer,
-                        errorBufferSize,
-                        "Unexpected character (%c) on line %d",
-                        parser->PeekFast(),
-                        parser->GetCurrentLineNumber());
+        if (parser->GetDataRemaining() == 0) {
+          s_snprintf(errorBuffer, errorBufferSize, "Unexpected end of file on line %d", parser->GetCurrentLineNumber());
+        } else {
+          s_snprintf(errorBuffer, errorBufferSize, "Unexpected character (%c) on line %d",
+                     parser->PeekFast(), parser->GetCurrentLineNumber());
+        }
       }
       return false;   // bad file
     }
@@ -333,20 +304,14 @@ bool XMLTag::ParseTag(StringParser *parser,
 
     if (!parser->Expect('=')) {
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Missing '=' after attribute %s on line %d",
-                      attr->fAttrName,
-                      parser->GetCurrentLineNumber());
+        s_snprintf(errorBuffer, errorBufferSize, "Missing '=' after attribute %s on line %d",
+                      attr->fAttrName, parser->GetCurrentLineNumber());
       return false;   // bad attribute specification
     }
     if (!parser->Expect('"')) {
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Attribute %s value not in quotes on line %d",
-                      attr->fAttrName,
-                      parser->GetCurrentLineNumber());
+        s_snprintf(errorBuffer, errorBufferSize, "Attribute %s value not in quotes on line %d",
+                   attr->fAttrName, parser->GetCurrentLineNumber());
       return false;   // bad attribute specification
     }
 
@@ -354,34 +319,22 @@ bool XMLTag::ParseTag(StringParser *parser,
     attr->fAttrValue = temp.GetAsCString();
     if (!parser->Expect('"')) {
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Attribute %s value not in quotes on line %d",
-                      attr->fAttrName,
-                      parser->GetCurrentLineNumber());
+        s_snprintf(errorBuffer, errorBufferSize, "Attribute %s value not in quotes on line %d",
+                   attr->fAttrName, parser->GetCurrentLineNumber());
       return false;   // bad attribute specification
     }
 
     if (verifier && !verifier->IsValidAttributeName(fTag, attr->fAttrName)) {
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Attribute %s not allowed in tag %s on line %d",
-                      attr->fAttrName,
-                      fTag,
-                      parser->GetCurrentLineNumber());
+        s_snprintf(errorBuffer, errorBufferSize, "Attribute %s not allowed in tag %s on line %d",
+                   attr->fAttrName, fTag, parser->GetCurrentLineNumber());
       return false;   // bad attribute specification
     }
 
-    if (verifier && !verifier->IsValidAttributeValue(fTag,
-                                                     attr->fAttrName,
-                                                     attr->fAttrValue)) {
+    if (verifier && !verifier->IsValidAttributeValue(fTag, attr->fAttrName, attr->fAttrValue)) {
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Bad value for attribute %s on line %d",
-                      attr->fAttrName,
-                      parser->GetCurrentLineNumber());
+        s_snprintf(errorBuffer, errorBufferSize, "Bad value for attribute %s on line %d",
+                   attr->fAttrName, parser->GetCurrentLineNumber());
       return false;   // bad attribute specification
     }
 
@@ -393,10 +346,7 @@ bool XMLTag::ParseTag(StringParser *parser,
     parser->Expect('/');
     if (!parser->Expect('>')) {
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "'>' must follow '/' on line %d",
-                      parser->GetCurrentLineNumber());
+        s_snprintf(errorBuffer, errorBufferSize, "'>' must follow '/' on line %d", parser->GetCurrentLineNumber());
       return false;   // bad attribute specification
     }
 
@@ -405,47 +355,34 @@ bool XMLTag::ParseTag(StringParser *parser,
 
   if (!parser->Expect('>')) {
     if (errorBuffer != NULL)
-      s_snprintf(errorBuffer,
-                    errorBufferSize,
-                    "Bad format for tag <%s> on line %d",
-                    fTag,
-                    parser->GetCurrentLineNumber());
+      s_snprintf(errorBuffer, errorBufferSize, "Bad format for tag <%s> on line %d",
+                 fTag, parser->GetCurrentLineNumber());
     return false;   // bad attribute specification
   }
 
   while (true) {
     parser->ConsumeUntil(&temp, '<');   // this is either value or whitespace
-    if (parser->GetDataRemaining() < 4) {
+    if (parser->GetDataRemaining() < 4) { // why 4?
       if (errorBuffer != NULL)
-        s_snprintf(errorBuffer,
-                      errorBufferSize,
-                      "Reached end of file without end for tag <%s> declared on line %d",
-                      fTag,
-                      tagStartLine);
+        s_snprintf(errorBuffer, errorBufferSize, "Reached end of file without end for tag <%s> declared on line %d",
+                   fTag, tagStartLine);
       return false;
     }
     if ((*parser)[1] == '/') {
       // we'll only assign a value if there were no embedded tags
-      if (fEmbeddedTags.GetLength() == 0
-          && (!verifier || verifier->CanHaveValue(fTag)))
+      if (fEmbeddedTags.GetLength() == 0 && (!verifier || verifier->CanHaveValue(fTag))) {
         fValue = temp.GetAsCString();
-      else {
+      } else {
         // otherwise this needs to have been just whitespace
         StringParser tempParser(&temp);
         tempParser.ConsumeWhitespace();
         if (tempParser.GetDataRemaining() > 0) {
           if (errorBuffer) {
             if (fEmbeddedTags.GetLength() > 0)
-              s_snprintf(errorBuffer,
-                            errorBufferSize,
-                            "Unexpected text outside of tag on line %d",
-                            tagStartLine);
+              s_snprintf(errorBuffer, errorBufferSize, "Unexpected text outside of tag on line %d", tagStartLine);
             else
-              s_snprintf(errorBuffer,
-                            errorBufferSize,
-                            "Tag <%s> on line %d not allowed to have data",
-                            fTag,
-                            tagStartLine);
+              s_snprintf(errorBuffer, errorBufferSize, "Tag <%s> on line %d not allowed to have data",
+                         fTag, tagStartLine);
           }
         }
       }
@@ -461,12 +398,8 @@ bool XMLTag::ParseTag(StringParser *parser,
 
       if (verifier && !verifier->IsValidSubtag(fTag, tag->GetTagName())) {
         if (errorBuffer != NULL)
-          s_snprintf(errorBuffer,
-                        errorBufferSize,
-                        "Tag %s not allowed in tag %s on line %d",
-                        tag->GetTagName(),
-                        fTag,
-                        parser->GetCurrentLineNumber());
+          s_snprintf(errorBuffer, errorBufferSize, "Tag %s not allowed in tag %s on line %d",
+                     tag->GetTagName(), fTag, parser->GetCurrentLineNumber());
         return false;   // bad attribute specification
       }
     } else {
@@ -480,24 +413,15 @@ bool XMLTag::ParseTag(StringParser *parser,
   if (!temp.Equal(fTag)) {
     char *newTag = temp.GetAsCString();
     if (errorBuffer != NULL)
-      s_snprintf(errorBuffer,
-                    errorBufferSize,
-                    "End tag </%s> on line %d doesn't match tag <%s> declared on line %d",
-                    newTag,
-                    parser->GetCurrentLineNumber(),
-                    fTag,
-                    tagStartLine);
+      s_snprintf(errorBuffer, errorBufferSize, "End tag </%s> on line %d doesn't match tag <%s> declared on line %d",
+                 newTag, parser->GetCurrentLineNumber(), fTag, tagStartLine);
     delete newTag;
     return false;   // bad attribute specification
   }
 
   if (!parser->GetThru(NULL, '>')) {
     if (errorBuffer != NULL)
-      s_snprintf(errorBuffer,
-                    errorBufferSize,
-                    "Couldn't find end of tag <%s> declared on line %d",
-                    fTag,
-                    tagStartLine);
+      s_snprintf(errorBuffer, errorBufferSize, "Couldn't find end of tag <%s> declared on line %d", fTag, tagStartLine);
     return false;   // bad attribute specification
   }
 
@@ -506,8 +430,7 @@ bool XMLTag::ParseTag(StringParser *parser,
 
 char *XMLTag::GetAttributeValue(const char *attrName) {
   for (QueueIter iter(&fAttributes); !iter.IsDone(); iter.Next()) {
-    XMLAttribute
-        *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
+    XMLAttribute *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
     if (!strcmp(attr->fAttrName, attrName))
       return attr->fAttrValue;
   }
@@ -549,9 +472,7 @@ XMLTag *XMLTag::GetEmbeddedTagByName(const char *tagName, const UInt32 index) {
   return result;
 }
 
-XMLTag *XMLTag::GetEmbeddedTagByAttr(const char *attrName,
-                                     const char *attrValue,
-                                     const UInt32 index) {
+XMLTag *XMLTag::GetEmbeddedTagByAttr(const char *attrName, const char *attrValue, const UInt32 index) {
   if (fEmbeddedTags.GetLength() <= index)
     return NULL;
 
@@ -559,8 +480,7 @@ XMLTag *XMLTag::GetEmbeddedTagByAttr(const char *attrName,
   UInt32 curIndex = 0;
   for (QueueIter iter(&fEmbeddedTags); !iter.IsDone(); iter.Next()) {
     XMLTag *temp = (XMLTag *) iter.GetCurrent()->GetEnclosingObject();
-    if ((temp->GetAttributeValue(attrName) != NULL)
-        && (!strcmp(temp->GetAttributeValue(attrName), attrValue))) {
+    if ((temp->GetAttributeValue(attrName) != NULL) && (!strcmp(temp->GetAttributeValue(attrName), attrValue))) {
       if (curIndex == index) {
         result = temp;
         break;
@@ -573,10 +493,8 @@ XMLTag *XMLTag::GetEmbeddedTagByAttr(const char *attrName,
   return result;
 }
 
-XMLTag *XMLTag::GetEmbeddedTagByNameAndAttr(const char *tagName,
-                                            const char *attrName,
-                                            const char *attrValue,
-                                            const UInt32 index) {
+XMLTag *XMLTag::
+GetEmbeddedTagByNameAndAttr(const char *tagName, const char *attrName, const char *attrValue, const UInt32 index) {
   if (fEmbeddedTags.GetLength() <= index)
     return NULL;
 
@@ -584,8 +502,8 @@ XMLTag *XMLTag::GetEmbeddedTagByNameAndAttr(const char *tagName,
   UInt32 curIndex = 0;
   for (QueueIter iter(&fEmbeddedTags); !iter.IsDone(); iter.Next()) {
     XMLTag *temp = (XMLTag *) iter.GetCurrent()->GetEnclosingObject();
-    if (!strcmp(temp->GetTagName(), tagName)
-        && (temp->GetAttributeValue(attrName) != NULL) &&
+    if (!strcmp(temp->GetTagName(), tagName) &&
+        (temp->GetAttributeValue(attrName) != NULL) &&
         (!strcmp(temp->GetAttributeValue(attrName), attrValue))) {
       if (curIndex == index) {
         result = temp;
@@ -611,8 +529,7 @@ void XMLTag::AddAttribute(char *attrName, char *attrValue) {
 
 void XMLTag::RemoveAttribute(char *attrName) {
   for (QueueIter iter(&fAttributes); !iter.IsDone(); iter.Next()) {
-    XMLAttribute
-        *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
+    XMLAttribute *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
     if (!strcmp(attr->fAttrName, attrName)) {
       fAttributes.Remove(&attr->fElem);
       delete attr;
@@ -646,9 +563,9 @@ void XMLTag::SetValue(char *value) {
   if (fValue != NULL)
     delete fValue;
 
-  if (value == NULL)
+  if (value == NULL) {
     fValue = NULL;
-  else {
+  } else {
     StrPtrLen temp(value);
     fValue = temp.GetAsCString();
   }
@@ -662,8 +579,7 @@ void XMLTag::FormatData(ResizeableStringFormatter *formatter, UInt32 indent) {
   if (fAttributes.GetLength() > 0) {
     formatter->PutChar(' ');
     for (QueueIter iter(&fAttributes); !iter.IsDone(); iter.Next()) {
-      XMLAttribute
-          *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
+      XMLAttribute *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
       formatter->Put(attr->fAttrName);
       formatter->Put("=\"");
       formatter->Put(attr->fAttrValue);
@@ -691,15 +607,11 @@ void XMLTag::FormatData(ResizeableStringFormatter *formatter, UInt32 indent) {
   formatter->Put(kEOLString);
 }
 
-XMLAttribute::XMLAttribute()
-    : fAttrName(NULL),
-      fAttrValue(NULL) {
+XMLAttribute::XMLAttribute() : fAttrName(NULL), fAttrValue(NULL) {
   fElem = this;
 }
 
 XMLAttribute::~XMLAttribute() {
-  if (fAttrName)
-    delete[] fAttrName;
-  if (fAttrValue)
-    delete[] fAttrValue;
+  if (fAttrName) delete[] fAttrName;
+  if (fAttrValue) delete[] fAttrValue;
 }

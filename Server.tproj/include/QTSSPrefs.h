@@ -102,8 +102,7 @@ class QTSSPrefs : public QTSSDictionary {
 
   //
   // Completion routines for SetValue and RemoveValue write back to the config source
-  virtual void RemoveValueComplete(UInt32 inAttrIndex, QTSSDictionaryMap *inMap,
-                                   UInt32 inValueIndex);
+  virtual void RemoveValueComplete(UInt32 inAttrIndex, QTSSDictionaryMap *inMap, UInt32 inValueIndex);
 
   virtual void SetValueComplete(UInt32 inAttrIndex,
                                 QTSSDictionaryMap *inMap,

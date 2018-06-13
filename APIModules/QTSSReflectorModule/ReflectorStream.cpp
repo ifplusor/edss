@@ -84,20 +84,25 @@ void ReflectorStream::Register() {
 
 void ReflectorStream::Initialize(QTSS_ModulePrefsObject inPrefs) {
 
-  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_bucket_offset_delay_msec", qtssAttrDataTypeUInt32, &ReflectorStream::sBucketDelayInMsec,
-                                &sDefaultBucketDelayInMsec, sizeof(sBucketDelayInMsec));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_bucket_offset_delay_msec", qtssAttrDataTypeUInt32,
+                                &ReflectorStream::sBucketDelayInMsec, &sDefaultBucketDelayInMsec,
+                                sizeof(sBucketDelayInMsec));
 
-  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_buffer_size_sec", qtssAttrDataTypeUInt32, &ReflectorStream::sOverBufferInSec,
-                                &sDefaultOverBufferInSec, sizeof(sDefaultOverBufferInSec));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_buffer_size_sec", qtssAttrDataTypeUInt32,
+                                &ReflectorStream::sOverBufferInSec, &sDefaultOverBufferInSec,
+                                sizeof(sDefaultOverBufferInSec));
 
-  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_use_in_packet_receive_time", qtssAttrDataTypeBool16, &ReflectorStream::sUsePacketReceiveTime,
-                                &sDefaultUsePacketReceiveTime, sizeof(sDefaultUsePacketReceiveTime));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_use_in_packet_receive_time", qtssAttrDataTypeBool16,
+                                &ReflectorStream::sUsePacketReceiveTime, &sDefaultUsePacketReceiveTime,
+                                sizeof(sDefaultUsePacketReceiveTime));
 
-  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_in_packet_max_receive_sec", qtssAttrDataTypeUInt32, &ReflectorStream::sMaxFuturePacketSec,
-                                &sDefaultMaxFuturePacketTimeSec, sizeof(sDefaultMaxFuturePacketTimeSec));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_in_packet_max_receive_sec", qtssAttrDataTypeUInt32,
+                                &ReflectorStream::sMaxFuturePacketSec, &sDefaultMaxFuturePacketTimeSec,
+                                sizeof(sDefaultMaxFuturePacketTimeSec));
 
-  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_rtp_info_offset_msec", qtssAttrDataTypeUInt32, &ReflectorStream::sFirstPacketOffsetMsec,
-                                &sDefaultFirstPacketOffsetMsec, sizeof(sDefaultFirstPacketOffsetMsec));
+  QTSSModuleUtils::GetAttribute(inPrefs, "reflector_rtp_info_offset_msec", qtssAttrDataTypeUInt32,
+                                &ReflectorStream::sFirstPacketOffsetMsec, &sDefaultFirstPacketOffsetMsec,
+                                sizeof(sDefaultFirstPacketOffsetMsec));
 
   ReflectorStream::sOverBufferInMsec = sOverBufferInSec * 1000;
   ReflectorStream::sMaxFuturePacketMSec = sMaxFuturePacketSec * 1000;
@@ -106,8 +111,7 @@ void ReflectorStream::Initialize(QTSS_ModulePrefsObject inPrefs) {
     ReflectorStream::sMaxPacketAgeMSec = 10000;
 }
 
-void ReflectorStream::GenerateSourceID(SourceInfo::StreamInfo *inInfo,
-                                       char *ioBuffer) {
+void ReflectorStream::GenerateSourceID(SourceInfo::StreamInfo *inInfo, char *ioBuffer) {
 
   ::memcpy(ioBuffer, &inInfo->fSrcIPAddr, sizeof(inInfo->fSrcIPAddr));
   ::memcpy(&ioBuffer[sizeof(inInfo->fSrcIPAddr)], &inInfo->fPort, sizeof(inInfo->fPort));
@@ -237,14 +241,14 @@ ReflectorStream::~ReflectorStream() {
 
 void ReflectorStream::AllocateBucketArray(UInt32 inNumBuckets) {
   Bucket *oldArray = fOutputArray;
-  //allocate the 2-dimensional array
+  // allocate the 2-dimensional array
   fOutputArray = new Bucket[inNumBuckets];
   for (UInt32 x = 0; x < inNumBuckets; x++) {
     fOutputArray[x] = new ReflectorOutput *[sBucketSize];
     ::memset(fOutputArray[x], 0, sizeof(ReflectorOutput *) * sBucketSize);
   }
 
-  //copy over the old information if there was an old array
+  // copy over the old information if there was an old array
   if (oldArray != NULL) {
     Assert(inNumBuckets > fNumBuckets);
     for (UInt32 y = 0; y < fNumBuckets; y++) {
@@ -297,7 +301,7 @@ SInt32 ReflectorStream::FindBucket() {
   if (fNumElements == (sBucketSize * fNumBuckets))
     this->AllocateBucketArray(fNumBuckets * 2);
 
-  //find the first open spot in the array
+  // find the first open spot in the array
   for (SInt32 putInThisBucket = 0; (UInt32) putInThisBucket < fNumBuckets; putInThisBucket++) {
     for (UInt32 y = 0; y < sBucketSize; y++)
       if (fOutputArray[putInThisBucket][y] == NULL)

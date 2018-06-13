@@ -161,15 +161,12 @@ char *SDPSourceInfo::GetLocalSDP(UInt32 *newSDPLen) {
   }
 
   if ((trackIndex > 0) && (!hasControlLine)) {
-    s_sprintf(trackIndexBuffer,
-                 "a=control:trackID=%" _S32BITARG_ "\r\n",
-                 trackIndex);
+    s_sprintf(trackIndexBuffer, "a=control:trackID=%" _S32BITARG_ "\r\n", trackIndex);
     localSDPFormatter.Put(trackIndexBuffer, ::strlen(trackIndexBuffer));
   }
   *newSDPLen = (UInt32) localSDPFormatter.GetCurrentOffset();
 
-  StrPtrLen theSDPStr(localSDP,
-                      *newSDPLen);//localSDP is not 0 terminated so initialize theSDPStr with the len.
+  StrPtrLen theSDPStr(localSDP, *newSDPLen);//localSDP is not 0 terminated so initialize theSDPStr with the len.
   SDPContainer rawSDPContainer;
   (void) rawSDPContainer.SetSDPBuffer(&theSDPStr);
   SDPLineSorter sortedSDP(&rawSDPContainer);

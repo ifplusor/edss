@@ -48,8 +48,7 @@ class RTSPResponseStream : public CF::ResizeableStringFormatter {
   // This object provides some flow control buffering services.
   // It also refreshes the timeout whenever there is a successful write
   // on the socket.
-  RTSPResponseStream(CF::Net::TCPSocket *inSocket,
-                     CF::Thread::TimeoutTask *inTimeoutTask)
+  RTSPResponseStream(CF::Net::TCPSocket *inSocket, CF::Thread::TimeoutTask *inTimeoutTask)
       : ResizeableStringFormatter(fOutputBuf, kOutputBufferSizeInBytes),
         fSocket(inSocket),
         fBytesSentInBuffer(0),
@@ -81,8 +80,7 @@ class RTSPResponseStream : public CF::ResizeableStringFormatter {
     kAlwaysBuffer = 2
   };
 
-  QTSS_Error WriteV(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength,
-                    UInt32 *outLengthSent, UInt32 inSendType);
+  QTSS_Error WriteV(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength, UInt32 *outLengthSent, UInt32 inSendType);
 
   // Flushes any buffered data to the socket. If all data could be sent,
   // this returns QTSS_NoErr, otherwise, it returns EWOULDBLOCK

@@ -12,6 +12,7 @@
 #include <QTSS.h>
 #include <QTSServer.h>
 
+
 class EDSS : public CF::CFConfigure {
  public:
   static EDSS *StartServer(XMLPrefsParser *inPrefsSource,
@@ -24,7 +25,14 @@ class EDSS : public CF::CFConfigure {
                            UInt32 debugOptions,
                            const char *sAbsolutePath);
 
-  EDSS();
+  EDSS(XMLPrefsParser *inPrefsSource,
+       PrefsSource *inMessagesSource,
+       UInt16 inPortOverride,
+       QTSS_ServerState inInitialState,
+       bool inDontFork,
+       UInt32 debugLevel,
+       UInt32 debugOptions,
+       const char *sAbsolutePath);
   ~EDSS() override;
 
   //
@@ -34,12 +42,12 @@ class EDSS : public CF::CFConfigure {
   CF_Error AfterConfigThreads(UInt32 numThreads) override;
   CF_Error AfterConfigFramework() override;
   CF_Error StartupCustomServices() override;
+  CF_Error DoIdle() override;
 
   //
   // User Settings
 
   char *GetPersonalityUser() override;
-
   char *GetPersonalityGroup() override;
 
   //
@@ -52,8 +60,31 @@ class EDSS : public CF::CFConfigure {
   // Http Server Settings
 
  private:
-  QTSS_ServerState theServerState;
+  //
+  // Member fuctions
 
+  void LogStatus(QTSS_ServerState theServerState);
+  bool PrintHeader(UInt32 loopCount);
+  bool PrintLine(UInt32 loopCount);
+  void PrintStatus(bool printHeader);
+  void DebugLevel_1(FILE *statusFile, FILE *stdOut, bool printHeader);
+  FILE *LogDebugEnabled();
+  FILE *DisplayDebugEnabled();
+  void DebugStatus(UInt32 debugLevel, bool printHeader);
+
+ private:
+  XMLPrefsParser *prefsSource;
+  PrefsSource *messagesSource;
+  UInt16 portOverride;
+  QTSS_ServerState initialState;
+  bool dontFork;
+  UInt32 debugLevel;
+  UInt32 debugOptions;
+  char *sAbsolutePath;
+
+  UInt32 loopCount;
+
+  // global member
   static QTSServer *sServer;
   static int sStatusUpdateInterval;
   static bool sHasPID;

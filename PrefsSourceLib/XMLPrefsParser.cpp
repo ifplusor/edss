@@ -98,10 +98,7 @@ ContainerRef XMLPrefsParser::GetRefForModule(char *inModuleName, bool create) {
   if (inModuleName == NULL)
     return GetRefForServer();
 
-  ContainerRef result = GetConfigurationTag()->GetEmbeddedTagByNameAndAttr(
-      kModule,
-      kNameAttr,
-      inModuleName);
+  ContainerRef result = GetConfigurationTag()->GetEmbeddedTagByNameAndAttr(kModule, kNameAttr, inModuleName);
   if (result == NULL) {
     result = new XMLTag(kModule);
     result->AddAttribute(kNameAttr, (char *) inModuleName);
@@ -155,10 +152,8 @@ char *XMLPrefsParser::GetPrefValueByIndex(ContainerRef container,
   return GetPrefValueByRef(pref, inValueIndex, outPrefName, outDataType);
 }
 
-char *XMLPrefsParser::GetPrefValueByRef(ContainerRef pref,
-                                        const UInt32 inValueIndex,
-                                        char **outPrefName,
-                                        char **outDataType) {
+char *XMLPrefsParser::
+GetPrefValueByRef(ContainerRef pref, const UInt32 inValueIndex, char **outPrefName, char **outDataType) {
   if (outPrefName != NULL)
     *outPrefName = pref->GetAttributeValue(kNameAttr);
   if (outDataType != NULL) {
@@ -180,8 +175,7 @@ char *XMLPrefsParser::GetPrefValueByRef(ContainerRef pref,
       return value->GetValue();
   }
 
-  if (!strcmp(pref->GetTagName(), kObject)
-      || !strcmp(pref->GetTagName(), kObjectList))
+  if (!strcmp(pref->GetTagName(), kObject) || !strcmp(pref->GetTagName(), kObjectList))
     *outDataType = "QTSS_Object";
 
   return NULL;
@@ -197,18 +191,15 @@ ContainerRef XMLPrefsParser::GetObjectValue(ContainerRef pref,
   return NULL;
 }
 
-ContainerRef XMLPrefsParser::GetPrefRefByName(ContainerRef container,
-                                              const char *inPrefName) {
+ContainerRef XMLPrefsParser::GetPrefRefByName(ContainerRef container, const char *inPrefName) {
   return container->GetEmbeddedTagByAttr(kNameAttr, inPrefName);
 }
 
-ContainerRef XMLPrefsParser::GetPrefRefByIndex(ContainerRef container,
-                                               const UInt32 inPrefsIndex) {
+ContainerRef XMLPrefsParser::GetPrefRefByIndex(ContainerRef container, const UInt32 inPrefsIndex) {
   return container->GetEmbeddedTag(inPrefsIndex);
 }
 
-ContainerRef XMLPrefsParser::AddPref(ContainerRef container, char *inPrefName,
-                                     char *inPrefDataType) {
+ContainerRef XMLPrefsParser::AddPref(ContainerRef container, char *inPrefName, char *inPrefDataType) {
   XMLTag *pref = container->GetEmbeddedTagByAttr(kNameAttr, inPrefName);
   if (pref != NULL)
     return pref;    // it already exists
@@ -226,8 +217,8 @@ ContainerRef XMLPrefsParser::AddPref(ContainerRef container, char *inPrefName,
 }
 
 void XMLPrefsParser::AddPrefValue(ContainerRef pref, char *inNewValue) {
-  if (!strcmp(pref->GetTagName(), kPref))     // is this a PREF tag
-  {
+  if (!strcmp(pref->GetTagName(), kPref)) {    // is this a PREF tag
+
     if (pref->GetValue() == NULL) {
       // easy case, no existing value, so just add a vlue
       pref->SetValue(inNewValue);
@@ -280,15 +271,13 @@ void XMLPrefsParser::AddNewObject(ContainerRef pref) {
   }
 }
 
-void XMLPrefsParser::ChangePrefType(ContainerRef pref,
-                                    char *inNewPrefDataType) {
+void XMLPrefsParser::ChangePrefType(ContainerRef pref, char *inNewPrefDataType) {
   pref->RemoveAttribute(kTypeAttr);   // remove it if it exists
   if (strcmp(inNewPrefDataType, "CharArray"))
     pref->AddAttribute(kTypeAttr, inNewPrefDataType);
 }
 
-void XMLPrefsParser::SetPrefValue(ContainerRef pref, const UInt32 inValueIndex,
-                                  char *inNewValue) {
+void XMLPrefsParser::SetPrefValue(ContainerRef pref, const UInt32 inValueIndex, char *inNewValue) {
   UInt32 numValues = GetNumPrefValues(pref);
 
   if (((numValues == 0) || (numValues == 1)) && (inValueIndex == 0)) {
@@ -302,8 +291,7 @@ void XMLPrefsParser::SetPrefValue(ContainerRef pref, const UInt32 inValueIndex,
   }
 }
 
-void XMLPrefsParser::RemovePrefValue(ContainerRef pref,
-                                     const UInt32 inValueIndex) {
+void XMLPrefsParser::RemovePrefValue(ContainerRef pref, const UInt32 inValueIndex) {
   UInt32 numValues = GetNumPrefValues(pref);
   if (inValueIndex >= numValues)
     return;
@@ -311,11 +299,9 @@ void XMLPrefsParser::RemovePrefValue(ContainerRef pref,
   if (numValues == 1) {
     delete pref;    // just remove the whole pref
   } else if (numValues == 2) {
-    XMLTag *value =
-        pref->GetEmbeddedTag(inValueIndex); // get the one we're removing
+    XMLTag *value = pref->GetEmbeddedTag(inValueIndex); // get the one we're removing
     delete value;                                       // delete it
-    value =
-        pref->GetEmbeddedTag(0);                    // get the remaining tag index always 0 for 2 vals
+    value = pref->GetEmbeddedTag(0);                    // get the remaining tag index always 0 for 2 vals
     pref->RemoveEmbeddedTag(value);                     // pull it out of the parent
     if (!strcmp(pref->GetTagName(), kObjectList)) {
       pref->SetTagName(kObject);  // set it back to a simple pref
@@ -350,8 +336,6 @@ int XMLPrefsParser::Parse() {
     s_printf("%s\n", error);
     return -1;
   }
-
-
 
   // the above routine checks that it's a valid XML file, we should check that
   // all the tags conform to our prefs format

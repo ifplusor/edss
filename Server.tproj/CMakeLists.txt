@@ -61,8 +61,15 @@ set(SOURCE_FILES
         QTSServer.cpp
         GenerateXMLPrefs.cpp
         RunServer.cpp
-#        EDSS.cpp
-        main.cpp)
+        EDSS.cpp)
+
+if ((${CONF_PLATFORM} STREQUAL "Win32")
+        OR (${CONF_PLATFORM} STREQUAL "MinGW"))
+    set(SOURCE_FILES ${SOURCE_FILES} win32main.cpp)
+else()
+    set(SOURCE_FILES ${SOURCE_FILES} main.cpp)
+endif()
+
 
 add_executable(edss2
         ${HEADER_FILES} ${SOURCE_FILES})

@@ -145,9 +145,7 @@ ReadEntireFile(char *inPath, StrPtrLen *outData, QTSS_TimeVal inModDate, QTSS_Ti
   return theErr;
 }
 
-void QTSSModuleUtils::SetupSupportedMethods(QTSS_Object inServer,
-                                            QTSS_RTSPMethod *inMethodArray,
-                                            UInt32 inNumMethods) {
+void QTSSModuleUtils::SetupSupportedMethods(QTSS_Object inServer, QTSS_RTSPMethod *inMethodArray, UInt32 inNumMethods) {
   // Report to the server that this module handles DESCRIBE, SETUP, PLAY, PAUSE, and TEARDOWN
   UInt32 theNumMethods = 0;
   (void) QTSS_GetNumValues(inServer, qtssSvrHandledMethods, &theNumMethods);
@@ -218,12 +216,11 @@ GetFullPath(QTSS_RTSPRequestObject inRequest, QTSS_AttributeID whichFileType, UI
   QTSS_Error theErr = QTSS_GetValuePtr(inRequest, qtssRTSPReqRootDir, 0, (void **) &theRootDir.Ptr, &theRootDir.Len);
   Assert(theErr == QTSS_NoErr);
 
-
-  //trim off extra / characters before concatenating
+  // trim off extra / characters before concatenating
   // so root/ + /path instead of becoming root//path  is now root/path  as it should be.
 
-  if (theRootDir.Len && theRootDir.Ptr[theRootDir.Len - 1] == kPathDelimiterChar
-      && theFilePath.Len && theFilePath.Ptr[0] == kPathDelimiterChar) {
+  if (theRootDir.Len && theRootDir.Ptr[theRootDir.Len - 1] == kPathDelimiterChar &&
+      theFilePath.Len && theFilePath.Ptr[0] == kPathDelimiterChar) {
     char *thePathEnd = &(theFilePath.Ptr[theFilePath.Len]);
     while (theFilePath.Ptr != thePathEnd) {
       if (*theFilePath.Ptr != kPathDelimiterChar) break;
@@ -233,8 +230,7 @@ GetFullPath(QTSS_RTSPRequestObject inRequest, QTSS_AttributeID whichFileType, UI
     }
   }
 
-  //construct a full path out of the root dir path for this request,
-  //and the url path.
+  // construct a full path out of the root dir path for this request, and the url path.
   *outLen = theFilePath.Len + theRootDir.Len + 2;
   if (suffix != NULL) *outLen += suffix->Len;
 
@@ -331,20 +327,21 @@ AppendRTPMetaInfoHeader(QTSS_RTSPRequestObject inRequest, StrPtrLen *inRTPMetaIn
 }
 
 QTSS_Error QTSSModuleUtils::
-SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatusCode, QTSS_AttributeID inTextMessage, StrPtrLen *inStringArg) {
+SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatusCode,
+                  QTSS_AttributeID inTextMessage, StrPtrLen *inStringArg) {
   static bool sFalse = false;
 
-  //set RTSP headers necessary for this error response message
+  // set RTSP headers necessary for this error response message
   (void) QTSS_SetValue(inRequest, qtssRTSPReqStatusCode, 0, &inStatusCode, sizeof(inStatusCode));
   (void) QTSS_SetValue(inRequest, qtssRTSPReqRespKeepAlive, 0, &sFalse, sizeof(sFalse));
   StringFormatter theErrorMsgFormatter(NULL, 0);
   char *messageBuffPtr = NULL;
 
   if (sEnableRTSPErrorMsg) {
-    // 准备要输出的Error Message
+    // 准备要输出的 Error Message
     // 实际上是调用(RTSPRequestInterface*)inRequest)->AppendHeader函数
-    // 在该函数里,调用RTSPRequetInterface::fOutputStream(RTSPResponseStream类
-    // 对象)的Put函数关联Error Message
+    // 在该函数里, 调用RTSPRequetInterface::fOutputStream(RTSPResponseStream类对象)的Put函数关联 Error Message
+    //
 
     // Retrieve the specified message out of the text messages dictionary.
     StrPtrLen theMessage;
@@ -384,19 +381,17 @@ SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatus
         stringLocation += 2;
       }
       //write last chunk
-      theErrorMsgFormatter.Put(stringLocation,
-                               (theMessage.Ptr + theMessage.Len)
-                                   - stringLocation);
+      theErrorMsgFormatter.Put(stringLocation, (theMessage.Ptr + theMessage.Len) - stringLocation);
     } else
       theErrorMsgFormatter.Put(theMessage);
 
     char buff[32];
-    s_sprintf(buff, "%"   _U32BITARG_   "", theErrorMsgFormatter.GetBytesWritten());
+    s_sprintf(buff, "%" _U32BITARG_ "", theErrorMsgFormatter.GetBytesWritten());
     (void) QTSS_AppendRTSPHeader(inRequest, qtssContentLengthHeader, buff, ::strlen(buff));
   }
 
-  //send the response header. In all situations where errors could happen, we
-  //don't really care, cause there's nothing we can do anyway!
+  // send the response header. In all situations where errors could happen, we
+  // don't really care, cause there's nothing we can do anyway!
   // 实际上是调用(RTSPRequestInterface*)inRequest)->SendHeader函数
   // 在该函数里调用WriteStandardHeaders函数,添加标准的RTSP回复头部。
   (void) QTSS_SendRTSPHeaders(inRequest);
@@ -620,7 +615,8 @@ QTSS_ModulePrefsObject QTSSModuleUtils::GetModuleObjectByName(const StrPtrLen &i
 }
 
 void QTSSModuleUtils::
-GetAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *ioBuffer, void *inDefaultValue, UInt32 inBufferLen) {
+GetAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *ioBuffer,
+             void *inDefaultValue, UInt32 inBufferLen) {
   //
   // Check to make sure this attribute is the right type. If it's not, this will coerce
   // it to be the right type. This also returns the id of the attribute

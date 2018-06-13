@@ -67,7 +67,7 @@ enum {
   qtssCSeqHeader = 1,
   qtssUserAgentHeader = 2,
   qtssTransportHeader = 3,
-  qtssSessionHeader = 4,
+  qtssSessionHeader = 4, // RTSP Session ID
   qtssRangeHeader = 5,
   qtssNumVIPHeaders = 6,
 
@@ -89,7 +89,7 @@ enum {
   qtssDateHeader = 20,
   qtssExpiresHeader = 21,
   qtssFromHeader = 22,
-  qtssHostHeader = 23,
+  qtssHostHeader = 23,  // server ip:port from request header
   qtssIfMatchHeader = 24,
   qtssIfModifiedSinceHeader = 25,
   qtssLastModifiedHeader = 26,

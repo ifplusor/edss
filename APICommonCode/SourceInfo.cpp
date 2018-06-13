@@ -76,21 +76,19 @@ bool SourceInfo::IsReflectable() {
   if (fNumStreams == 0)
     return false;
 
-  //each stream's info must meet certain criteria
+  // each stream's info must meet certain criteria
   for (UInt32 x = 0; x < fNumStreams; x++) {
     if (fStreamArray[x].fIsTCP)
       continue;
 
-    if ((!this->IsReflectableIPAddr(fStreamArray[x].fDestIPAddr)) ||
-        (fStreamArray[x].fTimeToLive == 0))
+    if ((!this->IsReflectableIPAddr(fStreamArray[x].fDestIPAddr)) || (fStreamArray[x].fTimeToLive == 0))
       return false;
   }
   return true;
 }
 
 bool SourceInfo::IsReflectableIPAddr(UInt32 inIPAddr) {
-  if (Net::SocketUtils::IsMulticastIPAddr(inIPAddr)
-      || Net::SocketUtils::IsLocalIPAddr(inIPAddr))
+  if (Net::SocketUtils::IsMulticastIPAddr(inIPAddr) || Net::SocketUtils::IsLocalIPAddr(inIPAddr))
     return true;
   return false;
 }
@@ -264,8 +262,7 @@ void SourceInfo::StreamInfo::Copy(const StreamInfo &copy) {
   fTimeToLive = copy.fTimeToLive;
   fPayloadType = copy.fPayloadType;
   if ((copy.fPayloadName).Ptr != NULL)
-    fPayloadName.Set((copy.fPayloadName).GetAsCString(),
-                     (copy.fPayloadName).Len);
+    fPayloadName.Set((copy.fPayloadName).GetAsCString(), (copy.fPayloadName).Len);
   fTrackID = copy.fTrackID;
   if ((copy.fTrackName).Ptr != NULL)
     fTrackName.Set((copy.fTrackName).GetAsCString(), (copy.fTrackName).Len);

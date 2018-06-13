@@ -59,9 +59,9 @@ class RTSPRequestInterface : public QTSSDictionary {
   void ReInit(RTSPSessionInterface *session);
 
   //CONSTRUCTOR:
-  RTSPRequestInterface(RTSPSessionInterface *session);
+  explicit RTSPRequestInterface(RTSPSessionInterface *session);
 
-  virtual ~RTSPRequestInterface() {
+  ~RTSPRequestInterface() override {
     if (fMovieFolderPtr != &fMovieFolderPath[0]) delete[] fMovieFolderPtr;
   }
 
@@ -74,21 +74,13 @@ class RTSPRequestInterface : public QTSSDictionary {
 
   // The transport header constructed by this function mimics the one sent
   // by the client, with the addition of server port & interleaved sub headers
-  void AppendTransportHeader(StrPtrLen *serverPortA,
-                             StrPtrLen *serverPortB,
-                             StrPtrLen *channelA,
-                             StrPtrLen *channelB,
-                             StrPtrLen *serverIPAddr = NULL,
-                             StrPtrLen *ssrc = NULL);
+  void AppendTransportHeader(StrPtrLen *serverPortA, StrPtrLen *serverPortB, StrPtrLen *channelA, StrPtrLen *channelB,
+                             StrPtrLen *serverIPAddr = NULL, StrPtrLen *ssrc = NULL);
 
   void AppendContentBaseHeader(StrPtrLen *theURL);
 
-  void AppendRTPInfoHeader(QTSS_RTSPHeader inHeader,
-                           StrPtrLen *url,
-                           StrPtrLen *seqNumber,
-                           StrPtrLen *ssrc,
-                           StrPtrLen *rtpTime,
-                           bool lastRTPInfo);
+  void AppendRTPInfoHeader(QTSS_RTSPHeader inHeader, StrPtrLen *url, StrPtrLen *seqNumber, StrPtrLen *ssrc,
+                           StrPtrLen *rtpTime, bool lastRTPInfo);
 
   void AppendContentLength(UInt32 contentLength);
 
@@ -290,8 +282,8 @@ class RTSPRequestInterface : public QTSSDictionary {
   UInt32 fWindowSize;
   StrPtrLen fWindowSizeStr;
 
-  //Because of URL decoding issues, we need to make a copy of the file path.
-  //Here is a buffer for it.
+  // Because of URL decoding issues, we need to make a copy of the file path.
+  // Here is a buffer for it.
   char fFilePath[kMaxFilePathSizeInBytes];
   char fMovieFolderPath[kMovieFolderBufSizeInBytes];
   char *fMovieFolderPtr;
@@ -303,11 +295,9 @@ class RTSPRequestInterface : public QTSSDictionary {
   bool fAuthHandled;
 
   QTSS_RTPTransportMode fTransportMode;
-  UInt16
-      fSetUpServerPort;           //send this back as the server_port if is SETUP request
+  UInt16 fSetUpServerPort;           //send this back as the server_port if is SETUP request
 
-  QTSS_ActionFlags
-      fAction;    // The action that will be performed for this request
+  QTSS_ActionFlags fAction;    // The action that will be performed for this request
   // Set to a combination of QTSS_ActionFlags
 
   QTSS_AuthScheme fAuthScheme;
@@ -333,6 +323,7 @@ class RTSPRequestInterface : public QTSSDictionary {
   UInt32 fBandwidthBits;
   StrPtrLen fAuthDigestChallenge;
   StrPtrLen fAuthDigestResponse;
+
  private:
 
   RTSPSessionInterface *fSession;
@@ -344,14 +335,11 @@ class RTSPRequestInterface : public QTSSDictionary {
 
   bool fStandardHeadersWritten;
 
-  void PutTransportStripped(StrPtrLen &outFirstTransport,
-                            StrPtrLen &outResultStr);
+  void PutTransportStripped(StrPtrLen &outFirstTransport, StrPtrLen &outResultStr);
 
   void WriteStandardHeaders();
 
-  static void PutStatusLine(StringFormatter *putStream,
-                            QTSS_RTSPStatusCode status,
-                            RTSPProtocol::RTSPVersion version);
+  static void PutStatusLine(StringFormatter *putStream, QTSS_RTSPStatusCode status, RTSPProtocol::RTSPVersion version);
 
   //Individual param retrieval functions
   static void *GetAbsTruncatedPath(QTSSDictionary *inRequest, UInt32 *outLen);

@@ -276,8 +276,7 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
 
   UInt32 fLastRTPTimestamp;
   SInt64 fLastNTPTimeStamp;
-  UInt32
-      fEstRTT;                //The estimated RTT calculated from RTCP's DLSR and LSR fields
+  UInt32 fEstRTT;                //The estimated RTT calculated from RTCP's DLSR and LSR fields
 
   // RTCP data
   UInt32 fFractionLostPackets;
@@ -371,22 +370,14 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
 
   //-----------------------------------------------------------
   // acutally write the data out that way
-  QTSS_Error InterleavedWrite(void *inBuffer,
-                              UInt32 inLen,
-                              UInt32 *outLenWritten,
-                              unsigned char channel);
+  QTSS_Error InterleavedWrite(void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, unsigned char channel);
 
   // implements the ReliableRTP protocol
-  QTSS_Error ReliableRTPWrite(void *inBuffer,
-                              UInt32 inLen,
-                              const SInt64 &curPacketDelay);
+  QTSS_Error ReliableRTPWrite(void *inBuffer, UInt32 inLen, const SInt64 &curPacketDelay);
 
   void SetTCPThinningParams();
 
-  QTSS_Error TCPWrite(void *inBuffer,
-                      UInt32 inLen,
-                      UInt32 *outLenWritten,
-                      UInt32 inFlags);
+  QTSS_Error TCPWrite(void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, UInt32 inFlags);
 
   static QTSSAttrInfoDict::AttrInfo sAttributes[];
   static CF::StrPtrLen sChannelNums[];
@@ -397,10 +388,8 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
   static char *RUDP;
   static char *TCP;
 
-  bool UpdateQualityLevel(const SInt64 &inTransmitTime,
-                          const SInt64 &inCurrentPacketDelay,
-                          const SInt64 &inCurrentTime,
-                          UInt32 inPacketSize);
+  bool UpdateQualityLevel(const SInt64 &inTransmitTime, const SInt64 &inCurrentPacketDelay,
+                          const SInt64 &inCurrentTime, UInt32 inPacketSize);
 
   void DisableThinning() { fDisableThinning = true; }
 
@@ -413,8 +402,7 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
   };
 
   Float32 GetStreamStartTimeSecs() {
-    return (Float32) ((CF::Core::Time::Milliseconds()
-        - this->fSession->GetSessionCreateTime()) / 1000.0);
+    return (Float32) ((CF::Core::Time::Milliseconds() - this->fSession->GetSessionCreateTime()) / 1000.0);
   }
 
   void PrintPacket(char *inBuffer, UInt32 inLen, SInt32 inType);
@@ -423,9 +411,7 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
 
   void PrintRTCPSenderReport(char *packetBuff, UInt32 inLen);
 
-  inline void PrintPacketPrefEnabled(char *inBuffer,
-                                     UInt32 inLen,
-                                     SInt32 inType) {
+  inline void PrintPacketPrefEnabled(char *inBuffer, UInt32 inLen, SInt32 inType) {
     if (QTSServerInterface::GetServer()->GetPrefs()->PacketHeaderPrintfsEnabled())
       this->PrintPacket(inBuffer, inLen, inType);
   }

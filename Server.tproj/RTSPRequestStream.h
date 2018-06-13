@@ -45,8 +45,10 @@
 class RTSPRequestStream {
  public:
 
-  //CONSTRUCTOR / DESTRUCTOR
-  RTSPRequestStream(CF::Net::TCPSocket *sock);
+  //
+  // CONSTRUCTOR / DESTRUCTOR
+
+  explicit RTSPRequestStream(CF::Net::TCPSocket *sock);
 
   // We may have to delete this memory if it was allocated due to base64 decoding
   ~RTSPRequestStream() {
@@ -80,11 +82,12 @@ class RTSPRequestStream {
   // Tell the request stream whether or not to decode from base64.
   void IsBase64Encoded(bool isDataEncoded) { fDecode = isDataEncoded; }
 
-  //GetRequestBuffer
-  //This returns a buffer containing the full client request. The length is set to
-  //the exact length of the request headers. This will return NULL UNLESS this object
-  //is in the proper state (has been initialized, ReadRequest has been called until it returns
-  //RequestArrived).
+  /**
+   * This returns a buffer containing the full client request. The length is set to
+   * the exact length of the request headers. This will return NULL UNLESS this object
+   * is in the proper state (has been initialized, ReadRequest has been called until it returns
+   * RequestArrived).
+   */
   CF::StrPtrLen *GetRequestBuffer() { return fRequestPtr; }
 
   bool IsDataPacket() { return fIsDataPacket; }
@@ -95,9 +98,9 @@ class RTSPRequestStream {
 
  private:
 
-  //CONSTANTS:
+  // CONSTANTS:
   enum {
-    kRequestBufferSizeInBytes = QTSS_MAX_REQUEST_BUFFER_SIZE        //UInt32
+    kRequestBufferSizeInBytes = QTSS_MAX_REQUEST_BUFFER_SIZE  // UInt32
   };
 
   // Base64 decodes into fRequest.Ptr, updates fRequest.Len, and returns the amount
@@ -112,8 +115,8 @@ class RTSPRequestStream {
   UInt32 fCurOffset; // tracks how much valid data is in the above buffer
   UInt32 fEncodedBytesRemaining; // If we are decoding, tracks how many encoded bytes are in the buffer
 
-  CF::StrPtrLen fRequest;
-  CF::StrPtrLen *fRequestPtr;    // pointer to a request header
+  CF::StrPtrLen fRequest;     // received request data
+  CF::StrPtrLen *fRequestPtr; // pointer to a request header or interleaved frame
   bool fDecode;        // should we base 64 decode?
   bool fIsDataPacket;  // is this a data packet? Like for a record?
   bool fPrintRTSP;     // debugging printfs

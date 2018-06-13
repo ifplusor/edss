@@ -39,35 +39,34 @@
 #include "RTSPSession.h"
 #include "QTSSModuleUtils.h"
 
-UInt8 RTSPRequest::sURLStopConditions[] =
-    {
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, //0-9      //'\t' is a stop condition
-        1, 0, 0, 1, 0, 0, 0, 0, 0, 0, //10-19    //'\r' & '\n' are stop conditions
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //20-29
-        0, 0, 1, 0, 0, 0, 0, 0, 0, 0, //30-39    //' '
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //40-49
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //50-59
-        0, 0, 0, 1, 0, 0, 0, 0, 0, 0, //60-69    //'?'
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //70-79
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //80-89
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //90-99
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //100-109
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //110-119
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //120-129
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //130-139
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //140-149
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //150-159
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //160-169
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //170-179
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //180-189
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //190-199
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //200-209
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //210-219
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //220-229
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //230-239
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //240-249
-        0, 0, 0, 0, 0, 0             //250-255
-    };
+UInt8 RTSPRequest::sURLStopConditions[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, //0-9      //'\t' is a stop condition
+    1, 0, 0, 1, 0, 0, 0, 0, 0, 0, //10-19    //'\r' & '\n' are stop conditions
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //20-29
+    0, 0, 1, 0, 0, 0, 0, 0, 0, 0, //30-39    //' '
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //40-49
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //50-59
+    0, 0, 0, 1, 0, 0, 0, 0, 0, 0, //60-69    //'?'
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //70-79
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //80-89
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //90-99
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //100-109
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //110-119
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //120-129
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //130-139
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //140-149
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //150-159
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //160-169
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //170-179
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //180-189
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //190-199
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //200-209
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //210-219
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //220-229
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //230-239
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //240-249
+    0, 0, 0, 0, 0, 0             //250-255
+};
 
 static StrPtrLen sDefaultRealm("Streaming Server", 16);
 static StrPtrLen sAuthBasicStr("Basic", 5);
@@ -86,105 +85,109 @@ static StrPtrLen sEqualQuote("=\"", 2);
 static StrPtrLen sQuoteCommaSpace("\", ", 3);
 static StrPtrLen sStaleTrue("stale=\"true\", ", 14);
 
-//Parses the request
+// Parses the request
 QTSS_Error RTSPRequest::Parse() {
   StringParser parser(this->GetValue(qtssRTSPReqFullRequest));
   Assert(this->GetValue(qtssRTSPReqFullRequest)->Ptr != NULL);
 
-  //parse status line.
+  // parse status line.
   QTSS_Error error = ParseFirstLine(parser);
 
-  //handle any errors that come up
+  // handle any errors that come up
   if (error != QTSS_NoErr) return error;
 
   error = this->ParseHeaders(parser);
   if (error != QTSS_NoErr)
     return error;
 
-  //Response headers should set themselves up to reflect what's in the request headers
+  // Response headers should set themselves up to reflect what's in the request headers
   fResponseKeepAlive = fRequestKeepAlive;
 
-  //Make sure that there was some path that was extracted from this request. If not, there is no way
-  //we can process the request, so generate an error
+  // Make sure that there was some path that was extracted from this request.
+  // If not, there is no way we can process the request, so generate an error
   if (this->GetValue(qtssRTSPReqFilePath)->Len == 0)
     return QTSSModuleUtils::SendErrorResponse(this, qtssClientBadRequest, qtssMsgNoURLInRequest, this->GetValue( qtssRTSPReqFullRequest));
 
   return QTSS_NoErr;
 }
 
-//returns: StatusLineTooLong, SyntaxError, BadMethod
+/**
+ * @return StatusLineTooLong, SyntaxError, BadMethod
+ */
 QTSS_Error RTSPRequest::ParseFirstLine(StringParser &parser) {
-  //first get the method
+  // first get the method
   StrPtrLen theParsedData;
   parser.ConsumeWord(&theParsedData);
   this->SetVal(qtssRTSPReqMethodStr, theParsedData.Ptr, theParsedData.Len);
 
 
-  //THIS WORKS UNDER THE ASSUMPTION THAT:
-  //valid HTTP/1.1 headers are: GET, HEAD, POST, PUT, OPTIONS, DELETE, TRACE
+  // THIS WORKS UNDER THE ASSUMPTION THAT:
+  // valid HTTP/1.1 headers are: GET, HEAD, POST, PUT, OPTIONS, DELETE, TRACE
   fMethod = RTSPProtocol::GetMethod(theParsedData);
   if (fMethod == qtssIllegalMethod)
     return QTSSModuleUtils::SendErrorResponse(this, qtssClientBadRequest, qtssMsgBadRTSPMethod, &theParsedData);
 
-  //no longer assume this is a space... instead, just consume whitespace
+  // no longer assume this is a space... instead, just consume whitespace
   parser.ConsumeWhitespace();
 
-  //now parse the uri,for example rtsp://www.easydarwin.org:554/live.sdp?channel=1&token=888888
+  // now parse the uri, for example rtsp://www.easydarwin.org:554/live.sdp?channel=1&token=888888
   QTSS_Error err = ParseURI(parser);
   if (err != QTSS_NoErr)
     return err;
 
-  //no longer assume this is a space... instead, just consume whitespace
+  // no longer assume this is a space... instead, just consume whitespace
   parser.ConsumeWhitespace();
 
-  //if there is a version, consume the version string
+  // if there is a version, consume the version string
   StrPtrLen versionStr;
   parser.ConsumeUntil(&versionStr, StringParser::sEOLMask);
 
-  //check the version
+  // check the version
   if (versionStr.Len > 0)
     fVersion = RTSPProtocol::GetVersion(versionStr);
 
-  //go past the end of line
+  // go past the end of line
   if (!parser.ExpectEOL())
     return QTSSModuleUtils::SendErrorResponse(this, qtssClientBadRequest, qtssMsgNoRTSPVersion, &theParsedData);
 
   return QTSS_NoErr;
 }
 
-//returns: SyntaxError if there was an error in the uri. Or InternalServerError
+/**
+ * @return SyntaxError if there was an error in the uri. Or InternalServerError
+ */
 QTSS_Error RTSPRequest::ParseURI(StringParser &parser) {
-  //for example: rtsp://www.easydarwin.org:554/live.sdp?channel=1&token=888888
-  //read in the complete URL, set it to be the qtssAbsoluteURLParam
-  StrPtrLen theURL;
-  parser.ConsumeUntilWhitespace(&theURL);
-  //qtssRTSPReqAbsoluteURL = rtsp://www.easydarwin.org:554/live.sdp?channel=1&token=888888
-  this->SetVal(qtssRTSPReqAbsoluteURL, &theURL);
+  // for example: rtsp://www.easydarwin.org:554/live.sdp?channel=1&token=888888
 
-  StringParser absParser(&theURL);
+  //read in the complete URL, set it to be the qtssAbsoluteURLParam
   StrPtrLen theAbsURL;
-  //theAbsURL = rtsp://www.easydarwin.org:554/live.sdp
-  absParser.ConsumeUntil(&theAbsURL, sURLStopConditions);
+
+  // RTSPRequestInterface::sPathURLStopConditions stop on ? as well as sURLStopConditions
+  parser.ConsumeUntil(&theAbsURL, sURLStopConditions );
+
+  // set qtssRTSPReqAbsoluteURL to the URL through the path component; will be : <protocol>://<host-addr>/<path>
+  this->SetVal(qtssRTSPReqAbsoluteURL, &theAbsURL); // qtssRTSPReqAbsoluteURL = rtsp://www.easydarwin.org:554/live.sdp
 
   StringParser urlParser(&theAbsURL);
 
-  //we always should have a slash before the uri.
-  //If not, that indicates this is a full URI. Also, this could be a '*' OPTIONS request
+  // we always should have a slash before the uri.
+  // If not, that indicates this is a full URI. Also, this could be a '*' OPTIONS request
   if ((*theAbsURL.Ptr != '/') && (*theAbsURL.Ptr != '*')) {
-    //if it is a full URL, store the host name off in a separate parameter
+    // if it is a full URL, store the host name off in a separate parameter
     StrPtrLen theRTSPString;
     urlParser.ConsumeLength(&theRTSPString, 7); //consume "rtsp://"
-    //assign the host field here to the proper QTSS param
+    // assign the host field here to the proper QTSS param
     StrPtrLen theHost;
     urlParser.ConsumeUntil(&theHost, '/');
-    // qtssHostHeader = www.easydarwin.org:554
-    fHeaderDictionary.SetVal(qtssHostHeader, &theHost);
+    fHeaderDictionary.SetVal(qtssHostHeader, &theHost); //qtssHostHeader = www.easydarwin.org:554
   }
 
   // don't allow non-aggregate operations indicated by a url/media track=id
   // might need this for rate adapt
-  //if (qtssSetupMethod != fMethod && qtssOptionsMethod != fMethod && qtssSetParameterMethod != fMethod)
+
   // any method not a setup, options, or setparameter is not allowed to have a "/trackID=" in the url.
+  //if (qtssSetupMethod != fMethod && qtssOptionsMethod != fMethod && qtssSetParameterMethod != fMethod)
+
   if (qtssSetupMethod != fMethod) { // any method not a setup is not allowed to have a "/trackID=" in the url.
     StrPtrLenDel tempCStr(theAbsURL.GetAsCString());
     StrPtrLen nonaggregate(tempCStr.FindString("/trackID="));
@@ -199,17 +202,16 @@ QTSS_Error RTSPRequest::ParseURI(StringParser &parser) {
       return QTSSModuleUtils::SendErrorResponse(this, qtssClientAggregateOptionAllowed, qtssMsgBadRTSPMethod, &theAbsURL);
   }
 
-  //
-  // In case there is no URI at all... we have to fake it.
-  static char *sSlashURI = "/";
-
-  //whatever is in this position in the URL must be the URI. Store that
-  //in the qtssURLParam. Confused?
-  UInt32 uriLen = urlParser.GetDataReceivedLen() - urlParser.GetDataParsedLen();
+  // whatever is in this position in the URL must be the URI. Store that in the qtssURLParam.
+  UInt32 uriLen = urlParser.GetDataRemaining();
   if (uriLen > 0) {
     // qtssRTSPReqURI = /live.sdp
-    this->SetVal(qtssRTSPReqURI, urlParser.GetCurrentPosition(), urlParser.GetDataReceivedLen() - urlParser.GetDataParsedLen());
+    this->SetVal(qtssRTSPReqURI, urlParser.GetCurrentPosition(), uriLen);
   } else {
+    //
+    // In case there is no URI at all... we have to fake it.
+    static char *sSlashURI = "/";
+
     //
     // This might happen if there is nothing after the host at all, not even
     // a '/'. This is legal (RFC 2326, Sec 3.2). If so, just pretend that there
@@ -218,21 +220,18 @@ QTSS_Error RTSPRequest::ParseURI(StringParser &parser) {
   }
 
   // parse the query string from the url if present.
-  // init qtssRTSPReqQueryString dictionary to an empty string
-  StrPtrLen queryString;
-  // qtssRTSPReqQueryString = channel=1&token=888888
-  this->SetVal(qtssRTSPReqQueryString, queryString.Ptr, queryString.Len);
+  if (parser.GetDataRemaining() > 0 && parser.PeekFast() == '?') {
+    // we've got some CGI param
+    parser.ConsumeLength(NULL, 1); // toss '?'
 
-  if (absParser.GetDataRemaining() > 0) {
-    if (absParser.PeekFast() == '?') {
-      // we've got some CGI param
-      absParser.ConsumeLength(&queryString, 1); // toss '?'
+    // consume the rest of the line..
+    StrPtrLen queryString;
+    parser.ConsumeUntilWhitespace(&queryString); // see qtssRTSPReqAbsoluteURL
 
-      // consume the rest of the line..
-      absParser.ConsumeUntilWhitespace(&queryString);
-
-      this->SetVal(qtssRTSPReqQueryString, queryString.Ptr, queryString.Len);
-    }
+    this->SetVal(qtssRTSPReqQueryString, queryString.Ptr, queryString.Len); // qtssRTSPReqQueryString = channel=1&token=888888
+  } else {
+    // init qtssRTSPReqQueryString dictionary to an empty string
+    this->SetVal(qtssRTSPReqQueryString, NULL, 0);
   }
 
 
@@ -244,17 +243,17 @@ QTSS_Error RTSPRequest::ParseURI(StringParser &parser) {
     return QTSS_NoErr;
   }
 
-  //path strings are statically allocated. Therefore, if they are longer than
-  //this length we won't be able to handle the request.
+  // path strings are statically allocated. Therefore, if they are longer than
+  // this length we won't be able to handle the request.
   StrPtrLen *theURLParam = this->GetValue(qtssRTSPReqURI);
   if (theURLParam->Len > RTSPRequestInterface::kMaxFilePathSizeInBytes)
     return QTSSModuleUtils::SendErrorResponse(this, qtssClientBadRequest, qtssMsgURLTooLong, theURLParam);
 
-  //decode the URL, put the result in the separate buffer for the file path,
-  //set the file path StrPtrLen to the proper value
-  SInt32 theBytesWritten = StringTranslator::DecodeURL(theURLParam->Ptr, theURLParam->Len, fFilePath, RTSPRequestInterface::kMaxFilePathSizeInBytes);
-  //if negative, an error occurred, reported as an QTSS_Error
-  //we also need to leave room for a terminator.
+  // decode the URL, put the result in the separate buffer for the file path,
+  // set the file path StrPtrLen to the proper value
+  SInt32 theBytesWritten = StringTranslator::DecodeURL(
+      theURLParam->Ptr, theURLParam->Len, fFilePath, RTSPRequestInterface::kMaxFilePathSizeInBytes);
+  // if negative, an error occurred, reported as an QTSS_Error. we also need to leave room for a terminator.
   if ((theBytesWritten < 0) || (theBytesWritten == RTSPRequestInterface::kMaxFilePathSizeInBytes)) {
     return QTSSModuleUtils::SendErrorResponse(this, qtssClientBadRequest, qtssMsgURLInBadFormat, theURLParam);
   }
@@ -262,9 +261,8 @@ QTSS_Error RTSPRequest::ParseURI(StringParser &parser) {
   // Convert from a / delimited path to a local file system path
   StringTranslator::DecodePath(fFilePath, theBytesWritten);
 
-  //setup the proper QTSS param
+  // setup the proper QTSS param
   fFilePath[theBytesWritten] = '\0';
-  //this->SetVal(qtssRTSPReqFilePath, fFilePath, theBytesWritten);
   this->SetValue(qtssRTSPReqFilePath, 0, fFilePath, theBytesWritten, QTSSDictionary::kDontObeyReadOnly);
 
   return QTSS_NoErr;
@@ -298,8 +296,9 @@ QTSS_Error RTSPRequest::ParseHeaders(StringParser &parser) {
     if ((parser.PeekFast() == '\r') || (parser.PeekFast() == '\n')) {
       isStreamOK = true;
       parser.ConsumeEOL(&theEOL);
-    } else
+    } else {
       isStreamOK = false;
+    }
 
     while ((parser.PeekFast() == ' ') || (parser.PeekFast() == '\t')) {
       theHeaderVal.Len += theEOL.Len;
@@ -310,8 +309,9 @@ QTSS_Error RTSPRequest::ParseHeaders(StringParser &parser) {
       if ((parser.PeekFast() == '\r') || (parser.PeekFast() == '\n')) {
         isStreamOK = true;
         parser.ConsumeEOL(&theEOL);
-      } else
+      } else {
         isStreamOK = false;
+      }
     }
 
     // If this is an unknown header, ignore it. Otherwise, set the proper
@@ -322,9 +322,7 @@ QTSS_Error RTSPRequest::ParseHeaders(StringParser &parser) {
       fHeaderDictionary.SetVal(theHeader, &theHeaderVal);
     }
     if (!isStreamOK)
-      return QTSSModuleUtils::SendErrorResponse(this,
-                                                qtssClientBadRequest,
-                                                qtssMsgNoEOLAfterHeader);
+      return QTSSModuleUtils::SendErrorResponse(this, qtssClientBadRequest, qtssMsgNoEOLAfterHeader);
 
     //some headers require some special processing. If this code begins
     //to get out of control, we made need to come up with a function pointer table
@@ -347,11 +345,9 @@ QTSS_Error RTSPRequest::ParseHeaders(StringParser &parser) {
 
   // Tell the session what the request body length is for this request
   // so that it can prevent people from reading past the end of the request.
-  StrPtrLen *theContentLengthBody =
-      fHeaderDictionary.GetValue(qtssContentLengthHeader);
+  StrPtrLen *theContentLengthBody = fHeaderDictionary.GetValue(qtssContentLengthHeader);
   if (theContentLengthBody->Len > 0) {
-    StringParser
-        theHeaderParser(fHeaderDictionary.GetValue(qtssContentLengthHeader));
+    StringParser theHeaderParser(theContentLengthBody);
     theHeaderParser.ConsumeWhitespace();
     this->GetSession()->SetRequestBodyLength(theHeaderParser.ConsumeInteger(NULL));
   }
@@ -371,19 +367,16 @@ void RTSPRequest::ParseSessionHeader() {
 bool RTSPRequest::ParseNetworkModeSubHeader(StrPtrLen *inSubHeader) {
   static StrPtrLen sUnicast("unicast");
   static StrPtrLen sMulticast("multiicast");
-  bool result = false; // true means header was found
 
-  if (!result && inSubHeader->EqualIgnoreCase(sUnicast)) {
+  if (inSubHeader->EqualIgnoreCase(sUnicast)) {
     fNetworkMode = qtssRTPNetworkModeUnicast;
-    result = true;
-  }
-
-  if (!result && inSubHeader->EqualIgnoreCase(sMulticast)) {
+  } else if (inSubHeader->EqualIgnoreCase(sMulticast)) {
     fNetworkMode = qtssRTPNetworkModeMulticast;
-    result = true;
+  } else {
+    return false;
   }
 
-  return result;
+  return true; // true means header was found
 }
 
 void RTSPRequest::ParseTransportHeader() {
@@ -391,9 +384,9 @@ void RTSPRequest::ParseTransportHeader() {
 
   StringParser theTransParser(fHeaderDictionary.GetValue(qtssTransportHeader));
 
-  //transport header from client: Transport: RTP/AVP;unicast;client_port=5000-5001\r\n
-  //                              Transport: RTP/AVP;multicast;ttl=15;destination=229.41.244.93;client_port=5000-5002\r\n
-  //                              Transport: RTP/AVP/TCP;unicast\r\n
+  // transport header from client: Transport: RTP/AVP;unicast;client_port=5000-5001\r\n
+  //                               Transport: RTP/AVP;multicast;ttl=15;destination=229.41.244.93;client_port=5000-5002\r\n
+  //                               Transport: RTP/AVP/TCP;unicast\r\n
 
   //
   // A client may send multiple transports to the server, comma separated.
@@ -403,8 +396,7 @@ void RTSPRequest::ParseTransportHeader() {
     (void) theTransParser.ConsumeWhitespace();
     (void) theTransParser.ConsumeUntil(&fFirstTransport, ',');
 
-    if (fFirstTransport.NumEqualIgnoreCase(sRTPAVPTransportStr,
-                                           ::strlen(sRTPAVPTransportStr)))
+    if (fFirstTransport.NumEqualIgnoreCase(sRTPAVPTransportStr, ::strlen(sRTPAVPTransportStr)))
       break;
 
     if (theTransParser.PeekFast() == ',')
@@ -418,7 +410,7 @@ void RTSPRequest::ParseTransportHeader() {
 
   while (theTransportSubHeader.Len > 0) {
 
-    // Extract the relevent information from the relevent subheader.
+    // Extract the relevant information from the relevant sub-header.
     // So far we care about 3 sub-headers
 
     if (!this->ParseNetworkModeSubHeader(&theTransportSubHeader)) {
@@ -444,9 +436,7 @@ void RTSPRequest::ParseTransportHeader() {
           static StrPtrLen sDestinationSubHeader("destination");
 
           //Parse the header, extract the destination address
-          this->ParseAddrSubHeader(&theTransportSubHeader,
-                                   &sDestinationSubHeader,
-                                   &fDestinationAddr);
+          this->ParseAddrSubHeader(&theTransportSubHeader, &sDestinationSubHeader, &fDestinationAddr);
           break;
         }
         case 's':   //source sub-header
@@ -454,9 +444,7 @@ void RTSPRequest::ParseTransportHeader() {
         {
           //Same as above code
           static StrPtrLen sSourceSubHeader("source");
-          this->ParseAddrSubHeader(&theTransportSubHeader,
-                                   &sSourceSubHeader,
-                                   &fSourceAddr);
+          this->ParseAddrSubHeader(&theTransportSubHeader, &sSourceSubHeader, &fSourceAddr);
           break;
         }
         case 't':   //time-to-live sub-header
@@ -471,6 +459,8 @@ void RTSPRequest::ParseTransportHeader() {
           this->ParseModeSubHeader(&theTransportSubHeader);
           break;
         }
+        default:
+          break;
       }
     }
 
@@ -598,15 +588,13 @@ void RTSPRequest::ParseSpeedHeader() {
 }
 
 void RTSPRequest::ParseTransportOptionsHeader() {
-  StringParser theRTPOptionsParser
-      (fHeaderDictionary.GetValue(qtssXTransportOptionsHeader));
+  StringParser theRTPOptionsParser(fHeaderDictionary.GetValue(qtssXTransportOptionsHeader));
   StrPtrLen theRTPOptionsSubHeader;
 
   do {
     static StrPtrLen sLateTolerance("late-tolerance");
 
-    if (theRTPOptionsSubHeader.NumEqualIgnoreCase(sLateTolerance.Ptr,
-                                                  sLateTolerance.Len)) {
+    if (theRTPOptionsSubHeader.NumEqualIgnoreCase(sLateTolerance.Ptr, sLateTolerance.Len)) {
       StringParser theLateTolParser(&theRTPOptionsSubHeader);
       theLateTolParser.GetThru(NULL, '=');
       theLateTolParser.ConsumeWhitespace();
@@ -619,9 +607,7 @@ void RTSPRequest::ParseTransportOptionsHeader() {
   } while (theRTPOptionsSubHeader.Len > 0);
 }
 
-void RTSPRequest::ParseAddrSubHeader(StrPtrLen *inSubHeader,
-                                     StrPtrLen *inHeaderName,
-                                     UInt32 *outAddr) {
+void RTSPRequest::ParseAddrSubHeader(StrPtrLen *inSubHeader, StrPtrLen *inHeaderName, UInt32 *outAddr) {
   if (!inSubHeader || !inHeaderName || !outAddr)
     return;
 
@@ -636,21 +622,19 @@ void RTSPRequest::ParseAddrSubHeader(StrPtrLen *inSubHeader,
   if (!theFirstBit.EqualIgnoreCase(*inHeaderName))
     return;
 
-  //Find the IP address
+  // Find the IP address
   theSubHeaderParser.ConsumeUntilDigit();
 
-  //Set the addr string param.
-  StrPtrLen theAddr(theSubHeaderParser.GetCurrentPosition(),
-                    theSubHeaderParser.GetDataRemaining());
+  // Set the addr string param.
+  StrPtrLen theAddr(theSubHeaderParser.GetCurrentPosition(), theSubHeaderParser.GetDataRemaining());
 
-  //Convert the string to a UInt32 IP address
+  // Convert the string to a UInt32 IP address
   char theTerminator = theAddr.Ptr[theAddr.Len];
   theAddr.Ptr[theAddr.Len] = '\0';
 
   *outAddr = Net::SocketUtils::ConvertStringToAddr(theAddr.Ptr);
 
   theAddr.Ptr[theAddr.Len] = theTerminator;
-
 }
 
 void RTSPRequest::ParseModeSubHeader(StrPtrLen *inModeSubHeader) {
@@ -664,22 +648,20 @@ void RTSPRequest::ParseModeSubHeader(StrPtrLen *inModeSubHeader) {
   theSubHeaderParser.GetThru(&theFirstBit, '=');
   theFirstBit.TrimWhitespace();
 
-  // Make sure this is the client port subheader
-  if (theFirstBit.EqualIgnoreCase(sModeSubHeader))
+  // Make sure this is the client port sub-header
+  if (theFirstBit.EqualIgnoreCase(sModeSubHeader)) {
     do {
       theSubHeaderParser.ConsumeWhitespace();
 
       StrPtrLen theMode;
       theSubHeaderParser.ConsumeWord(&theMode);
 
-      if (theMode.EqualIgnoreCase(sReceiveMode)
-          || theMode.EqualIgnoreCase(sRecordMode)) {
-        fTransportMode = qtssRTPTransportModeRecord;
+      if (theMode.EqualIgnoreCase(sReceiveMode) || theMode.EqualIgnoreCase(sRecordMode)) {
+        fTransportMode = qtssRTPTransportModeRecord; // default is qtssRTPTransportModePlay
         break;
       }
-
     } while (false);
-
+  }
 }
 
 void RTSPRequest::ParseClientPortSubHeader(StrPtrLen *inClientPortSubHeader) {
@@ -745,8 +727,7 @@ void RTSPRequest::ParseTimeToLiveSubHeader(StrPtrLen *inTimeToLiveSubHeader) {
 
 // DJM PROTOTYPE
 void RTSPRequest::ParseRandomDataSizeHeader() {
-  StringParser theContentLenParser
-      (fHeaderDictionary.GetValue(qtssXRandomDataSizeHeader));
+  StringParser theContentLenParser(fHeaderDictionary.GetValue(qtssXRandomDataSizeHeader));
   theContentLenParser.ConsumeWhitespace();
   fRandomDataSize = theContentLenParser.ConsumeInteger(NULL);
 
@@ -756,8 +737,7 @@ void RTSPRequest::ParseRandomDataSizeHeader() {
 }
 
 void RTSPRequest::ParseBandwidthHeader() {
-  StringParser
-      theContentLenParser(fHeaderDictionary.GetValue(qtssBandwidthHeader));
+  StringParser theContentLenParser(fHeaderDictionary.GetValue(qtssBandwidthHeader));
   theContentLenParser.ConsumeWhitespace();
   fBandwidthBits = theContentLenParser.ConsumeInteger(NULL);
 
@@ -795,23 +775,11 @@ QTSS_Error RTSPRequest::ParseBasicHeader(StringParser *inParsedAuthLinePtr) {
 
 
   // Set the qtssRTSPReqUserName and qtssRTSPReqUserPassword attributes in the Request object
-  (void) this->SetValue(qtssRTSPReqUserName,
-                        0,
-                        name.Ptr,
-                        name.Len,
-                        QTSSDictionary::kDontObeyReadOnly);
-  (void) this->SetValue(qtssRTSPReqUserPassword,
-                        0,
-                        password.Ptr,
-                        password.Len,
-                        QTSSDictionary::kDontObeyReadOnly);
+  (void) this->SetValue(qtssRTSPReqUserName, 0, name.Ptr, name.Len, QTSSDictionary::kDontObeyReadOnly);
+  (void) this->SetValue(qtssRTSPReqUserPassword, 0, password.Ptr, password.Len, QTSSDictionary::kDontObeyReadOnly);
 
   // Also set the qtssUserName attribute in the qtssRTSPReqUserProfile object attribute of the Request Object
-  (void) fUserProfile.SetValue(qtssUserName,
-                               0,
-                               name.Ptr,
-                               name.Len,
-                               QTSSDictionary::kDontObeyReadOnly);
+  (void) fUserProfile.SetValue(qtssUserName, 0, name.Ptr, name.Len, QTSSDictionary::kDontObeyReadOnly);
 
   return theErr;
 }
@@ -852,17 +820,9 @@ QTSS_Error RTSPRequest::ParseDigestHeader(StringParser *inParsedAuthLinePtr) {
     // fAuthRealm, fAuthNonce, fAuthUri, fAuthNonceCount, fAuthResponse, fAuthOpaque
     if (fieldName.Equal(sUsernameStr)) {
       // Set the qtssRTSPReqUserName attribute in the Request object
-      (void) this->SetValue(qtssRTSPReqUserName,
-                            0,
-                            fieldValue.Ptr,
-                            fieldValue.Len,
-                            QTSSDictionary::kDontObeyReadOnly);
+      this->SetValue(qtssRTSPReqUserName, 0, fieldValue.Ptr, fieldValue.Len, QTSSDictionary::kDontObeyReadOnly);
       // Also set the qtssUserName attribute in the qtssRTSPReqUserProfile object attribute of the Request Object
-      (void) fUserProfile.SetValue(qtssUserName,
-                                   0,
-                                   fieldValue.Ptr,
-                                   fieldValue.Len,
-                                   QTSSDictionary::kDontObeyReadOnly);
+      fUserProfile.SetValue(qtssUserName, 0, fieldValue.Ptr, fieldValue.Len, QTSSDictionary::kDontObeyReadOnly);
     } else if (fieldName.Equal(sRealmStr)) {
       fAuthRealm.Set(fieldValue.Ptr, fieldValue.Len);
     } else if (fieldName.Equal(sNonceStr)) {
@@ -870,10 +830,11 @@ QTSS_Error RTSPRequest::ParseDigestHeader(StringParser *inParsedAuthLinePtr) {
     } else if (fieldName.Equal(sUriStr)) {
       fAuthUri.Set(fieldValue.Ptr, fieldValue.Len);
     } else if (fieldName.Equal(sQopStr)) {
-      if (fieldValue.Equal(sQopAuthStr))
+      if (fieldValue.Equal(sQopAuthStr)) {
         fAuthQop = RTSPSessionInterface::kAuthQop;
-      else if (fieldValue.Equal(sQopAuthIntStr))
+      } else if (fieldValue.Equal(sQopAuthIntStr)) {
         fAuthQop = RTSPSessionInterface::kAuthIntQop;
+      }
     } else if (fieldName.Equal(sNonceCountStr)) {
       fAuthNonceCount.Set(fieldValue.Ptr, fieldValue.Len);
     } else if (fieldName.Equal(sResponseStr)) {
@@ -918,17 +879,11 @@ void RTSPRequest::SetupAuthLocalPath(void) {
 
   UInt32 theLen = 0;
   char *theFullPath = QTSSModuleUtils::GetFullPath(this, theID, &theLen, NULL);
-  this->SetValue(qtssRTSPReqLocalPath,
-                 0,
-                 theFullPath,
-                 theLen,
-                 QTSSDictionary::kDontObeyReadOnly);
+  this->SetValue(qtssRTSPReqLocalPath, 0, theFullPath, theLen, QTSSDictionary::kDontObeyReadOnly);
   delete[] theFullPath;
 }
 
-QTSS_Error RTSPRequest::SendDigestChallenge(UInt32 qop,
-                                            StrPtrLen *nonce,
-                                            StrPtrLen *opaque) {
+QTSS_Error RTSPRequest::SendDigestChallenge(UInt32 qop, StrPtrLen *nonce, StrPtrLen *opaque) {
   QTSS_Error theErr = QTSS_NoErr;
 
   char challengeBuf[kAuthChallengeHeaderBufSize];
@@ -1011,18 +966,14 @@ QTSS_Error RTSPRequest::SendBasicChallenge(void) {
 
     // Get the module's realm
     StrPtrLen moduleRealm;
-    theErr = this->GetValuePtr(qtssRTSPReqURLRealm,
-                               0,
-                               (void **) &moduleRealm.Ptr,
-                               &moduleRealm.Len);
+    theErr = this->GetValuePtr(qtssRTSPReqURLRealm, 0, (void **) &moduleRealm.Ptr, &moduleRealm.Len);
     if ((QTSS_NoErr == theErr) && (moduleRealm.Len > 0)) {
       whichRealm = moduleRealm;
     } else {
       theErr = QTSS_NoErr;
       // Get the default realm from the config file or use the static default if config realm is not found
       QTSServerInterface *theServer = QTSServerInterface::GetServer();
-      prefRealmPtr =
-          theServer->GetPrefs()->GetAuthorizationRealm(); // allocates memory
+      prefRealmPtr = theServer->GetPrefs()->GetAuthorizationRealm(); // allocates memory
       Assert(prefRealmPtr != NULL);
       if (prefRealmPtr != NULL) {
         whichRealm.Set(prefRealmPtr, strlen(prefRealmPtr));
@@ -1031,23 +982,17 @@ QTSS_Error RTSPRequest::SendBasicChallenge(void) {
       }
     }
 
-    int realmLen = whichRealm.Len + challenge.Len
-        + 2; // add 2 based on double quote char + end of string 0x00
-    if (realmLen
-        > kRealmBuffSize) // The realm is too big so use the default realm
-    {
+    int realmLen = whichRealm.Len + challenge.Len + 2; // add 2 based on double quote char + end of string 0x00
+    if (realmLen > kRealmBuffSize) { // The realm is too big so use the default realm
       Assert(0);
       whichRealm = sDefaultRealm;
     }
     memcpy(&challenge.Ptr[challenge.Len], whichRealm.Ptr, whichRealm.Len);
     int newLen = challenge.Len + whichRealm.Len;
 
-    challenge.Ptr[newLen] =
-        '"'; // add the terminating "" this was accounted for with the size check above
-    challenge.Ptr[newLen + 1] =
-        0;// add the 0 terminator this was accounted for with the size check above
-    challenge.Len =
-        newLen + 1; // set the real size of the string excluding the 0.
+    challenge.Ptr[newLen] = '"'; // add the terminating "" this was accounted for with the size check above
+    challenge.Ptr[newLen + 1] = 0;// add the 0 terminator this was accounted for with the size check above
+    challenge.Len = newLen + 1; // set the real size of the string excluding the 0.
 
 #if (0)
     {  // test code

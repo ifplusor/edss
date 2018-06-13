@@ -82,9 +82,9 @@ class QTSSDictionary : public QTSSStream {
   //
   // CONSTRUCTOR / DESTRUCTOR
 
-  QTSSDictionary(QTSSDictionaryMap *inMap, CF::Core::Mutex *inMutex = NULL);
+  explicit QTSSDictionary(QTSSDictionaryMap *inMap, CF::Core::Mutex *inMutex = NULL);
 
-  virtual ~QTSSDictionary();
+  ~QTSSDictionary() override;
 
   //
   // QTSS API CALLS
@@ -126,11 +126,13 @@ class QTSSDictionary : public QTSSStream {
    * @returns QTSS_BadArgument,
    * @returns QTSS_ReadOnly (if attribute is read only),
    * @returns QTSS_BadIndex (attempt to set indexed parameter with param retrieval)
+   * @note this method will copy inBuffer#inLen to internally memory
    */
   QTSS_Error SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32 inLen, UInt32 inFlags = kNoFlags);
 
   /**
-   * @return QTSS_BadArgument, QTSS_ReadOnly (if attribute is read only),
+   * @returns QTSS_BadArgument
+   * @returns QTSS_ReadOnly (if attribute is read only),
    */
   QTSS_Error SetValuePtr(QTSS_AttributeID inAttrID, const void *inBuffer, UInt32 inLen, UInt32 inFlags = kNoFlags);
 
@@ -216,13 +218,13 @@ class QTSSDictionary : public QTSSStream {
 
  protected:
 
-  // Derived classes can provide a completion routine for some dictionary functions
-  virtual void RemoveValueComplete(UInt32 /*inAttrIndex*/, QTSSDictionaryMap * /*inMap*/, UInt32 /*inValueIndex*/) {}
+  /*
+   * Hooks, derived classes can provide a completion routine for some dictionary functions
+   */
 
-  virtual void SetValueComplete(UInt32 /*inAttrIndex*/, QTSSDictionaryMap * /*inMap*/, UInt32 /*inValueIndex*/, void * /*inNewValue*/, UInt32 /*inNewValueLen*/) {}
-
-  virtual void RemoveInstanceAttrComplete(UInt32 /*inAttrindex*/, QTSSDictionaryMap * /*inMap*/) {}
-
+  virtual void RemoveValueComplete(UInt32 inAttrIndex, QTSSDictionaryMap *inMap, UInt32 inValueIndex) {}
+  virtual void SetValueComplete(UInt32 inAttrIndex, QTSSDictionaryMap *inMap, UInt32 inValueIndex, void *inNewValue, UInt32 inNewValueLen) {}
+  virtual void RemoveInstanceAttrComplete(UInt32 inAttrindex, QTSSDictionaryMap *inMap) {}
   virtual QTSSDictionary *CreateNewDictionary(QTSSDictionaryMap *inMap, CF::Core::Mutex *inMutex);
 
  private:
@@ -230,23 +232,20 @@ class QTSSDictionary : public QTSSStream {
   struct DictValueElement {
     // This stores all necessary information for each attribute value.
 
-    DictValueElement() : fAllocatedLen(0),
-                         fNumAttributes(0),
-                         fAllocatedInternally(false),
-                         fIsDynamicDictionary(false) {}
+    DictValueElement() : fAllocatedLen(0), fNumAttributes(0), fAllocatedInternally(false), fIsDynamicDictionary(false) {}
 
-    // Does not delete! You Must call DeleteAttributeData for that
+    // NOTE: Does not delete! You Must call DeleteAttributeData for that
     ~DictValueElement() {}
 
-    CF::StrPtrLen fAttributeData; // The data
-    UInt32 fAllocatedLen;  // How much space do we have allocated?
-    UInt32 fNumAttributes; // If this is an iterated attribute, how many?
-    bool fAllocatedInternally; //Should we delete this memory?
-    bool fIsDynamicDictionary; //is this a dictionary object?
+    CF::StrPtrLen fAttributeData; // The data. Ptr: value array pointer, Len: every value size
+    UInt32 fAllocatedLen;         // How much space do we have allocated? memory size, not value num
+    UInt32 fNumAttributes;        // If this is an iterated attribute, how many?
+    bool fAllocatedInternally;    // Should we delete this memory?
+    bool fIsDynamicDictionary;    // is this a dictionary object?
   };
 
-  DictValueElement fAttributes[QTSS_MAX_ATTRIBUTE_NUMS];
-  DictValueElement *fInstanceAttrs;
+  DictValueElement fAttributes[QTSS_MAX_ATTRIBUTE_NUMS]; // not dynamic allocate
+  DictValueElement *fInstanceAttrs; // create by AddInstanceAttribute()
   UInt32 fInstanceArraySize;
   QTSSDictionaryMap *fMap;
   QTSSDictionaryMap *fInstanceMap;
@@ -258,7 +257,19 @@ class QTSSDictionary : public QTSSStream {
 };
 
 /**
- * 被用来描述QTSS Object的具体一个属性。
+ * 描述 QTSS_Object 的具体一个属性。
+ *
+ * @note QTSSAttrInfoDict 具有4个属性，分别指向fAttrInfo(AttrInfo)对应的4个字段
+ *
+ * @note QTSSAttrInfoDict 具有自引用的递归结构：</br>
+ *   QTSSDictionary </br>
+ *       +->fMap/fInstanceMap(QTSSDictionaryMap) </br>
+ *           +->fAttrArray(QTSSAttrInfoDict)                      ---+ </br>
+ *               +->fMap=QTSSDictionaryMap::kAttrInfoDictIndex       | </br>
+ *                   +->fAttrArray(QTSSAttrInfoDict)              ---+ </br>
+ *                       +->...
+ *
+ * @see QTSSDictionaryMap::kAttrInfoDictIndex
  */
 class QTSSAttrInfoDict : public QTSSDictionary {
  public:
@@ -323,9 +334,7 @@ class QTSSDictionaryMap {
   // QTSS API CALLS
 
   // All functions either return QTSS_BadArgument or QTSS_NoErr
-  QTSS_Error AddAttribute(const char *inAttrName,
-                          QTSS_AttrFunctionPtr inFuncPtr,
-                          QTSS_AttrDataType inDataType,
+  QTSS_Error AddAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr, QTSS_AttrDataType inDataType,
                           QTSS_AttrPermission inPermission);
 
   //
@@ -340,11 +349,9 @@ class QTSSDictionaryMap {
   // Searching / Iteration. These never return removed attributes
   QTSS_Error GetAttrInfoByName(const char *inAttrName, QTSSAttrInfoDict **outAttrInfoDict, bool returnRemovedAttr = false);
 
-  QTSS_Error GetAttrInfoByID(QTSS_AttributeID inID,
-                             QTSSAttrInfoDict **outAttrInfoDict);
+  QTSS_Error GetAttrInfoByID(QTSS_AttributeID inID, QTSSAttrInfoDict **outAttrInfoDict);
 
-  QTSS_Error GetAttrInfoByIndex(UInt32 inIndex,
-                                QTSSAttrInfoDict **outAttrInfoDict);
+  QTSS_Error GetAttrInfoByIndex(UInt32 inIndex, QTSSAttrInfoDict **outAttrInfoDict);
 
   QTSS_Error GetAttrID(const char *inAttrName, QTSS_AttributeID *outID);
 
@@ -362,13 +369,19 @@ class QTSSDictionaryMap {
     return (inAttrID & 0x80000000) != 0;
   }
 
+  //
   // ACCESSORS
-
   // These functions do no error checking. Be careful.
 
-  // Includes removed attributes
+  /**
+   * Return the number of attributes
+   * @note Includes removed attributes
+   */
   UInt32 GetNumAttrs() { return fNextAvailableID; }
 
+  /**
+   * Return the number of valid attributes
+   */
   UInt32 GetNumNonRemovedAttrs() { return fNumValidAttrs; }
 
   bool IsPreemptiveSafe(UInt32 inIndex) {
@@ -419,11 +432,14 @@ class QTSSDictionaryMap {
     return (bool) (fFlags & kCompleteFunctionsAllowed);
   }
 
+  //
   // MODIFIERS
 
-  // Sets this attribute ID to have this information
-
-  void SetAttribute(QTSS_AttributeID inID, const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr, QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission);
+  /**
+   * Sets this attribute ID to have this information
+   */
+  void SetAttribute(QTSS_AttributeID inID, const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
+                    QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission);
 
 
   //
@@ -483,7 +499,7 @@ class QTSSDictionaryMap {
   };
 
   UInt32 fNextAvailableID;
-  UInt32 fNumValidAttrs;
+  UInt32 fNumValidAttrs;   // 有效的属性数量
   UInt32 fAttrArraySize;
   QTSSAttrInfoDict **fAttrArray;
   UInt32 fFlags;

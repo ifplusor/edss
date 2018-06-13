@@ -63,11 +63,7 @@ RTPSession::~RTPSession() {
     SInt32 theNumLatePacketsDropped = 0;
     SInt32 theNumResends = 0;
 
-    for (int x = 0;
-         this->GetValuePtr(qtssCliSesStreamObjects,
-                           x,
-                           (void **) &theStream,
-                           &theLen) == QTSS_NoErr; x++) {
+    for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects, x, (void **) &theStream, &theLen) == QTSS_NoErr; x++) {
       Assert(theStream != NULL);
       Assert(theLen == sizeof(RTPStream *));
       if (*theStream != NULL) {
@@ -99,10 +95,7 @@ RTPSession::~RTPSession() {
     delete[] theURL;
   }
 
-  for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects,
-                                    x,
-                                    (void **) &theStream,
-                                    &theLen) == QTSS_NoErr; x++) {
+  for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects, x, (void **) &theStream, &theLen) == QTSS_NoErr; x++) {
     Assert(theStream != NULL);
     Assert(theLen == sizeof(RTPStream *));
 
@@ -198,16 +191,12 @@ RTPStream *RTPSession::FindRTPStreamForChannelNum(UInt8 inChannelNum) {
   RTPStream **theStream = NULL;
   UInt32 theLen = 0;
 
-  for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects,
-                                    x,
-                                    (void **) &theStream,
-                                    &theLen) == QTSS_NoErr; x++) {
+  for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects, x, (void **) &theStream, &theLen) == QTSS_NoErr; x++) {
     Assert(theStream != NULL);
     Assert(theLen == sizeof(RTPStream *));
 
     if (*theStream != NULL)
-      if (((*theStream)->GetRTPChannelNum() == inChannelNum) ||
-          ((*theStream)->GetRTCPChannelNum() == inChannelNum))
+      if (((*theStream)->GetRTPChannelNum() == inChannelNum) || ((*theStream)->GetRTCPChannelNum() == inChannelNum))
         return *theStream;
   }
   return NULL; // Couldn't find a matching stream
@@ -240,10 +229,10 @@ QTSS_Error RTPSession::AddStream(RTSPRequestInterface *request, RTPStream **outS
 
   // 调用 RTPStream::Setup 函数
   QTSS_Error theErr = (*outStream)->Setup(request, inFlags);
-  if (theErr != QTSS_NoErr)
+  if (theErr != QTSS_NoErr) {
     // If we couldn't setup the stream, make sure not to leak memory!
     delete *outStream;
-  else {
+  } else {
     // If the stream init succeeded, then put it into the array of setup streams
     theErr = this->SetValue(qtssCliSesStreamObjects, this->GetNumValues(qtssCliSesStreamObjects), outStream, sizeof(RTPStream *), QTSSDictionary::kDontObeyReadOnly);
     Assert(theErr == QTSS_NoErr);
@@ -258,10 +247,7 @@ void RTPSession::SetStreamThinningParams(Float32 inLateTolerance) {
   RTPStream **theStream = NULL;
   UInt32 theLen = 0;
 
-  for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects,
-                                    x,
-                                    (void **) &theStream,
-                                    &theLen) == QTSS_NoErr; x++) {
+  for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects, x, (void **) &theStream, &theLen) == QTSS_NoErr; x++) {
     Assert(theStream != NULL);
     Assert(theLen == sizeof(RTPStream *));
     if (*theStream != NULL) {
@@ -416,8 +402,7 @@ void RTPSession::Teardown() {
   this->Signal(kKillEvent);
 }
 
-void RTPSession::SendPlayResponse(RTSPRequestInterface *request,
-                                  UInt32 inFlags) {
+void RTPSession::SendPlayResponse(RTSPRequestInterface *request, UInt32 inFlags) {
   QTSS_RTSPHeader theHeader = qtssRTPInfoHeader;
 
   RTPStream **theStream = NULL;
@@ -425,10 +410,7 @@ void RTPSession::SendPlayResponse(RTSPRequestInterface *request,
   UInt32 valueCount = this->GetNumValues(qtssCliSesStreamObjects);
   bool lastValue = false;
   for (UInt32 x = 0; x < valueCount; x++) {
-    this->GetValuePtr(qtssCliSesStreamObjects,
-                      x,
-                      (void **) &theStream,
-                      &theLen);
+    this->GetValuePtr(qtssCliSesStreamObjects, x, (void **) &theStream, &theLen);
     Assert(theStream != NULL);
     Assert(theLen == sizeof(RTPStream *));
 
@@ -457,8 +439,7 @@ void RTPSession::SendDescribeResponse(RTSPRequestInterface *inRequest) {
 
   // write x-Accept-Retransmit header
   static StrPtrLen sRetransmitProtocolName("our-retransmit");
-  inRequest->AppendHeader(qtssXAcceptRetransmitHeader,
-                          &sRetransmitProtocolName);
+  inRequest->AppendHeader(qtssXAcceptRetransmitHeader, &sRetransmitProtocolName);
 
   // write x-Accept-Dynamic-Rate header
   static StrPtrLen dynamicRateEnabledStr("1");

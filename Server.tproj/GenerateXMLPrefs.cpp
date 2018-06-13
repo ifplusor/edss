@@ -78,8 +78,7 @@ static const PrefConversionInfo kPrefs[] =
         {NULL, NULL, qtssAttrDataTypeCharArray}
     };
 
-int GenerateAllXMLPrefs(FilePrefsSource *inPrefsSource,
-                        XMLPrefsParser *inXMLPrefs) {
+int GenerateAllXMLPrefs(FilePrefsSource *inPrefsSource, XMLPrefsParser *inXMLPrefs) {
   for (UInt32 x = 0; x < inPrefsSource->GetNumKeys(); x++) {
     //
     // Get the name of this pref
@@ -92,8 +91,7 @@ int GenerateAllXMLPrefs(FilePrefsSource *inPrefsSource,
       if (::strcmp(thePrefName, kPrefs[y].fPrefName) == 0)
         break;
 
-    char *theTypeString =
-        (char *) QTSSDataConverter::TypeToTypeString(kPrefs[y].fPrefType);
+    char *theTypeString = (char *) QTSSDataConverter::TypeToTypeString(kPrefs[y].fPrefType);
     ContainerRef module = inXMLPrefs->GetRefForModule(kPrefs[y].fModuleName);
     ContainerRef pref = inXMLPrefs->AddPref(module, thePrefName, theTypeString);
 

@@ -608,15 +608,13 @@ class ReflectorStream {
 };
 
 void ReflectorStream::UpdateBitRate(SInt64 currentTime) {
-  if ((fLastBitRateSample + ReflectorStream::kBitRateAvgIntervalInMilSecs)
-      < currentTime) {
+  if ((fLastBitRateSample + ReflectorStream::kBitRateAvgIntervalInMilSecs) < currentTime) {
     unsigned int intervalBytes = fBytesSentInThisInterval;
     //(void)atomic_sub(&fBytesSentInThisInterval, intervalBytes);
     fBytesSentInThisInterval.fetch_sub(intervalBytes);
 
     // Multiply by 1000 to convert from milliseconds to seconds, and by 8 to convert from bytes to bits
-    Float32 bps = (Float32) (intervalBytes * 8)
-        / (Float32) (currentTime - fLastBitRateSample);
+    Float32 bps = (Float32) (intervalBytes * 8) / (Float32) (currentTime - fLastBitRateSample);
     bps *= 1000;
     fCurrentBitRate = (UInt32) bps;
 

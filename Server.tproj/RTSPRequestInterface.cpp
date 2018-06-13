@@ -57,54 +57,54 @@ StrPtrLen RTSPRequestInterface::sPremadeNoHeaderPtr(sPremadeNoHeader, kStaticHea
 
 StrPtrLen RTSPRequestInterface::sColonSpace(": ", 2);
 
-QTSSAttrInfoDict::AttrInfo  RTSPRequestInterface::sAttributes[] =
-    {   /*fields:   fAttrName, fFuncPtr, fAttrDataType, fAttrPermission */
-        /* 0  */{"qtssRTSPReqFullRequest", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 1  */{"qtssRTSPReqMethodStr", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 2  */{"qtssRTSPReqFilePath", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModeWrite},
-        /* 3  */{"qtssRTSPReqURI", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 4  */{"qtssRTSPReqFilePathTrunc", GetTruncatedPath, qtssAttrDataTypeCharArray, qtssAttrModeRead},
-        /* 5  */{"qtssRTSPReqFileName", GetFileName, qtssAttrDataTypeCharArray, qtssAttrModeRead},
-        /* 6  */{"qtssRTSPReqFileDigit", GetFileDigit, qtssAttrDataTypeCharArray, qtssAttrModeRead},
-        /* 7  */{"qtssRTSPReqAbsoluteURL", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 8  */{"qtssRTSPReqTruncAbsoluteURL", GetAbsTruncatedPath, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
-        /* 9  */{"qtssRTSPReqMethod", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 10 */{"qtssRTSPReqStatusCode", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 11 */{"qtssRTSPReqStartTime", NULL, qtssAttrDataTypeFloat64, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 12 */{"qtssRTSPReqStopTime", NULL, qtssAttrDataTypeFloat64, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 13 */{"qtssRTSPReqRespKeepAlive", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 14 */{"qtssRTSPReqRootDir", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModeWrite},
-        /* 15 */{"qtssRTSPReqRealStatusCode", GetRealStatusCode, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 16 */{"qtssRTSPReqStreamRef", NULL, qtssAttrDataTypeQTSS_StreamRef, qtssAttrModeRead | qtssAttrModePreempSafe},
+QTSSAttrInfoDict::AttrInfo  RTSPRequestInterface::sAttributes[] = {
+    /*fields:   fAttrName, fFuncPtr, fAttrDataType, fAttrPermission */
+    /* 0  */{"qtssRTSPReqFullRequest", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 1  */{"qtssRTSPReqMethodStr", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 2  */{"qtssRTSPReqFilePath", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModeWrite},
+    /* 3  */{"qtssRTSPReqURI", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 4  */{"qtssRTSPReqFilePathTrunc", GetTruncatedPath, qtssAttrDataTypeCharArray, qtssAttrModeRead /*| qtssAttrModeCacheable*/},
+    /* 5  */{"qtssRTSPReqFileName", GetFileName, qtssAttrDataTypeCharArray, qtssAttrModeRead /*| qtssAttrModeCacheable*/},
+    /* 6  */{"qtssRTSPReqFileDigit", GetFileDigit, qtssAttrDataTypeCharArray, qtssAttrModeRead /*| qtssAttrModeCacheable*/},
+    /* 7  */{"qtssRTSPReqAbsoluteURL", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 8  */{"qtssRTSPReqTruncAbsoluteURL", GetAbsTruncatedPath, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeCacheable},
+    /* 9  */{"qtssRTSPReqMethod", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 10 */{"qtssRTSPReqStatusCode", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 11 */{"qtssRTSPReqStartTime", NULL, qtssAttrDataTypeFloat64, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 12 */{"qtssRTSPReqStopTime", NULL, qtssAttrDataTypeFloat64, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 13 */{"qtssRTSPReqRespKeepAlive", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 14 */{"qtssRTSPReqRootDir", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModeWrite},
+    /* 15 */{"qtssRTSPReqRealStatusCode", GetRealStatusCode, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 16 */{"qtssRTSPReqStreamRef", NULL, qtssAttrDataTypeQTSS_StreamRef, qtssAttrModeRead | qtssAttrModePreempSafe},
 
-        /* 17 */{"qtssRTSPReqUserName", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 18 */{"qtssRTSPReqUserPassword", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 19 */{"qtssRTSPReqUserAllowed", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 20 */{"qtssRTSPReqURLRealm", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 21 */{"qtssRTSPReqLocalPath", GetLocalPath, qtssAttrDataTypeCharArray, qtssAttrModeRead},
-        /* 22 */{"qtssRTSPReqIfModSinceDate", NULL, qtssAttrDataTypeTimeVal, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 23 */{"qtssRTSPReqQueryString", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 24 */{"qtssRTSPReqRespMsg", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 25 */{"qtssRTSPReqContentLen", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 26 */{"qtssRTSPReqSpeed", NULL, qtssAttrDataTypeFloat32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 27 */{"qtssRTSPReqLateTolerance", NULL, qtssAttrDataTypeFloat32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 28 */{"qtssRTSPReqTransportType", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 29 */{"qtssRTSPReqTransportMode", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 30 */{"qtssRTSPReqSetUpServerPort", NULL, qtssAttrDataTypeUInt16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 31 */{"qtssRTSPReqAction", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 32 */{"qtssRTSPReqUserProfile", NULL, qtssAttrDataTypeQTSS_Object, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 33 */{"qtssRTSPReqPrebufferMaxTime", NULL, qtssAttrDataTypeFloat32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 34 */{"qtssRTSPReqAuthScheme", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 35 */{"qtssRTSPReqSkipAuthorization", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 36 */{"qtssRTSPReqNetworkMode", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 37 */{"qtssRTSPReqDynamicRateValue", NULL, qtssAttrDataTypeSInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 17 */{"qtssRTSPReqUserName", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 18 */{"qtssRTSPReqUserPassword", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 19 */{"qtssRTSPReqUserAllowed", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 20 */{"qtssRTSPReqURLRealm", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 21 */{"qtssRTSPReqLocalPath", GetLocalPath, qtssAttrDataTypeCharArray, qtssAttrModeRead},
+    /* 22 */{"qtssRTSPReqIfModSinceDate", NULL, qtssAttrDataTypeTimeVal, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 23 */{"qtssRTSPReqQueryString", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 24 */{"qtssRTSPReqRespMsg", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 25 */{"qtssRTSPReqContentLen", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 26 */{"qtssRTSPReqSpeed", NULL, qtssAttrDataTypeFloat32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 27 */{"qtssRTSPReqLateTolerance", NULL, qtssAttrDataTypeFloat32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 28 */{"qtssRTSPReqTransportType", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 29 */{"qtssRTSPReqTransportMode", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 30 */{"qtssRTSPReqSetUpServerPort", NULL, qtssAttrDataTypeUInt16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 31 */{"qtssRTSPReqAction", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 32 */{"qtssRTSPReqUserProfile", NULL, qtssAttrDataTypeQTSS_Object, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 33 */{"qtssRTSPReqPrebufferMaxTime", NULL, qtssAttrDataTypeFloat32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 34 */{"qtssRTSPReqAuthScheme", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 35 */{"qtssRTSPReqSkipAuthorization", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 36 */{"qtssRTSPReqNetworkMode", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 37 */{"qtssRTSPReqDynamicRateValue", NULL, qtssAttrDataTypeSInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
 
-        /* 39 */{"qtssRTSPReqBandwidthBits", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 39 */{"qtssRTSPReqUserFound", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 40 */{"qtssRTSPReqAuthHandled", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
-        /* 41 */{"qtssRTSPReqDigestChallenge", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 42 */{"qtssRTSPReqDigestResponse", GetAuthDigestResponse, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe}
-    };
+    /* 39 */{"qtssRTSPReqBandwidthBits", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 39 */{"qtssRTSPReqUserFound", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 40 */{"qtssRTSPReqAuthHandled", NULL, qtssAttrDataTypeBool16, qtssAttrModeRead | qtssAttrModePreempSafe | qtssAttrModeWrite},
+    /* 41 */{"qtssRTSPReqDigestChallenge", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 42 */{"qtssRTSPReqDigestResponse", GetAuthDigestResponse, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe}
+};
 
 void RTSPRequestInterface::Initialize(void) {
   //make a partially complete header
@@ -126,33 +126,29 @@ void RTSPRequestInterface::Initialize(void) {
   Assert(sPremadeNoHeaderPtr.Len < kStaticHeaderSizeInBytes);
 
   //Setup all the dictionary stuff
-  for (UInt32 x = 0; x < qtssRTSPReqNumParams; x++)
-    QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kRTSPRequestDictIndex)->
-        SetAttribute(x,
-                     sAttributes[x].fAttrName,
-                     sAttributes[x].fFuncPtr,
-                     sAttributes[x].fAttrDataType,
-                     sAttributes[x].fAttrPermission);
+  QTSSDictionaryMap *theRequestMap = QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kRTSPRequestDictIndex);
+  for (UInt32 x = 0; x < qtssRTSPReqNumParams; x++) {
+    theRequestMap->SetAttribute(x, sAttributes[x].fAttrName, sAttributes[x].fFuncPtr,
+                                sAttributes[x].fAttrDataType, sAttributes[x].fAttrPermission);
+  }
 
-  QTSSDictionaryMap *theHeaderMap =
-      QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kRTSPHeaderDictIndex);
-  for (UInt32 y = 0; y < qtssNumHeaders; y++)
-    theHeaderMap->SetAttribute(y,
-                               RTSPProtocol::GetHeaderString(y).Ptr,
-                               NULL,
-                               qtssAttrDataTypeCharArray,
-                               qtssAttrModeRead | qtssAttrModePreempSafe);
+  QTSSDictionaryMap *theHeaderMap = QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kRTSPHeaderDictIndex);
+  for (UInt32 y = 0; y < qtssNumHeaders; y++) {
+    theHeaderMap->SetAttribute(y, RTSPProtocol::GetHeaderString(y).Ptr, NULL,
+                               qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe);
+  }
 }
 
 void RTSPRequestInterface::ReInit(RTSPSessionInterface *session) {
-  //   fSession=session;
-  //   fOutputStream=session->GetOutputStream();
-  fStandardHeadersWritten = false; // private initializes after protected and public storage above
+  // private initializes after protected and public storage above
+  //fSession=session;
+  //fOutputStream=session->GetOutputStream();
+  fStandardHeadersWritten = false;
 
   RTSPRequestStream *input = session->GetInputStream();
   this->SetVal(qtssRTSPReqFullRequest, input->GetRequestBuffer()->Ptr, input->GetRequestBuffer()->Len);
 
-  // klaus(20170223):fix ffplay cant pull stream from easydarwin
+  // klaus(20170223): fix ffplay can't pull stream from dss
   fHeaderDictionary.SetVal(qtssSessionHeader, NULL, 0);
   fHeaderDictionary.SetNumValues(qtssSessionHeader, 0);
 }
@@ -173,7 +169,7 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
       fTtl(0),
       fDestinationAddr(0),
       fSourceAddr(0),
-      fTransportType(qtssRTPTransportTypeTCP),
+      fTransportType(qtssRTPTransportTypeUDP), // NOTE: default transport type is 'RTP/AVP/UDP'
       fNetworkMode(qtssRTPNetworkModeDefault),
       fContentLength(0),
       fIfModSinceDate(0),
@@ -196,6 +192,7 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
       fStale(false),
       fSkipAuthorization(true),
       fEnableDynamicRateState(-1),// -1 undefined, 0 disabled, 1 enabled
+
     // DJM PROTOTYPE
       fRandomDataSize(0),
       fBandwidthBits(0),
@@ -203,11 +200,11 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
     // private storage initializes after protected and public storage above
       fSession(session),
       fOutputStream(session->GetOutputStream()),
-      fStandardHeadersWritten(false) { // private initializes after protected and public storage above
+      fStandardHeadersWritten(false) {
 
-  //Setup QTSS parameters that can be setup now. These are typically the parameters that are actually
-  //pointers to binary variable values. Because these variables are just member variables of this object,
-  //we can properly initialize their pointers right off the bat.
+  // Setup QTSS parameters that can be setup now. These are typically the parameters that are actually
+  // pointers to binary variable values. Because these variables are just member variables of this object,
+  // we can properly initialize their pointers right off the bat.
 
   fStreamRef = this;
   RTSPRequestStream *input = session->GetInputStream();
@@ -249,10 +246,12 @@ RTSPRequestInterface::RTSPRequestInterface(RTSPSessionInterface *session)
 
   this->SetVal(qtssRTSPReqDigestResponse, &fAuthDigestResponse, sizeof(fAuthDigestResponse));
 
+  // fix ffplay can't pull stream from dss
+  fHeaderDictionary.SetVal(qtssSessionHeader, NULL, 0);
+  fHeaderDictionary.SetNumValues(qtssSessionHeader, 0);
 }
 
-void RTSPRequestInterface::AppendHeader(QTSS_RTSPHeader inHeader,
-                                        StrPtrLen *inValue) {
+void RTSPRequestInterface::AppendHeader(QTSS_RTSPHeader inHeader, StrPtrLen *inValue) {
   if (!fStandardHeadersWritten)
     this->WriteStandardHeaders();
 
@@ -262,9 +261,8 @@ void RTSPRequestInterface::AppendHeader(QTSS_RTSPHeader inHeader,
   fOutputStream->PutEOL();
 }
 
-void RTSPRequestInterface::PutStatusLine(StringFormatter *putStream,
-                                         QTSS_RTSPStatusCode status,
-                                         RTSPProtocol::RTSPVersion version) {
+void RTSPRequestInterface::
+PutStatusLine(StringFormatter *putStream, QTSS_RTSPStatusCode status, RTSPProtocol::RTSPVersion version) {
   putStream->Put(RTSPProtocol::GetVersionString(version));
   putStream->PutSpace();
   putStream->Put(RTSPProtocol::GetStatusCodeAsString(status));
@@ -279,10 +277,7 @@ void RTSPRequestInterface::AppendContentLength(UInt32 contentLength) {
 
   char dataSize[10];
   dataSize[sizeof(dataSize) - 1] = 0;
-  s_snprintf(dataSize,
-                sizeof(dataSize) - 1,
-                "%"   _U32BITARG_   "",
-                contentLength);
+  s_snprintf(dataSize, sizeof(dataSize) - 1, "%" _U32BITARG_ "", contentLength);
   StrPtrLen contentLengthStr(dataSize);
   this->AppendHeader(qtssContentLengthHeader, &contentLengthStr);
 
@@ -302,8 +297,7 @@ void RTSPRequestInterface::AppendDateAndExpires() {
   this->AppendHeader(qtssExpiresHeader, &theDate);
 }
 
-void RTSPRequestInterface::AppendSessionHeaderWithTimeout(StrPtrLen *inSessionID,
-                                                          StrPtrLen *inTimeout) {
+void RTSPRequestInterface::AppendSessionHeaderWithTimeout(StrPtrLen *inSessionID, StrPtrLen *inTimeout) {
 
   // Append a session header if there wasn't one already
   if (GetHeaderDictionary()->GetValue(qtssSessionHeader)->Len == 0) {
@@ -329,38 +323,30 @@ void RTSPRequestInterface::AppendSessionHeaderWithTimeout(StrPtrLen *inSessionID
 
 }
 
-void RTSPRequestInterface::PutTransportStripped(StrPtrLen &fullTransportHeader,
-                                                StrPtrLen &fieldToStrip) {
+void RTSPRequestInterface::PutTransportStripped(StrPtrLen &fullTransportHeader, StrPtrLen &fieldToStrip) {
 
   // skip the fieldToStrip and echo the rest back
   UInt32 offset = (UInt32) (fieldToStrip.Ptr - fullTransportHeader.Ptr);
   StrPtrLen transportStart(fullTransportHeader.Ptr, offset);
-  while (transportStart.Len > 0) // back up removing chars up to and including ;
-  {
+  while (transportStart.Len > 0) { // back up removing chars up to and including ;
     transportStart.Len--;
     if (transportStart[transportStart.Len] == ';')
       break;
   }
 
-  StrPtrLen
-      transportRemainder(fieldToStrip.Ptr, fullTransportHeader.Len - offset);
+  StrPtrLen transportRemainder(fieldToStrip.Ptr, fullTransportHeader.Len - offset);
   StringParser transportParser(&transportRemainder);
-  transportParser.ConsumeUntil(&fieldToStrip,
-                               ';'); //remainder starts with ;
-  transportRemainder.Set(transportParser.GetCurrentPosition(),
-                         transportParser.GetDataRemaining());
+  transportParser.ConsumeUntil(&fieldToStrip, ';'); //remainder starts with ;
+  transportRemainder.Set(transportParser.GetCurrentPosition(), transportParser.GetDataRemaining());
 
   fOutputStream->Put(transportStart);
   fOutputStream->Put(transportRemainder);
 
 }
 
-void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA,
-                                                 StrPtrLen *serverPortB,
-                                                 StrPtrLen *channelA,
-                                                 StrPtrLen *channelB,
-                                                 StrPtrLen *serverIPAddr,
-                                                 StrPtrLen *ssrc) {
+void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA, StrPtrLen *serverPortB,
+                                                 StrPtrLen *channelA, StrPtrLen *channelB,
+                                                 StrPtrLen *serverIPAddr, StrPtrLen *ssrc) {
   static StrPtrLen sServerPortString(";server_port=");
   static StrPtrLen sSourceString(";source=");
   static StrPtrLen sInterleavedString(";interleaved=");
@@ -385,10 +371,8 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA,
   // see if it contains an interleaved field or client port field
   StrPtrLen stripClientPortStr;
   StrPtrLen stripInterleavedStr;
-  (void) outFirstTransport.FindStringIgnoreCase(sClientPort,
-                                                &stripClientPortStr);
-  (void) outFirstTransport.FindStringIgnoreCase(sInterLeaved,
-                                                &stripInterleavedStr);
+  (void) outFirstTransport.FindStringIgnoreCase(sClientPort, &stripClientPortStr);
+  (void) outFirstTransport.FindStringIgnoreCase(sInterLeaved, &stripInterleavedStr);
 
   // echo back the transport without the interleaved or client ports fields we will add those in ourselves
   if (stripClientPortStr.Len != 0)
@@ -410,12 +394,8 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA,
     fOutputStream->Put(sClientPortString);
     UInt16 portA = this->GetClientPortA();
     UInt16 portB = this->GetClientPortB();
-    StrPtrLenDel clientPortA(QTSSDataConverter::ValueToString(&portA,
-                                                              sizeof(portA),
-                                                              qtssAttrDataTypeUInt16));
-    StrPtrLenDel clientPortB(QTSSDataConverter::ValueToString(&portB,
-                                                              sizeof(portB),
-                                                              qtssAttrDataTypeUInt16));
+    StrPtrLenDel clientPortA(QTSSDataConverter::ValueToString(&portA, sizeof(portA), qtssAttrDataTypeUInt16));
+    StrPtrLenDel clientPortB(QTSSDataConverter::ValueToString(&portB, sizeof(portB), qtssAttrDataTypeUInt16));
 
     fOutputStream->Put(clientPortA);
     fOutputStream->PutChar('-');
@@ -438,9 +418,9 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA,
     fOutputStream->Put(*channelB);
   }
 
-  if (ssrc != NULL && ssrc->Ptr != NULL && ssrc->Len != 0
-      && fNetworkMode == qtssRTPNetworkModeUnicast
-      && fTransportMode == qtssRTPTransportModePlay) {
+  if (ssrc != NULL && ssrc->Ptr != NULL && ssrc->Len != 0 &&
+      fNetworkMode == qtssRTPNetworkModeUnicast &&
+      fTransportMode == qtssRTPTransportModePlay) {
     char *theCString = ssrc->GetAsCString();
     CharArrayDeleter cStrDeleter(theCString);
 
@@ -448,9 +428,7 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA,
     ::sscanf(theCString, "%"   _U32BITARG_   "", &ssrcVal);
     ssrcVal = htonl(ssrcVal);
 
-    StrPtrLen hexSSRC(QTSSDataConverter::ValueToString(&ssrcVal,
-                                                       sizeof(ssrcVal),
-                                                       qtssAttrDataTypeUnknown));
+    StrPtrLen hexSSRC(QTSSDataConverter::ValueToString(&ssrcVal, sizeof(ssrcVal), qtssAttrDataTypeUnknown));
     CharArrayDeleter hexStrDeleter(hexSSRC.Ptr);
 
     fOutputStream->Put(sSSRC);
@@ -492,12 +470,8 @@ void RTSPRequestInterface::AppendRetransmitHeader(UInt32 inAckTimeout) {
 
 }
 
-void RTSPRequestInterface::AppendRTPInfoHeader(QTSS_RTSPHeader inHeader,
-                                               StrPtrLen *url,
-                                               StrPtrLen *seqNumber,
-                                               StrPtrLen *ssrc,
-                                               StrPtrLen *rtpTime,
-                                               bool lastRTPInfo) {
+void RTSPRequestInterface::AppendRTPInfoHeader(QTSS_RTSPHeader inHeader, StrPtrLen *url, StrPtrLen *seqNumber,
+                                               StrPtrLen *ssrc, StrPtrLen *rtpTime, bool lastRTPInfo) {
   static StrPtrLen sURL("url=", 4);
   static StrPtrLen sSeq(";seq=", 5);
   static StrPtrLen sSsrc(";ssrc=", 6);
@@ -510,15 +484,14 @@ void RTSPRequestInterface::AppendRTPInfoHeader(QTSS_RTSPHeader inHeader,
   if (inHeader != qtssSameAsLastHeader)
     fOutputStream->Put(sColonSpace);
 
-  //Only append the various bits of RTP information if they actually have been
-  //providied
+  // Only append the various bits of RTP information if they actually have been provided
   if ((url != NULL) && (url->Len > 0)) {
     fOutputStream->Put(sURL);
 
+    // example: rtsp://127.0.0.1:8554/test_pc.sdp/test_pc.sdp
     if (true) {
       RTSPRequestInterface *theRequest = (RTSPRequestInterface *) this;
-      StrPtrLen
-          *path = (StrPtrLen *) theRequest->GetValue(qtssRTSPReqAbsoluteURL);
+      StrPtrLen *path = (StrPtrLen *) theRequest->GetValue(qtssRTSPReqAbsoluteURL);
 
       if (path != NULL && path->Len > 0) {
         fOutputStream->Put(*path);
@@ -554,8 +527,7 @@ void RTSPRequestInterface::WriteStandardHeaders() {
 
   //if this is a "200 OK" response (most HTTP responses), we have some special
   //optmizations here
-  bool sendServerInfo =
-      QTSServerInterface::GetServer()->GetPrefs()->GetRTSPServerInfoEnabled();
+  bool sendServerInfo = QTSServerInterface::GetServer()->GetPrefs()->GetRTSPServerInfoEnabled();
   if (fStatus == qtssSuccessOK) {
 
     if (sendServerInfo) {
@@ -605,10 +577,7 @@ void RTSPRequestInterface::SendHeader() {
 }
 
 QTSS_Error
-RTSPRequestInterface::Write(void *inBuffer,
-                            UInt32 inLength,
-                            UInt32 *outLenWritten,
-                            UInt32 /*inFlags*/) {
+RTSPRequestInterface::Write(void *inBuffer, UInt32 inLength, UInt32 *outLenWritten, UInt32 /*inFlags*/) {
   //now just write whatever remains into the output buffer
   fOutputStream->Put((char *) inBuffer, inLength);
 
@@ -619,56 +588,49 @@ RTSPRequestInterface::Write(void *inBuffer,
 }
 
 QTSS_Error
-RTSPRequestInterface::WriteV(iovec *inVec,
-                             UInt32 inNumVectors,
-                             UInt32 inTotalLength,
-                             UInt32 *outLenWritten) {
-  (void) fOutputStream->WriteV(inVec, inNumVectors, inTotalLength, NULL,
-                               RTSPResponseStream::kAlwaysBuffer);
+RTSPRequestInterface::WriteV(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength, UInt32 *outLenWritten) {
+  (void) fOutputStream->WriteV(inVec, inNumVectors, inTotalLength, NULL, RTSPResponseStream::kAlwaysBuffer);
   if (outLenWritten != NULL)
     *outLenWritten = inTotalLength;
   return QTSS_NoErr;
 }
 
 //param retrieval functions described in .h file
-void *RTSPRequestInterface::GetAbsTruncatedPath(QTSSDictionary *inRequest,
-                                                UInt32 * /*outLen*/) {
+void *RTSPRequestInterface::GetAbsTruncatedPath(QTSSDictionary *inRequest, UInt32 * /*outLen*/) {
   // This function gets called only once
-  // if qtssRTSPReqAbsoluteURL = rtsp://www.easydarwin.org:554/live.sdp?channel=1&token=888888/trackID=1
-  // then qtssRTSPReqTruncAbsoluteURL = rtsp://www.easydarwin.org:554/live.sdp?channel=1&token=888888
+
+  // if qtssRTSPReqAbsoluteURL = rtsp://www.easydarwin.org:554/live.sdp/trackID=1
+  // then qtssRTSPReqTruncAbsoluteURL = rtsp://www.easydarwin.org:554/live.sdp
 
   RTSPRequestInterface *theRequest = (RTSPRequestInterface *) inRequest;
-  theRequest->SetVal(qtssRTSPReqTruncAbsoluteURL,
-                     theRequest->GetValue(qtssRTSPReqAbsoluteURL));
+  theRequest->SetVal(qtssRTSPReqTruncAbsoluteURL, theRequest->GetValue(qtssRTSPReqAbsoluteURL));
 
-  //Adjust the length to truncate off the last file in the path
-
-  StrPtrLen
-      *theAbsTruncPathParam = theRequest->GetValue(qtssRTSPReqTruncAbsoluteURL);
-  theAbsTruncPathParam->Len--;
-  while (theAbsTruncPathParam->Ptr[theAbsTruncPathParam->Len]
-      != kPathDelimiterChar)
+  // Adjust the length to truncate off the last file in the path
+  StrPtrLen *theAbsTruncPathParam = theRequest->GetValue(qtssRTSPReqTruncAbsoluteURL);
+  if (theAbsTruncPathParam->Len > 0) {
     theAbsTruncPathParam->Len--;
+
+    // except kPathDelimiterChar
+    while (theAbsTruncPathParam->Ptr[theAbsTruncPathParam->Len] != kPathDelimiterChar)
+      theAbsTruncPathParam->Len--;
+  }
 
   return NULL;
 }
 
-void *RTSPRequestInterface::GetTruncatedPath(QTSSDictionary *inRequest,
-                                             UInt32 * /*outLen*/) {
+void *RTSPRequestInterface::GetTruncatedPath(QTSSDictionary *inRequest, UInt32 * /*outLen*/) {
   // This function always gets called
 
   RTSPRequestInterface *theRequest = (RTSPRequestInterface *) inRequest;
-  theRequest->SetVal(qtssRTSPReqFilePathTrunc,
-                     theRequest->GetValue(qtssRTSPReqFilePath));
+  theRequest->SetVal(qtssRTSPReqFilePathTrunc, theRequest->GetValue(qtssRTSPReqFilePath));
 
-  //Adjust the length to truncate off the last file in the path
+  // Adjust the length to truncate off the last file in the path
   StrPtrLen *theTruncPathParam = theRequest->GetValue(qtssRTSPReqFilePathTrunc);
-
   if (theTruncPathParam->Len > 0) {
     theTruncPathParam->Len--;
-    while ((theTruncPathParam->Len != 0)
-        && (theTruncPathParam->Ptr[theTruncPathParam->Len]
-            != kPathDelimiterChar))
+
+    // except kPathDelimiterChar
+    while ((theTruncPathParam->Len != 0) && (theTruncPathParam->Ptr[theTruncPathParam->Len] != kPathDelimiterChar))
       theTruncPathParam->Len--;
   }
 
@@ -681,27 +643,27 @@ void *RTSPRequestInterface::GetFileName(QTSSDictionary *inRequest, UInt32 * /*ou
   RTSPRequestInterface *theRequest = (RTSPRequestInterface *) inRequest;
   theRequest->SetVal(qtssRTSPReqFileName, theRequest->GetValue(qtssRTSPReqFilePath));
 
+  // NOTE: theFileNameParam is &fAttributes[qtssRTSPReqFileName].fAttributeData, so change it is change value
   StrPtrLen *theFileNameParam = theRequest->GetValue(qtssRTSPReqFileName);
 
-  //paranoid check
+  // paranoid check
   if (theFileNameParam->Len == 0)
     return theFileNameParam;
 
-  if (theFileNameParam->Ptr[0] == kPathDelimiterChar) {
-    theFileNameParam->Ptr++;
-    theFileNameParam->Len--;
-  }
-
-  //walk back in the file name until we hit a /
-  SInt32 x = 0;
-  int i = 0;
-  for (; x < theFileNameParam->Len; x++)
+  // walk back in the file name until we hit a /
+  SInt32 x = theFileNameParam->Len - 1;
+  for (; x > 0; x--)
     if (theFileNameParam->Ptr[x] == kPathDelimiterChar)
       break;
-  //once we do, make the tempPtr point to the next character after the slash,
-  //and adjust the length accordingly
-  theFileNameParam->Len = x;
 
+  // once we do, make the tempPtr point to the next character after the slash,
+  // and adjust the length accordingly
+  if (theFileNameParam->Ptr[x] == kPathDelimiterChar) {
+    theFileNameParam->Ptr = (&theFileNameParam->Ptr[x]) + 1;
+    theFileNameParam->Len -= (x + 1);
+  }
+
+  // just return NULL, because we set qtssRTSPReqFileName at the beginning
   return NULL;
 }
 
@@ -709,29 +671,31 @@ void *RTSPRequestInterface::GetFileDigit(QTSSDictionary *inRequest, UInt32 * /*o
   // This function always gets called
 
   RTSPRequestInterface *theRequest = (RTSPRequestInterface *) inRequest;
-  theRequest->SetVal(qtssRTSPReqFileDigit, theRequest->GetValue(qtssRTSPReqAbsoluteURL));
+  theRequest->SetVal(qtssRTSPReqFileDigit, theRequest->GetValue(qtssRTSPReqFilePath));
 
+  // qtssRTSPReqFileDigit 实际上是 qtssRTSPReqFilePath 的后缀子串
   StrPtrLen *theFileDigit = theRequest->GetValue(qtssRTSPReqFileDigit);
 
-  StrPtrLen theFilePath;
-  (void) QTSS_GetValuePtr(inRequest, qtssRTSPReqTruncAbsoluteURL, 0, (void **) &theFilePath.Ptr, &theFilePath.Len);
+  UInt32 theFilePathLen = theRequest->GetValue(qtssRTSPReqFilePath)->Len;
 
-  //UInt32  theFilePathLen = theRequest->GetValue(qtssRTSPReqTruncAbsoluteURL)->Len;
+  // NOTE: 此处未检查 trackID=
   theFileDigit->Ptr += theFileDigit->Len - 1;
   theFileDigit->Len = 0;
-  while ((StringParser::sDigitMask[(unsigned int) *(*theFileDigit).Ptr] != '\0') && (theFileDigit->Len <= theFilePath.Len)) {
+  while ((StringParser::sDigitMask[(unsigned int) *(theFileDigit->Ptr)] != 0) &&
+      (theFileDigit->Len <= theFilePathLen)) {
     theFileDigit->Ptr--;
     theFileDigit->Len++;
   }
-  //termination condition means that we aren't actually on a digit right now.
-  //Move pointer back onto the digit
+
+  // termination condition means that we aren't actually on a digit right now.
+  // Move pointer back onto the digit
   theFileDigit->Ptr++;
 
+  // just return NULL, because we set qtssRTSPReqFileDigit at the beginning
   return NULL;
 }
 
-void *RTSPRequestInterface::GetRealStatusCode(QTSSDictionary *inRequest,
-                                              UInt32 *outLen) {
+void *RTSPRequestInterface::GetRealStatusCode(QTSSDictionary *inRequest, UInt32 *outLen) {
   // Set the fRealStatusCode variable based on the current fStatusCode.
   // This function always gets called
   RTSPRequestInterface *theReq = (RTSPRequestInterface *) inRequest;
@@ -740,9 +704,9 @@ void *RTSPRequestInterface::GetRealStatusCode(QTSSDictionary *inRequest,
   return &theReq->fRealStatusCode;
 }
 
-void *RTSPRequestInterface::GetLocalPath(QTSSDictionary *inRequest,
-                                         UInt32 *outLen) {
+void *RTSPRequestInterface::GetLocalPath(QTSSDictionary *inRequest, UInt32 *outLen) {
   // This function always gets called
+
   RTSPRequestInterface *theRequest = (RTSPRequestInterface *) inRequest;
   QTSS_AttributeID theID = qtssRTSPReqFilePath;
 
@@ -756,10 +720,11 @@ void *RTSPRequestInterface::GetLocalPath(QTSSDictionary *inRequest,
   StrPtrLen *thePath = theRequest->GetValue(theID);
   StrPtrLen filePath(thePath->Ptr, thePath->Len);
   StrPtrLen *theRootDir = theRequest->GetValue(qtssRTSPReqRootDir);
-  if (theRootDir->Len
-      && theRootDir->Ptr[theRootDir->Len - 1] == kPathDelimiterChar
-      && thePath->Len && thePath->Ptr[0] == kPathDelimiterChar) {
+  if (theRootDir->Len && theRootDir->Ptr[theRootDir->Len - 1] == kPathDelimiterChar &&
+      thePath->Len && thePath->Ptr[0] == kPathDelimiterChar) {
     char *thePathEnd = &(filePath.Ptr[filePath.Len]);
+
+    // trim head kPathDelimiterChar
     while (filePath.Ptr != thePathEnd) {
       if (*filePath.Ptr != kPathDelimiterChar)
         break;
@@ -780,11 +745,7 @@ void *RTSPRequestInterface::GetLocalPath(QTSSDictionary *inRequest,
   ::memcpy(theFullPath, theRootDir->Ptr, theRootDir->Len);
   ::memcpy(theFullPath + theRootDir->Len, filePath.Ptr, filePath.Len);
 
-  (void) theRequest->SetValue(qtssRTSPReqLocalPath,
-                              0,
-                              theFullPath,
-                              fullPathLen,
-                              QTSSDictionary::kDontObeyReadOnly);
+  (void) theRequest->SetValue(qtssRTSPReqLocalPath, 0, theFullPath, fullPathLen, QTSSDictionary::kDontObeyReadOnly);
 
   // delete our copy of the data
   delete[] theFullPath;
@@ -793,8 +754,7 @@ void *RTSPRequestInterface::GetLocalPath(QTSSDictionary *inRequest,
   return NULL;
 }
 
-void *RTSPRequestInterface::GetAuthDigestResponse(QTSSDictionary *inRequest,
-                                                  UInt32 *) {
+void *RTSPRequestInterface::GetAuthDigestResponse(QTSSDictionary *inRequest, UInt32 *) {
   RTSPRequestInterface *theRequest = (RTSPRequestInterface *) inRequest;
   (void) theRequest->SetValue(qtssRTSPReqDigestResponse,
                               0,

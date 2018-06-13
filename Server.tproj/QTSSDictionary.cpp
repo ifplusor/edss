@@ -36,20 +36,16 @@
 #include "QTSSDataConverter.h"
 
 QTSSDictionary::QTSSDictionary(QTSSDictionaryMap *inMap, CF::Core::Mutex *inMutex)
-    : fInstanceAttrs(NULL),
-      fInstanceArraySize(0),
-      fMap(inMap),
-      fInstanceMap(NULL),
-      fMutexP(inMutex),
-      fMyMutex(false),
-      fLocked(false) {
+    : fInstanceAttrs(NULL), fInstanceArraySize(0), fMap(inMap), fInstanceMap(NULL),
+      fMutexP(inMutex), fMyMutex(false), fLocked(false) {
+
   if (fMap != NULL) {
     if (fMap->GetNumAttrs() > QTSS_MAX_ATTRIBUTE_NUMS) {
       s_printf("QTSS_MAX_ATTRIBUTE_NUMS not big enough, please check!");
       exit(0);
     }
   }
-  //    fAttributes = new DictValueElement[inMap->GetNumAttrs()];
+
   if (fMutexP == NULL) {
     fMyMutex = true;
     fMutexP = new CF::Core::Mutex();
@@ -58,8 +54,6 @@ QTSSDictionary::QTSSDictionary(QTSSDictionaryMap *inMap, CF::Core::Mutex *inMute
 
 QTSSDictionary::~QTSSDictionary() {
   if (fMap != NULL) this->DeleteAttributeData(fAttributes, fMap->GetNumAttrs(), fMap);
-  //  if (fAttributes != NULL)
-  //      delete [] fAttributes;
   this->DeleteAttributeData(fInstanceAttrs, fInstanceArraySize, fInstanceMap);
   delete[] fInstanceAttrs;
   delete fInstanceMap;
@@ -105,12 +99,10 @@ GetValuePtr(QTSS_AttributeID inAttrID, UInt32 inIndex, void **outValueBuffer, UI
     //     retrieval function provided, invoke that function now.
     // If function is *not* cacheable:
     //   always call the function
-
     theBuffer = (char *) theMap->GetAttrFunction(theMapIndex)(this, outValueLen);
 
-    //If the param retrieval function didn't return an explicit value for this attribute,
-    //refetch the parameter out of the array, in case the function modified it.
-
+    // If the param retrieval function didn't return an explicit value for this attribute,
+    // refetch the parameter out of the array, in case the function modified it.
     if (theBuffer == NULL) {
       theBuffer = theAttrs[theMapIndex].fAttributeData.Ptr;
       *outValueLen = theAttrs[theMapIndex].fAttributeData.Len;
@@ -132,10 +124,9 @@ GetValuePtr(QTSS_AttributeID inAttrID, UInt32 inIndex, void **outValueBuffer, UI
 
   // strings need an extra dereference - moved it up
   if ((theMap->GetAttrType(theMapIndex) == qtssAttrDataTypeCharArray) && (theAttrs[theMapIndex].fNumAttributes > 1)) {
-    char **string = (char **) theBuffer;
+    auto string = (char **) theBuffer;
     *outValueBuffer = *string;
-    //*outValueLen = strlen(*string) + 1;
-    *outValueLen = strlen(*string);
+    *outValueLen = static_cast<UInt32>(strlen(*string) /* +1 */);
   }
 
   return QTSS_NoErr;
@@ -188,11 +179,8 @@ QTSS_Error QTSSDictionary::GetValueAsString(QTSS_AttributeID inAttrID, UInt32 in
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSDictionary::CreateObjectValue(QTSS_AttributeID inAttrID,
-                                             UInt32 *outIndex,
-                                             QTSSDictionary **newObject,
-                                             QTSSDictionaryMap *inMap,
-                                             UInt32 inFlags) {
+QTSS_Error QTSSDictionary::CreateObjectValue(QTSS_AttributeID inAttrID, UInt32 *outIndex, QTSSDictionary **newObject,
+                                             QTSSDictionaryMap *inMap, UInt32 inFlags) {
   // Check first to see if this is a static attribute or an instance attribute
   QTSSDictionaryMap *theMap = fMap;
   DictValueElement *theAttrs = fAttributes;
@@ -249,7 +237,7 @@ QTSS_Error QTSSDictionary::CreateObjectValue(QTSS_AttributeID inAttrID,
 }
 
 /*
- * 对于要设置的属性对应有多个值的情况,SetValue函数根据属性的ID、值的index找到正确的存储位
+ * 对于要设置的属性对应有多个值的情况, SetValue函数根据属性的ID、值的index找到正确的存储位
  * 置(这里可能会涉及到空间的重分配和老数据的转储),并利用 inBuffer指针拷贝存储新的数据。
  * 所以调用这个函数时传进来的inBuffer指针可以为局部变量。
  */
@@ -280,7 +268,7 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
   QTSS_AttrDataType dataType = theMap->GetAttrType(theMapIndex);
   UInt32 attrLen = inLen;
   if (dataType == qtssAttrDataTypeCharArray) {
-    if (inIndex > 0) attrLen = sizeof(char *);    // value just contains a pointer
+    if (inIndex > 0) attrLen = sizeof(char *); // value just contains a pointer
 
     if ((numValues == 1) && (inIndex == 1)) {
       // we're adding a second value, so we need to change the storage from directly
@@ -305,14 +293,16 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
   } else {
     // If this attribute is iterated, this new value
     // must be the same size as all the others.
-    if (((inIndex > 0) || (numValues > 1))
-        && (theAttrs[theMapIndex].fAttributeData.Len != 0)
-        && (inLen != theAttrs[theMapIndex].fAttributeData.Len))
+    if (((inIndex > 0) || (numValues > 1)) &&
+        (theAttrs[theMapIndex].fAttributeData.Len != 0) &&
+        (inLen != theAttrs[theMapIndex].fAttributeData.Len)) {
       return QTSS_BadArgument;
+    }
   }
 
   //
   // Can't put empty space into the array of values
+
   // 数据必须连续存储
   if (inIndex > numValues)
     return QTSS_BadIndex;
@@ -321,15 +311,16 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
     // We need to reallocate this buffer.
     UInt32 theLen;
 
-    if (inIndex == 0)
-      theLen = attrLen;   // most attributes are single valued, so allocate just enough space
-    else
-      theLen = 2 * (attrLen * (inIndex + 1));// Allocate twice as much as we need
+    if (inIndex == 0) {
+      // for qtssAttrDataTypeCharArray, the storage of first value is a copy of the char array.
+      theLen = attrLen; // most attributes are single valued, so allocate just enough space
+    } else {
+      theLen = 2 * (attrLen * (inIndex + 1)); // Allocate twice as much as we need
+    }
     char *theNewBuffer = new char[theLen];
     if (inIndex > 0) {
       // Copy out the old attribute data
-      ::memcpy(theNewBuffer, theAttrs[theMapIndex].fAttributeData.Ptr,
-               theAttrs[theMapIndex].fAllocatedLen);
+      ::memcpy(theNewBuffer, theAttrs[theMapIndex].fAttributeData.Ptr, theAttrs[theMapIndex].fAllocatedLen);
     }
 
     // Now get rid of the old stuff. Delete the buffer
@@ -359,8 +350,7 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
 
     // The offset should be (attrLen * inIndex) and not (inLen * inIndex)
     char **valuePtr = (char **) (theAttrs[theMapIndex].fAttributeData.Ptr + (attrLen * inIndex));
-    if (inIndex < numValues)    // we're replacing an existing string
-      delete[] *valuePtr;
+    if (inIndex < numValues) delete[] *valuePtr; // we're replacing an existing string
     *valuePtr = (char *) attributeBufferPtr;
   }
 
@@ -378,7 +368,7 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
   //
   // Call the completion routine
   if (((fMap == NULL) || fMap->CompleteFunctionsAllowed()) && !(inFlags & kDontCallCompletionRoutine)) {
-    // SetValueComplete是虚函数,不同的继承类有不同的实现
+    // SetValueComplete 是虚函数, 不同的继承类有不同的实现
     this->SetValueComplete(theMapIndex, theMap, inIndex, attributeBufferPtr, inLen);
   }
 
@@ -408,7 +398,7 @@ QTSS_Error QTSSDictionary::SetValuePtr(QTSS_AttributeID inAttrID, const void *in
 
   UInt32 numValues = theAttrs[theMapIndex].fNumAttributes;
   if ((numValues > 0) || (theAttrs[theMapIndex].fAttributeData.Ptr != NULL))
-    return QTSS_BadArgument;    // you can only set the pointer if you haven't done set value
+    return QTSS_BadArgument; // you can only set the pointer if you haven't done set value
 
   theAttrs[theMapIndex].fAttributeData.Ptr = (char *) inBuffer;
   theAttrs[theMapIndex].fAttributeData.Len = inLen;
@@ -546,7 +536,7 @@ void QTSSDictionary::SetVal(QTSS_AttributeID inAttrID, void *inValueBuffer, UInt
   Assert((UInt32) inAttrID < fMap->GetNumAttrs());
 
   // 记录每个属性的信息、包括属性数据的来源和长度等。
-  fAttributes[inAttrID].fAttributeData.Ptr = (char *) inValueBuffer;
+  fAttributes[inAttrID].fAttributeData.Ptr = (char*) inValueBuffer;
   fAttributes[inAttrID].fAttributeData.Len = inBufferLen;
   fAttributes[inAttrID].fAllocatedLen = inBufferLen;
 
@@ -568,10 +558,8 @@ void QTSSDictionary::SetEmptyVal(QTSS_AttributeID inAttrID, void *inBuf, UInt32 
 #endif
 }
 
-QTSS_Error QTSSDictionary::AddInstanceAttribute(const char *inAttrName,
-                                                QTSS_AttrFunctionPtr inFuncPtr,
-                                                QTSS_AttrDataType inDataType,
-                                                QTSS_AttrPermission inPermission) {
+QTSS_Error QTSSDictionary::AddInstanceAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
+                                                QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission) {
   if ((fMap != NULL) && !fMap->InstanceAttrsAllowed())
     return QTSS_InstanceAttrsNotAllowed;
 
@@ -666,8 +654,7 @@ QTSS_Error QTSSDictionary::GetAttrInfoByIndex(UInt32 inIndex, QTSSAttrInfoDict *
     return fMap->GetAttrInfoByIndex(inIndex, outAttrInfoDict);
 
   Assert(fInstanceMap != NULL);
-  return fInstanceMap->GetAttrInfoByIndex(inIndex - numStaticValues,
-                                          outAttrInfoDict);
+  return fInstanceMap->GetAttrInfoByIndex(inIndex - numStaticValues, outAttrInfoDict);
 
 }
 
@@ -687,8 +674,7 @@ QTSS_Error QTSSDictionary::GetAttrInfoByID(QTSS_AttributeID inAttrID, QTSSAttrIn
   return QTSS_AttrDoesntExist;
 }
 
-QTSS_Error QTSSDictionary::GetAttrInfoByName(const char *inAttrName,
-                                             QTSSAttrInfoDict **outAttrInfoDict) {
+QTSS_Error QTSSDictionary::GetAttrInfoByName(const char *inAttrName, QTSSAttrInfoDict **outAttrInfoDict) {
   QTSS_Error theErr = QTSS_AttrDoesntExist;
   if (outAttrInfoDict == NULL)
     return QTSS_BadArgument;
@@ -705,16 +691,13 @@ QTSS_Error QTSSDictionary::GetAttrInfoByName(const char *inAttrName,
   return theErr;
 }
 
-void QTSSDictionary::DeleteAttributeData(DictValueElement *inDictValues,
-                                         UInt32 inNumValues,
-                                         QTSSDictionaryMap *theMap) {
+void QTSSDictionary::
+DeleteAttributeData(DictValueElement *inDictValues, UInt32 inNumValues, QTSSDictionaryMap *theMap) {
   for (UInt32 x = 0; x < inNumValues; x++) {
     if (inDictValues[x].fAllocatedInternally) {
-      if ((theMap->GetAttrType(x) == qtssAttrDataTypeCharArray) &&
-          (inDictValues[x].fNumAttributes > 1)) {
-        UInt32 z = 0;
-        for (char **y = (char **) (inDictValues[x].fAttributeData.Ptr);
-             z < inDictValues[x].fNumAttributes; z++)
+      if ((theMap->GetAttrType(x) == qtssAttrDataTypeCharArray) && (inDictValues[x].fNumAttributes > 1)) {
+        char **y = (char **) (inDictValues[x].fAttributeData.Ptr);
+        for (UInt32 z = 0; z < inDictValues[x].fNumAttributes; z++)
           delete[] y[z];
       }
       delete[] inDictValues[x].fAttributeData.Ptr;
@@ -722,13 +705,12 @@ void QTSSDictionary::DeleteAttributeData(DictValueElement *inDictValues,
   }
 }
 
-QTSSAttrInfoDict::AttrInfo  QTSSAttrInfoDict::sAttributes[] =
-    {
-        /* 0 */ {"qtssAttrName", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 1 */ {"qtssAttrID", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 2 */ {"qtssAttrDataType", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
-        /* 3 */ {"qtssAttrPermissions", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe}
-    };
+QTSSAttrInfoDict::AttrInfo  QTSSAttrInfoDict::sAttributes[] = {
+    /* 0 */ {"qtssAttrName", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 1 */ {"qtssAttrID", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 2 */ {"qtssAttrDataType", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe},
+    /* 3 */ {"qtssAttrPermissions", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModePreempSafe}
+};
 
 QTSSAttrInfoDict::QTSSAttrInfoDict()
     : QTSSDictionary(QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kAttrInfoDictIndex)),
@@ -740,38 +722,39 @@ QTSSDictionaryMap *QTSSDictionaryMap::sDictionaryMaps[kNumDictionaries + kNumDyn
 UInt32 QTSSDictionaryMap::sNextDynamicMap = kNumDictionaries;
 
 void QTSSDictionaryMap::Initialize() {
-  // 首先创建并初始化kAttrInfoDictIndex所对应的dict map。
-  // Have to do this one first because this dict map is used by all the other
-  // dict maps.
-  sDictionaryMaps[kAttrInfoDictIndex] = new QTSSDictionaryMap(qtssAttrInfoNumParams);
+  /*
+   * Have to do this one first because this dict map is used by all the other dict maps.
+   * NOTE: kAttrInfoDictIndex 是一个递归结构:
+   *   QTSSDictionary -> QTSSDictionaryMap -> QTSSAttrInfoDict(QTSSDictionary) -> kAttrInfoDictIndex(QTSSDictionaryMap)
+   *                                                      ^                               |
+   *                                                      +-------------------------------+
+   */
+  QTSSDictionaryMap *attrInfoMap = new QTSSDictionaryMap(qtssAttrInfoNumParams);
+  sDictionaryMaps[kAttrInfoDictIndex] = attrInfoMap;
 
   // Setup the Attr Info attributes before constructing any other dictionaries
-  for (UInt32 x = 0; x < qtssAttrInfoNumParams; x++)
-    sDictionaryMaps[kAttrInfoDictIndex]->SetAttribute(x,
-                                                      QTSSAttrInfoDict::sAttributes[x].fAttrName,
-                                                      QTSSAttrInfoDict::sAttributes[x].fFuncPtr,
-                                                      QTSSAttrInfoDict::sAttributes[x].fAttrDataType,
-                                                      QTSSAttrInfoDict::sAttributes[x].fAttrPermission);
+  for (UInt32 x = 0; x < qtssAttrInfoNumParams; x++) {
+    attrInfoMap->SetAttribute(x,
+                              QTSSAttrInfoDict::sAttributes[x].fAttrName,
+                              QTSSAttrInfoDict::sAttributes[x].fFuncPtr,
+                              QTSSAttrInfoDict::sAttributes[x].fAttrDataType,
+                              QTSSAttrInfoDict::sAttributes[x].fAttrPermission);
+  }
 
-  // 创建各种类型的dict map(比如kServerDictIndex、kPrefsDictIndex、kTextMessagesDictIndex、
-  // kServiceDictIndex、kRTPStreamDictIndex等),保存在sDictionaryMaps数组里。
-  sDictionaryMaps[kServerDictIndex] = new QTSSDictionaryMap(qtssSvrNumParams,
-                                                            QTSSDictionaryMap::kCompleteFunctionsAllowed);
-  sDictionaryMaps[kPrefsDictIndex] = new QTSSDictionaryMap(qtssPrefsNumParams,
-                                                           QTSSDictionaryMap::kInstanceAttrsAllowed |
-                                                                   QTSSDictionaryMap::kCompleteFunctionsAllowed);
+  // 创建各种类型的 dict map (比如 kServerDictIndex、kPrefsDictIndex、kTextMessagesDictIndex、
+  // kServiceDictIndex、kRTPStreamDictIndex等), 保存在sDictionaryMaps数组里。
+  sDictionaryMaps[kServerDictIndex] = new QTSSDictionaryMap(qtssSvrNumParams, QTSSDictionaryMap::kCompleteFunctionsAllowed);
+  sDictionaryMaps[kPrefsDictIndex] = new QTSSDictionaryMap(qtssPrefsNumParams, QTSSDictionaryMap::kInstanceAttrsAllowed | QTSSDictionaryMap::kCompleteFunctionsAllowed);
   sDictionaryMaps[kTextMessagesDictIndex] = new QTSSDictionaryMap(qtssMsgNumParams);
   sDictionaryMaps[kServiceDictIndex] = new QTSSDictionaryMap(0);
   sDictionaryMaps[kRTPStreamDictIndex] = new QTSSDictionaryMap(qtssRTPStrNumParams);
-  sDictionaryMaps[kClientSessionDictIndex] = new QTSSDictionaryMap( qtssCliSesNumParams,
-                                                                    QTSSDictionaryMap::kCompleteFunctionsAllowed);
+  sDictionaryMaps[kClientSessionDictIndex] = new QTSSDictionaryMap(qtssCliSesNumParams, QTSSDictionaryMap::kCompleteFunctionsAllowed);
   sDictionaryMaps[kRTSPSessionDictIndex] = new QTSSDictionaryMap(qtssRTSPSesNumParams);
   sDictionaryMaps[kRTSPRequestDictIndex] = new QTSSDictionaryMap(qtssRTSPReqNumParams);
   sDictionaryMaps[kRTSPHeaderDictIndex] = new QTSSDictionaryMap(qtssNumHeaders);
   sDictionaryMaps[kFileDictIndex] = new QTSSDictionaryMap(qtssFlObjNumParams);
   sDictionaryMaps[kModuleDictIndex] = new QTSSDictionaryMap(qtssModNumParams);
-  sDictionaryMaps[kModulePrefsDictIndex] =
-      new QTSSDictionaryMap(0, QTSSDictionaryMap::kInstanceAttrsAllowed | QTSSDictionaryMap::kCompleteFunctionsAllowed);
+  sDictionaryMaps[kModulePrefsDictIndex] = new QTSSDictionaryMap(0, QTSSDictionaryMap::kInstanceAttrsAllowed | QTSSDictionaryMap::kCompleteFunctionsAllowed);
   sDictionaryMaps[kQTSSUserProfileDictIndex] = new QTSSDictionaryMap(qtssUserNumParams);
   sDictionaryMaps[kQTSSConnectedUserDictIndex] = new QTSSDictionaryMap(qtssConnectionNumParams);
   sDictionaryMaps[kHTTPSessionDictIndex] = new QTSSDictionaryMap(qtssRTSPSesNumParams);
@@ -784,29 +767,43 @@ QTSSDictionaryMap::QTSSDictionaryMap(UInt32 inNumReservedAttrs, UInt32 inFlags)
       fFlags(inFlags) {
   if (fAttrArraySize < kMinArraySize)
     fAttrArraySize = kMinArraySize;
+
   // 根据要描述的Object的属性个数来初始化fAttrArray。
-  fAttrArray = new QTSSAttrInfoDict *[fAttrArraySize];
+  fAttrArray = new QTSSAttrInfoDict*[fAttrArraySize];
   ::memset(fAttrArray, 0, sizeof(QTSSAttrInfoDict *) * fAttrArraySize);
 }
 
-QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr, QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission) {
+QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName,
+                                           QTSS_AttrFunctionPtr inFuncPtr,
+                                           QTSS_AttrDataType inDataType,
+                                           QTSS_AttrPermission inPermission) {
   if (inAttrName == NULL || ::strlen(inAttrName) > QTSS_MAX_ATTRIBUTE_NAME_SIZE)
     return QTSS_BadArgument;
 
+  /*
+   * NOTE: where add -> remove -> add another type -> add same type, it will a bug
+   */
+
   for (UInt32 count = 0; count < fNextAvailableID; count++) {
-    if (::strcmp(&fAttrArray[count]->fAttrInfo.fAttrName[0], inAttrName) == 0) { // found the name in the dictionary
-      if (fAttrArray[count]->fAttrInfo.fAttrPermission & qtssPrivateAttrModeRemoved) { // it is a previously removed attribute
-        if (fAttrArray[count]->fAttrInfo.fAttrDataType == inDataType) { //same type so reuse the attribute
+    QTSSAttrInfoDict *attr = fAttrArray[count];
+    if (attr == NULL) {
+      // NOTE: encounter error
+    }
+
+    if (::strcmp(&attr->fAttrInfo.fAttrName[0], inAttrName) == 0) { // found the name in the dictionary
+      if (attr->fAttrInfo.fAttrPermission & qtssPrivateAttrModeRemoved) { // it is a previously removed attribute
+        if (attr->fAttrInfo.fAttrDataType == inDataType) { // same type so reuse the attribute
           QTSS_AttributeID attrID = fAttrArray[count]->fID;
           this->UnRemoveAttribute(attrID);
-          fAttrArray[count]->fAttrInfo.fFuncPtr = inFuncPtr; // reset
-          fAttrArray[count]->fAttrInfo.fAttrPermission = inPermission;// reset
+          attr->fAttrInfo.fFuncPtr = inFuncPtr; // reset
+          attr->fAttrInfo.fAttrPermission = inPermission; // reset
           return QTSS_NoErr; // nothing left to do. It is re-added.
         }
 
-        // a removed attribute with the same name but different type--so keep checking
+        // a removed attribute with the same name but different type, so keep checking
         continue;
       }
+
       // an error, an active attribute with this name exists
       return QTSS_AttrNameExists;
     }
@@ -821,17 +818,16 @@ QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName, QTSS_AttrFunc
       theNewArraySize = kMinArraySize;
 
     QTSSAttrInfoDict **theNewArray = new QTSSAttrInfoDict *[theNewArraySize];
-    ::memset(theNewArray, 0, sizeof(QTSSAttrInfoDict *) * theNewArraySize);
+    ::memset(theNewArray, 0, sizeof(QTSSAttrInfoDict*) * theNewArraySize);
     if (fAttrArray != NULL) {
-      ::memcpy(theNewArray, fAttrArray, sizeof(QTSSAttrInfoDict *) * fAttrArraySize);
+      ::memcpy(theNewArray, fAttrArray, sizeof(QTSSAttrInfoDict*) * fAttrArraySize);
       delete[] fAttrArray;
     }
     fAttrArray = theNewArray;
     fAttrArraySize = theNewArraySize;
   }
 
-  QTSS_AttributeID theID = fNextAvailableID;
-  fNextAvailableID++;
+  QTSS_AttributeID theID = fNextAvailableID++;
   fNumValidAttrs++;
   if (fFlags & kIsInstanceMap)
     theID |= 0x80000000; // Set the high order bit to indicate this is an instance attr
@@ -842,33 +838,29 @@ QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName, QTSS_AttrFunc
   return QTSS_NoErr;
 }
 
-void QTSSDictionaryMap::SetAttribute(QTSS_AttributeID inID,
-                                     const char *inAttrName,
-                                     QTSS_AttrFunctionPtr inFuncPtr,
-                                     QTSS_AttrDataType inDataType,
-                                     QTSS_AttrPermission inPermission) {
-  UInt32 theIndex = QTSSDictionaryMap::ConvertAttrIDToArrayIndex(inID);
-  UInt32 theNameLen = ::strlen(inAttrName);
+void QTSSDictionaryMap::SetAttribute(QTSS_AttributeID inID, const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
+                                     QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission) {
+
+  UInt32 theIndex = static_cast<UInt32>(QTSSDictionaryMap::ConvertAttrIDToArrayIndex(inID));
+  UInt32 theNameLen = static_cast<UInt32>(::strlen(inAttrName));
   Assert(theNameLen < QTSS_MAX_ATTRIBUTE_NAME_SIZE);
   Assert(fAttrArray[theIndex] == NULL);
 
-  // 创建描述属性的QTSSAttrInfoDict对象,将属性包含的信息(ID、名称、函数指针、数据类型、权限)保存下来。
-  fAttrArray[theIndex] = new QTSSAttrInfoDict;
-
-  // Copy the information into the first available element
-  fAttrArray[theIndex]->fID = inID;
-
-  ::strcpy(&fAttrArray[theIndex]->fAttrInfo.fAttrName[0], inAttrName);
-  fAttrArray[theIndex]->fAttrInfo.fFuncPtr = inFuncPtr;
-  fAttrArray[theIndex]->fAttrInfo.fAttrDataType = inDataType;
-  fAttrArray[theIndex]->fAttrInfo.fAttrPermission = inPermission;
+  // Copy the information into the new QTSSAttrInfoDict element
+  QTSSAttrInfoDict *attr = new QTSSAttrInfoDict;
+  attr->fID = inID;
+  ::strcpy(&attr->fAttrInfo.fAttrName[0], inAttrName); // copy
+  attr->fAttrInfo.fFuncPtr = inFuncPtr;
+  attr->fAttrInfo.fAttrDataType = inDataType;
+  attr->fAttrInfo.fAttrPermission = inPermission;
 
   // 将属性四个成员(名称、ID、数据类型、权限)的相关信息通过基类QTSSDictionary保存起来。
-  fAttrArray[theIndex]->SetVal(qtssAttrName, &fAttrArray[theIndex]->fAttrInfo.fAttrName[0], theNameLen);
-  fAttrArray[theIndex]->SetVal(qtssAttrID, &fAttrArray[theIndex]->fID, sizeof(fAttrArray[theIndex]->fID));
-  fAttrArray[theIndex]->SetVal(qtssAttrDataType, &fAttrArray[theIndex]->fAttrInfo.fAttrDataType, sizeof(fAttrArray[theIndex]->fAttrInfo.fAttrDataType));
-  fAttrArray[theIndex]->SetVal(qtssAttrPermissions, &fAttrArray[theIndex]->fAttrInfo.fAttrPermission,
-                               sizeof(fAttrArray[theIndex]->fAttrInfo.fAttrPermission));
+  attr->SetVal(qtssAttrName, &attr->fAttrInfo.fAttrName[0], theNameLen);
+  attr->SetVal(qtssAttrID, &attr->fID, sizeof(attr->fID));
+  attr->SetVal(qtssAttrDataType, &attr->fAttrInfo.fAttrDataType, sizeof(attr->fAttrInfo.fAttrDataType));
+  attr->SetVal(qtssAttrPermissions, &attr->fAttrInfo.fAttrPermission, sizeof(attr->fAttrInfo.fAttrPermission));
+
+  fAttrArray[theIndex] = attr;
 }
 
 QTSS_Error QTSSDictionaryMap::CheckRemovePermission(QTSS_AttributeID inAttrID) {
@@ -876,8 +868,7 @@ QTSS_Error QTSSDictionaryMap::CheckRemovePermission(QTSS_AttributeID inAttrID) {
   if (theIndex < 0)
     return QTSS_AttrDoesntExist;
 
-  if (0
-      == (fAttrArray[theIndex]->fAttrInfo.fAttrPermission & qtssAttrModeDelete))
+  if (!(fAttrArray[theIndex]->fAttrInfo.fAttrPermission & qtssAttrModeDelete))
     return QTSS_BadArgument;
 
   if (!(fFlags & kAllowRemoval))
@@ -895,10 +886,15 @@ QTSS_Error QTSSDictionaryMap::RemoveAttribute(QTSS_AttributeID inAttrID) {
   if (!(fFlags & kAllowRemoval))
     return QTSS_BadArgument;
 
-  //s_printf("QTSSDictionaryMap::RemoveAttribute arraySize=%"   _U32BITARG_   " numNonRemove= %"   _U32BITARG_   " fAttrArray[%"   _U32BITARG_   "]->fAttrInfo.fAttrName=%s\n",this->GetNumAttrs(), this->GetNumNonRemovedAttrs(), theIndex,fAttrArray[theIndex]->fAttrInfo.fAttrName);
-  //
-  // Don't actually touch the attribute or anything. Just flag the
-  // it as removed.
+//  s_printf("QTSSDictionaryMap::RemoveAttribute arraySize=%" _U32BITARG_
+//           " numNonRemove= %" _U32BITARG_
+//           " fAttrArray[%" _U32BITARG_ "]->fAttrInfo.fAttrName=%s\n",
+//           this->GetNumAttrs(),
+//           this->GetNumNonRemovedAttrs(),
+//           theIndex,
+//           fAttrArray[theIndex]->fAttrInfo.fAttrName);
+
+  // Don't actually touch the attribute or anything. Just flag the it as removed.
   fAttrArray[theIndex]->fAttrInfo.fAttrPermission |= qtssPrivateAttrModeRemoved;
   fNumValidAttrs--;
   Assert(fNumValidAttrs < 1000000);
@@ -906,30 +902,23 @@ QTSS_Error QTSSDictionaryMap::RemoveAttribute(QTSS_AttributeID inAttrID) {
 }
 
 QTSS_Error QTSSDictionaryMap::UnRemoveAttribute(QTSS_AttributeID inAttrID) {
-  if (this->ConvertAttrIDToArrayIndex(inAttrID) == -1)
-    return QTSS_AttrDoesntExist;
-
   SInt32 theIndex = this->ConvertAttrIDToArrayIndex(inAttrID);
   if (theIndex < 0)
     return QTSS_AttrDoesntExist;
 
-  fAttrArray[theIndex]->fAttrInfo.fAttrPermission &=
-      ~qtssPrivateAttrModeRemoved;
-
+  fAttrArray[theIndex]->fAttrInfo.fAttrPermission &= ~qtssPrivateAttrModeRemoved;
   fNumValidAttrs++;
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSDictionaryMap::GetAttrInfoByName(const char *inAttrName,
-                                                QTSSAttrInfoDict **outAttrInfoObject,
-                                                bool returnRemovedAttr) {
+QTSS_Error QTSSDictionaryMap::
+GetAttrInfoByName(const char *inAttrName, QTSSAttrInfoDict **outAttrInfoObject, bool returnRemovedAttr) {
   if (outAttrInfoObject == NULL)
     return QTSS_BadArgument;
 
   for (UInt32 count = 0; count < fNextAvailableID; count++) {
     if (::strcmp(&fAttrArray[count]->fAttrInfo.fAttrName[0], inAttrName) == 0) {
-      if ((fAttrArray[count]->fAttrInfo.fAttrPermission
-          & qtssPrivateAttrModeRemoved) && (!returnRemovedAttr))
+      if ((fAttrArray[count]->fAttrInfo.fAttrPermission & qtssPrivateAttrModeRemoved) && (!returnRemovedAttr))
         continue;
 
       *outAttrInfoObject = fAttrArray[count];
@@ -991,8 +980,7 @@ QTSS_Error QTSSDictionaryMap::GetAttrInfoByIndex(UInt32 inIndex,
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSDictionaryMap::GetAttrID(const char *inAttrName,
-                                        QTSS_AttributeID *outID) {
+QTSS_Error QTSSDictionaryMap::GetAttrID(const char *inAttrName, QTSS_AttributeID *outID) {
   if (outID == NULL)
     return QTSS_BadArgument;
 

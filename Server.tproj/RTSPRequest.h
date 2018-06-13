@@ -57,17 +57,17 @@
 class RTSPRequest : public RTSPRequestInterface {
  public:
 
-  //CONSTRUCTOR / DESTRUCTOR
+  //
+  // CONSTRUCTOR / DESTRUCTOR
+
   //these do very little. Just initialize / delete some member data.
   //
   //Arguments:        session: the session this request is on (massive cyclical dependency)
-  RTSPRequest(RTSPSessionInterface *session)
-      : RTSPRequestInterface(session) {}
+  explicit RTSPRequest(RTSPSessionInterface *session) : RTSPRequestInterface(session) {}
 
-  virtual ~RTSPRequest() {}
+  ~RTSPRequest() override = default;
 
-  //Parses the request. Returns an error handler if there was an error encountered
-  //in parsing.
+  // Parses the request. Returns an error handler if there was an error encountered in parsing.
   QTSS_Error Parse();
 
   QTSS_Error ParseAuthHeader(void);
@@ -82,9 +82,7 @@ class RTSPRequest : public RTSPRequestInterface {
 
   QTSS_Error SendBasicChallenge(void);
 
-  QTSS_Error SendDigestChallenge(UInt32 qop,
-                                 StrPtrLen *nonce,
-                                 StrPtrLen *opaque);
+  QTSS_Error SendDigestChallenge(UInt32 qop, StrPtrLen *nonce, StrPtrLen *opaque);
 
   QTSS_Error SendForbiddenResponse(void);
 
@@ -110,17 +108,14 @@ class RTSPRequest : public RTSPRequestInterface {
   //Returns:      A handler object signifying that a fatal syntax error has occurred
   QTSS_Error ParseHeaders(StringParser &parser);
 
-  //Functions to parse the contents of particuarly complicated headers (as a convienence
-  //for modules)
+  // Functions to parse the contents of particularly complicated headers (as a convienence for modules)
   void ParseRangeHeader();
 
   void ParseTransportHeader();
 
   void ParseIfModSinceHeader();
 
-  void ParseAddrSubHeader(StrPtrLen *inSubHeader,
-                          StrPtrLen *inHeaderName,
-                          UInt32 *outAddr);
+  void ParseAddrSubHeader(StrPtrLen *inSubHeader, StrPtrLen *inHeaderName, UInt32 *outAddr);
 
   void ParseRetransmitHeader();
 

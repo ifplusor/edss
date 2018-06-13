@@ -295,8 +295,8 @@ CF_Error CFInit(int argc, char **argv) {
   Bool16 theXMLPrefsExist = true;
   UInt32 debugLevel = 0;
   UInt32 debugOptions = kRunServerDebug_Off;
-  static char *sDefaultConfigFilePath = DEFAULTPATHS_ETC_DIR_OLD "easydarwin.conf";
-  static char *sDefaultXMLFilePath = DEFAULTPATHS_ETC_DIR "easydarwin.xml";
+  static char *sDefaultConfigFilePath = DEFAULTPATHS_ETC_DIR_OLD "edss.conf";
+  static char *sDefaultXMLFilePath = DEFAULTPATHS_ETC_DIR "edss.xml";
 
   char *theConfigFilePath = sDefaultConfigFilePath;
   char *theXMLFilePath = sDefaultXMLFilePath;
@@ -445,7 +445,7 @@ CF_Error CFInit(int argc, char **argv) {
     }
   }
 
-  //Construct a Prefs Source object to get server text messages
+  // Construct a Prefs Source object to get server text messages
   FilePrefsSource theMessagesSource;
   theMessagesSource.InitFromConfigFile("qtssmessages.txt");
 

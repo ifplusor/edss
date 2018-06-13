@@ -108,10 +108,8 @@ QTSS_AttrDataType QTSSDataConverter::TypeStringToType(char *inTypeString) {
   return qtssAttrDataTypeUnknown;
 }
 
-QTSS_Error QTSSDataConverter::StringToValue(char *inValueAsString,
-                                            QTSS_AttrDataType inType,
-                                            void *ioBuffer,
-                                            UInt32 *ioBufSize) {
+QTSS_Error QTSSDataConverter::
+StringToValue(char *inValueAsString, QTSS_AttrDataType inType, void *ioBuffer, UInt32 *ioBufSize) {
   UInt32 theBufSize = 0;
   char *theFormat = NULL;
 
@@ -215,9 +213,7 @@ QTSS_Error QTSSDataConverter::StringToValue(char *inValueAsString,
       break;
 
     default:
-      return ConvertCHexStringToBytes(inValueAsString,
-                                      ioBuffer,
-                                      ioBufSize);
+      return ConvertCHexStringToBytes(inValueAsString, ioBuffer, ioBufSize);
   }
 
   if ((ioBuffer == NULL) || (*ioBufSize < theBufSize)) {
@@ -277,9 +273,7 @@ char *QTSSDataConverter::ConvertBytesToCHexString(void *inValue,
   return resultStr;
 }
 
-char *QTSSDataConverter::ValueToString(void *inValue,
-                                       const UInt32 inValueLen,
-                                       const QTSS_AttrDataType inType) {
+char *QTSSDataConverter::ValueToString(void *inValue, const UInt32 inValueLen, const QTSS_AttrDataType inType) {
   if (inValue == NULL)
     return NULL;
 

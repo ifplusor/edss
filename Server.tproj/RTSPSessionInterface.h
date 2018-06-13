@@ -112,25 +112,16 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
   // Allows non-buffered writes to the client. These will flow control.
 
   // THE FIRST ENTRY OF THE IOVEC MUST BE BLANK!!!
-  virtual QTSS_Error WriteV(iovec *inVec,
-                            UInt32 inNumVectors,
-                            UInt32 inTotalLength,
-                            UInt32 *outLenWritten);
+  virtual QTSS_Error WriteV(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength, UInt32 *outLenWritten);
 
-  virtual QTSS_Error Write(void *inBuffer,
-                           UInt32 inLength,
-                           UInt32 *outLenWritten,
-                           UInt32 inFlags);
+  virtual QTSS_Error Write(void *inBuffer, UInt32 inLength, UInt32 *outLenWritten, UInt32 inFlags);
 
   virtual QTSS_Error Read(void *ioBuffer, UInt32 inLength, UInt32 *outLenRead);
 
   virtual QTSS_Error RequestEvent(QTSS_EventType inEventMask);
 
   // performs RTP over RTSP
-  QTSS_Error InterleavedWrite(void *inBuffer,
-                              UInt32 inLen,
-                              UInt32 *outLenWritten,
-                              unsigned char channel);
+  QTSS_Error InterleavedWrite(void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, unsigned char channel);
 
   // OPTIONS request
   void SaveOutputStream();
@@ -154,8 +145,7 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
     kMaxUserRealmLen = 64
   };
 
-  enum                        // Quality of protection
-  {
+  enum {                      // Quality of protection
     kNoQop = 0,    // No Quality of protection
     kAuthQop = 1,    // Authentication
     kAuthIntQop = 2     // Authentication with Integrity
@@ -188,12 +178,8 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
 
   // for coalescing small interleaved writes into a single TCP frame
   enum {
-    kTCPCoalesceBufferSize =
-    1450 //1450 is the max data space in an TCP segment over ent
-    ,
-    kTCPCoalesceDirectWriteSize =
-    0 // if > this # bytes bypass coalescing and make a direct write
-    ,
+    kTCPCoalesceBufferSize = 1450, //1450 is the max data space in an TCP segment over ent
+    kTCPCoalesceDirectWriteSize = 0, // if > this # bytes bypass coalescing and make a direct write
     kInteleaveHeaderSize = 4  // '$ '+ 1 byte ch ID + 2 bytes length
   };
   char *fTCPCoalesceBuffer;
@@ -219,7 +205,7 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
   UInt32 fSessionID;
   UInt32 fLocalAddr;
   UInt32 fRemoteAddr;
-  SInt32 fRequestBodyLen;
+  SInt32 fRequestBodyLen; // parse from header
 
   UInt16 fLocalPort;
   UInt16 fRemotePort;

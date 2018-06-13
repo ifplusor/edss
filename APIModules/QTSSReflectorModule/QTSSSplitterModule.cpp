@@ -224,12 +224,10 @@ QTSS_Error Initialize(QTSS_Initialize_Params *inParams) {
   ReflectorSession::Initialize();
 
   // Report to the server that this module handles DESCRIBE, SETUP, PLAY, PAUSE, and TEARDOWN
-  static QTSS_RTSPMethod sSupportedMethods[] =
-      {qtssDescribeMethod, qtssSetupMethod, qtssTeardownMethod, qtssPlayMethod,
-       qtssPauseMethod};
-  QTSSModuleUtils::SetupSupportedMethods(inParams->inServer,
-                                         sSupportedMethods,
-                                         5);
+  static QTSS_RTSPMethod sSupportedMethods[] = {
+      qtssDescribeMethod, qtssSetupMethod, qtssTeardownMethod, qtssPlayMethod, qtssPauseMethod
+  };
+  QTSSModuleUtils::SetupSupportedMethods(inParams->inServer, sSupportedMethods, 5);
 
   return QTSS_NoErr;
 }
@@ -241,9 +239,8 @@ QTSS_Error Shutdown() {
 QTSS_Error ProcessRTSPRequest(QTSS_StandardRTSP_Params *inParams) {
   QTSS_RTSPMethod *theMethod = NULL;
   UInt32 theLen = 0;
-  if ((QTSS_GetValuePtr(inParams->inRTSPRequest, qtssRTSPReqMethod, 0,
-                        (void **) &theMethod, &theLen) != QTSS_NoErr)
-      || (theLen != sizeof(QTSS_RTSPMethod))) {
+  if ((QTSS_GetValuePtr(inParams->inRTSPRequest, qtssRTSPReqMethod, 0, (void **) &theMethod, &theLen) != QTSS_NoErr) ||
+      (theLen != sizeof(QTSS_RTSPMethod))) {
     Assert(0);
     return QTSS_RequestFailed;
   }
@@ -252,32 +249,22 @@ QTSS_Error ProcessRTSPRequest(QTSS_StandardRTSP_Params *inParams) {
     return DoDescribe(inParams);
 
   RTPSessionOutput **theOutput = NULL;
-  QTSS_Error theErr = QTSS_GetValuePtr(inParams->inClientSession,
-                                       sOutputAttr,
-                                       0,
-                                       (void **) &theOutput,
-                                       &theLen);
+  QTSS_Error theErr = QTSS_GetValuePtr(inParams->inClientSession, sOutputAttr, 0, (void **) &theOutput, &theLen);
   if ((theErr != QTSS_NoErr) || (theLen != sizeof(RTPSessionOutput *)))
     return QTSS_RequestFailed;
 
   switch (*theMethod) {
     case qtssSetupMethod:
-      return DoSetup(inParams,
-                     (*theOutput)->GetReflectorSession());
+      return DoSetup(inParams, (*theOutput)->GetReflectorSession());
     case qtssPlayMethod:
-      return DoPlay(inParams,
-                    (*theOutput)->GetReflectorSession());
+      return DoPlay(inParams, (*theOutput)->GetReflectorSession());
     case qtssTeardownMethod:
       // Tell the server that this session should be killed, and send a TEARDOWN response
       (void) QTSS_Teardown(inParams->inClientSession);
-      (void) QTSS_SendStandardRTSPResponse(inParams->inRTSPRequest,
-                                           inParams->inClientSession,
-                                           0);
+      (void) QTSS_SendStandardRTSPResponse(inParams->inRTSPRequest, inParams->inClientSession, 0);
       break;
     case qtssPauseMethod:(void) QTSS_Pause(inParams->inClientSession);
-      (void) QTSS_SendStandardRTSPResponse(inParams->inRTSPRequest,
-                                           inParams->inClientSession,
-                                           0);
+      (void) QTSS_SendStandardRTSPResponse(inParams->inRTSPRequest, inParams->inClientSession, 0);
       break;
     default:break;
   }
@@ -290,24 +277,15 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
   // If this URL doesn't end with an .rcf, don't even bother. Ah, if only the QTSSReflectorModule
   // could make this same check as well
   StrPtrLen theURI;
-  (void) QTSS_GetValuePtr(inParams->inRTSPRequest,
-                          qtssRTSPReqURI,
-                          0,
-                          (void **) &theURI.Ptr,
-                          &theURI.Len);
-  if ((theURI.Len < sRCFSuffix.Len)
-      || (!sRCFSuffix.EqualIgnoreCase(&theURI.Ptr[theURI.Len - sRCFSuffix.Len],
-                                      sRCFSuffix.Len)))
+  (void) QTSS_GetValuePtr(inParams->inRTSPRequest, qtssRTSPReqURI, 0, (void **) &theURI.Ptr, &theURI.Len);
+  if ((theURI.Len < sRCFSuffix.Len) ||
+      (!sRCFSuffix.EqualIgnoreCase(&theURI.Ptr[theURI.Len - sRCFSuffix.Len], sRCFSuffix.Len)))
     return QTSS_NoErr;
 
   // Check and see if we are in the process of setting this connection up already
   ReflectorSession *theSession = NULL;
   UInt32 theLen = sizeof(ReflectorSession *);
-  (void) QTSS_GetValue(inParams->inClientSession,
-                       sSessionAttr,
-                       0,
-                       (void *) &theSession,
-                       &theLen);
+  (void) QTSS_GetValue(inParams->inClientSession, sSessionAttr, 0, (void *) &theSession, &theLen);
 
   if (theSession == NULL) {
     // If we are not already in the process of initializing and setting up this ReflectorSession,
@@ -315,11 +293,7 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
 
     // Check and see if the full path to this file matches an existing ReflectorSession
     StrPtrLen thePathPtr;
-    OSCharArrayDeleter
-        rcfPath(QTSSModuleUtils::GetFullPath(inParams->inRTSPRequest,
-                                             qtssRTSPReqFilePath,
-                                             &thePathPtr.Len,
-                                             NULL));
+    OSCharArrayDeleter rcfPath(QTSSModuleUtils::GetFullPath(inParams->inRTSPRequest, qtssRTSPReqFilePath, &thePathPtr.Len, NULL));
 
     thePathPtr.Ptr = rcfPath.GetObject();
     theSession = FindOrCreateSession(&thePathPtr, inParams);
@@ -334,17 +308,13 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
 
     // If we haven't finished the describe yet, call
     // Describe again on the RTSPSourceInfo object.
-    QTSS_Error
-        theErr = ((RTSPSourceInfo *) theSession->GetSourceInfo())->Describe();
+    QTSS_Error theErr = ((RTSPSourceInfo *) theSession->GetSourceInfo())->Describe();
     if (theErr != QTSS_NoErr)
-      return HandleSourceInfoErr(theErr, inParams, theSession,
-                                 ((RTSPSourceInfo *) theSession->GetSourceInfo())->GetRTSPClient());
+      return HandleSourceInfoErr(theErr, inParams, theSession, ((RTSPSourceInfo *) theSession->GetSourceInfo())->GetRTSPClient());
     else {
       // Describe has completed. At this point we can setup the ReflectorSession.
       // However, tell it not to consider this session completely setup yet, as
-      theErr = theSession->SetupReflectorSession(theSession->GetSourceInfo(),
-                                                 inParams,
-                                                 ReflectorSession::kDontMarkSetup);
+      theErr = theSession->SetupReflectorSession(theSession->GetSourceInfo(), inParams, ReflectorSession::kDontMarkSetup);
       if (theErr != QTSS_NoErr) {
         // If we get an error here, for some reason we couldn't bind the ports, etc, etc.
         // Just abort
@@ -363,8 +333,7 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
     // We need to make sure that the SETUP and PLAY requests execute as well.
     theErr = ((RTSPSourceInfo *) theSession->GetSourceInfo())->SetupAndPlay();
     if (theErr != QTSS_NoErr)
-      return HandleSourceInfoErr(theErr, inParams, theSession,
-                                 ((RTSPSourceInfo *) theSession->GetSourceInfo())->GetRTSPClient());
+      return HandleSourceInfoErr(theErr, inParams, theSession, ((RTSPSourceInfo *) theSession->GetSourceInfo())->GetRTSPClient());
 
     // We've completed the SETUP and PLAY process if we are here. The ReflectorSession
     // is completely setup.
@@ -376,19 +345,11 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
 
   //ok, we've found or setup the proper reflector session, create an RTPSessionOutput object,
   //and add it to the session's list of outputs
-  RTPSessionOutput *theNewOutput = NEW
-  RTPSessionOutput(inParams->inClientSession,
-                   theSession,
-                   sServerPrefs,
-                   sStreamCookieAttr);
+  RTPSessionOutput *theNewOutput = NEW RTPSessionOutput(inParams->inClientSession, theSession, sServerPrefs, sStreamCookieAttr);
   theSession->AddOutput(theNewOutput);
 
   // And vice-versa, store this reflector session in the RTP session.
-  (void) QTSS_SetValue(inParams->inClientSession,
-                       sOutputAttr,
-                       0,
-                       &theNewOutput,
-                       sizeof(theNewOutput));
+  (void) QTSS_SetValue(inParams->inClientSession, sOutputAttr, 0, &theNewOutput, sizeof(theNewOutput));
 
   // Finally, send the DESCRIBE response
 
@@ -398,15 +359,8 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
   Assert(theSession->GetLocalSDP()->Ptr != NULL);
   theDescribeVec[1].iov_base = theSession->GetLocalSDP()->Ptr;
   theDescribeVec[1].iov_len = theSession->GetLocalSDP()->Len;
-  (void) QTSS_AppendRTSPHeader(inParams->inRTSPRequest,
-                               qtssCacheControlHeader,
-                               kCacheControlHeader.Ptr,
-                               kCacheControlHeader.Len);
-  QTSSModuleUtils::SendDescribeResponse(inParams->inRTSPRequest,
-                                        inParams->inClientSession,
-                                        &theDescribeVec[0],
-                                        2,
-                                        theSession->GetLocalSDP()->Len);
+  (void) QTSS_AppendRTSPHeader(inParams->inRTSPRequest, qtssCacheControlHeader, kCacheControlHeader.Ptr, kCacheControlHeader.Len);
+  QTSSModuleUtils::SendDescribeResponse(inParams->inRTSPRequest, inParams->inClientSession, &theDescribeVec[0], 2, theSession->GetLocalSDP()->Len);
   return QTSS_NoErr;
 }
 
@@ -700,23 +654,14 @@ QTSS_Error DestroySession(QTSS_ClientSessionClosing_Params *inParams) {
   // Check and see if we are in the process of tearing down this connection already
   ReflectorSession *theSession = NULL;
   UInt32 theLen = sizeof(ReflectorSession *);
-  (void) QTSS_GetValue(inParams->inClientSession,
-                       sSessionAttr,
-                       0,
-                       (void *) &theSession,
-                       &theLen);
+  (void) QTSS_GetValue(inParams->inClientSession, sSessionAttr, 0, (void *) &theSession, &theLen);
 
-  if (theSession != NULL)
+  if (theSession != NULL) {
     IssueTeardown(theSession);
-  else {
+  } else {
     RTPSessionOutput **theOutput = NULL;
-    QTSS_Error theErr = QTSS_GetValuePtr(inParams->inClientSession,
-                                         sOutputAttr,
-                                         0,
-                                         (void **) &theOutput,
-                                         &theLen);
-    if ((theErr != QTSS_NoErr) || (theLen != sizeof(RTPSessionOutput *))
-        || (theOutput == NULL))
+    QTSS_Error theErr = QTSS_GetValuePtr(inParams->inClientSession, sOutputAttr, 0, (void **) &theOutput, &theLen);
+    if ((theErr != QTSS_NoErr) || (theLen != sizeof(RTPSessionOutput *)) || (theOutput == NULL))
       return QTSS_RequestFailed;
 
     // This function removes the output from the ReflectorSession, then
@@ -734,11 +679,7 @@ QTSS_Error DestroySession(QTSS_ClientSessionClosing_Params *inParams) {
       sSessionMap->UnRegister(theSession->GetRef());
 
       theLen = sizeof(theSession);
-      theErr = QTSS_SetValue(inParams->inClientSession,
-                             sSessionAttr,
-                             0,
-                             (void *) &theSession,
-                             theLen);
+      theErr = QTSS_SetValue(inParams->inClientSession, sSessionAttr, 0, (void *) &theSession, theLen);
       if (theErr != QTSS_NoErr)
         delete theSession;
       else

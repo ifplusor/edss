@@ -36,8 +36,6 @@
 
 #include <CF/ConfParser.h>
 
-const int kMaxLineLen = 2048;
-const int kMaxValLen = 1024;
 
 class KeyValuePair {
  public:
@@ -57,12 +55,9 @@ class KeyValuePair {
   void ResetValue(const char *inValue);
 };
 
-KeyValuePair::KeyValuePair(const char *inKey,
-                           const char *inValue,
-                           KeyValuePair *inNext) :
-    fKey(NULL),
-    fValue(NULL),
-    fNext(NULL) {
+KeyValuePair::
+KeyValuePair(const char *inKey, const char *inValue, KeyValuePair *inNext)
+    : fKey(NULL), fValue(NULL), fNext(NULL) {
   fKey = new char[::strlen(inKey) + 1];
   ::strcpy(fKey, inKey);
   fValue = new char[::strlen(inValue) + 1];
@@ -85,7 +80,6 @@ FilePrefsSource::FilePrefsSource(bool allowDuplicates)
     : fKeyValueList(NULL),
       fNumKeys(0),
       fAllowDuplicates(allowDuplicates) {
-
 }
 
 FilePrefsSource::~FilePrefsSource() {
@@ -94,7 +88,6 @@ FilePrefsSource::~FilePrefsSource() {
     fKeyValueList = fKeyValueList->fNext;
     delete keyValue;
   }
-
 }
 
 int FilePrefsSource::GetValue(const char *inKey, char *ioValue) {
@@ -106,45 +99,7 @@ int FilePrefsSource::GetValueByIndex(const char *inKey,
                                      char *ioValue) {
   KeyValuePair *thePair = this->FindValue(inKey, ioValue, inIndex);
 
-  if (thePair == NULL)
-    return false;
-
-  return true;
-
-  /*
-  char* valuePtr = thePair->fValue;
-
-  //this function makes the assumption that fValue doesn't start with whitespace
-  Assert(*valuePtr != '\t');
-  Assert(*valuePtr != ' ');
-
-  for (UInt32 count = 0; ((count < inIndex) && (valuePtr != '\0')); count++)
-  {
-      //go through all the "words" on this line (delimited by whitespace)
-      //until we hit the one specified by inIndex
-
-      //we aren't at the proper word yet, so skip...
-      while ((*valuePtr != ' ') && (*valuePtr != '\t') && (*valuePtr != '\0'))
-          valuePtr++;
-
-      //skip over all the whitespace between words
-      while ((*valuePtr == ' ') || (*valuePtr == '\t'))
-          valuePtr++;
-
-  }
-
-  //We've exhausted the data on this line before getting to our pref,
-  //so return an error.
-  if (*valuePtr == '\0')
-      return false;
-
-  //if we are here, then valuePtr is pointing to the beginning of the right word
-  while ((*valuePtr != ' ') && (*valuePtr != '\t') && (*valuePtr != '\0'))
-      *ioValue++ = *valuePtr++;
-  *ioValue = '\0';
-
-  return true;
-  */
+  return thePair != NULL;
 }
 
 char *FilePrefsSource::GetValueAtIndex(UInt32 inIndex) {
@@ -183,12 +138,10 @@ void FilePrefsSource::SetValue(const char *inKey, const char *inValue) {
   }
 }
 
-bool FilePrefsSource::FilePrefsConfigSetter(const char *paramName,
-                                            const char *paramValue[],
-                                            void *userData) {
+bool FilePrefsSource::FilePrefsConfigSetter(const char *paramName, const char *paramValue[], void *userData) {
   /*
-      static callback routine for ParseConfigFile
-  */
+     static callback routine for ParseConfigFile
+   */
   int valueIndex = 0;
 
   FilePrefsSource *theFilePrefs = (FilePrefsSource *) userData;
@@ -210,85 +163,11 @@ bool FilePrefsSource::FilePrefsConfigSetter(const char *paramName,
 
 int FilePrefsSource::InitFromConfigFile(const char *configFilePath) {
   /*
-      load config from specified file.  return non-zero
-      in the event of significant error(s).
-
-  */
+     load config from specified file.
+     return non-zero in the event of significant error(s).
+   */
 
   return ::ParseConfigFile(true, configFilePath, FilePrefsConfigSetter, this);
-
-  /*
-  int err = 0;
-  char bufLine[kMaxLineLen];
-  char key[kMaxValLen];
-  char value[kMaxLineLen];
-
-  FILE* fileDesc = ::fopen( configFilePath, "r");
-
-  if (fileDesc == NULL)
-  {
-      // report some problem here...
-      err = OSThread::GetErrno();
-
-      Assert( err );
-  }
-  else
-  {
-
-      while (fgets(bufLine, sizeof(bufLine) - 1, fileDesc) != NULL)
-      {
-          if (bufLine[0] != '#' && bufLine[0] != '\0')
-          {
-              int i = 0;
-              int n = 0;
-
-              while ( bufLine[i] == ' ' || bufLine[i] == '\t')
-                      { ++i;}
-
-              n = 0;
-              while ( bufLine[i] != ' ' &&
-                       bufLine[i] != '\t' &&
-                       bufLine[i] != '\n' &&
-                       bufLine[i] != '\r' &&
-                       bufLine[i] != '\0' &&
-                       n < (kMaxLineLen - 1) )
-              {
-                  key[n++] = bufLine[i++];
-              }
-              key[n] = '\0';
-
-              while (bufLine[i] == ' ' || bufLine[i] == '\t')
-              {++i;}
-
-              n = 0;
-              while ((bufLine[i] != '\n') && (bufLine[i] != '\0') &&
-                      (bufLine[i] != '\r') && (n < kMaxLineLen - 1))
-              {
-                        value[n++] = bufLine[i++];
-              }
-              value[n] = '\0';
-
-              if (key[0] != '#' && key[0] != '\0' && value[0] != '\0')
-              {
-                  s_printf("Adding config setting  <key=\"%s\", value=\"%s\">\n", key, value);
-                  this->SetValue(key, value);
-              }
-              else
-              {
-                      //assert(false);
-              }
-          }
-      }
-
-
-      int closeErr = ::fclose(fileDesc);
-      Assert(closeErr == 0);
-  }
-
-  return err;
-*/
-
-
 }
 
 void FilePrefsSource::DeleteValue(const char *inKey) {
@@ -323,10 +202,7 @@ void FilePrefsSource::WriteToConfigFile(const char *configFilePath) {
     KeyValuePair *keyValue = fKeyValueList;
 
     while (keyValue != NULL) {
-      (void) s_fprintf(fileDesc,
-                          "%s   %s\n\n",
-                          keyValue->fKey,
-                          keyValue->fValue);
+      (void) s_fprintf(fileDesc, "%s   %s\n\n", keyValue->fKey, keyValue->fValue);
 
       keyValue = keyValue->fNext;
     }
@@ -336,9 +212,7 @@ void FilePrefsSource::WriteToConfigFile(const char *configFilePath) {
   }
 }
 
-KeyValuePair *FilePrefsSource::FindValue(const char *inKey,
-                                         char *ioValue,
-                                         UInt32 index) {
+KeyValuePair *FilePrefsSource::FindValue(const char *inKey, char *ioValue, UInt32 index) {
   KeyValuePair *keyValue = fKeyValueList;
   UInt32 foundIndex = 0;
 

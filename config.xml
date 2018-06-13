@@ -128,9 +128,8 @@
 	<MODULE NAME="QTSSErrorLogModule" ></MODULE>
 	<MODULE NAME="QTSSReflectorModule" >
 		<PREF NAME="reflector_bucket_offset_delay_msec" TYPE="UInt32" >73</PREF>
-		<PREF NAME="reflector_buffer_size_sec" TYPE="UInt32" >1</PREF>
-		<PREF NAME="reflector_use_in_packet_receive_time" TYPE="bool" >false
-        </PREF>
+		<PREF NAME="reflector_buffer_size_sec" TYPE="UInt32" >0</PREF>
+		<PREF NAME="reflector_use_in_packet_receive_time" TYPE="bool" >false</PREF>
 		<PREF NAME="reflector_in_packet_max_receive_sec" TYPE="UInt32" >60</PREF>
 		<PREF NAME="reflector_rtp_info_offset_msec" TYPE="UInt32" >500</PREF>
 		<PREF NAME="disable_rtp_play_info" TYPE="bool" >false</PREF>
@@ -152,8 +151,7 @@
 		<PREF NAME="allow_announced_kill" TYPE="bool" >true</PREF>
 		<PREF NAME="enable_play_response_range_header" TYPE="bool" >true</PREF>
 		<PREF NAME="enable_player_compatibility" TYPE="bool" >true</PREF>
-		<PREF NAME="compatibility_adjust_sdp_media_bandwidth_percent" TYPE="UInt32" >100
-        </PREF>
+		<PREF NAME="compatibility_adjust_sdp_media_bandwidth_percent" TYPE="UInt32" >100</PREF>
 		<PREF NAME="force_rtp_info_sequence_and_time" TYPE="bool" >false</PREF>
 		<PREF NAME="BroadcasterGroup" >broadcaster</PREF>
 		<PREF NAME="redirect_broadcast_keyword" ></PREF>

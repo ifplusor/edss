@@ -110,8 +110,7 @@ class RTSPSession : public RTSPSessionInterface {
 
   bool IsPlaying() {
     if (fRTPSession == NULL) return false;
-    if (fRTPSession->GetSessionState() == qtssPlayingState) return true;
-    return false;
+    return fRTPSession->GetSessionState() == qtssPlayingState;
   }
 
  private:
@@ -176,8 +175,8 @@ class RTSPSession : public RTSPSessionInterface {
   static char sHTTPResponseNoServerHeaderBuf[kMaxHTTPResponseLen];
   static StrPtrLen sHTTPResponseNoServerHeaderPtr;
 
-  static char *sHTTPResponseFormatStr;
-  static char *sHTTPNoServerResponseFormatStr;
+  static const char *sHTTPResponseFormatStr;
+  static const char *sHTTPNoServerResponseFormatStr;
   char fProxySessionID[QTSS_MAX_SESSION_ID_LENGTH
   ];    // our magic cookie to match proxy connections
   StrPtrLen fProxySessionIDPtr;
@@ -226,7 +225,7 @@ class RTSPSession : public RTSPSessionInterface {
   UInt32 fCurrentModule;
   UInt32 fState;
 
-  QTSS_RoleParams fRoleParams;//module param blocks for roles.
+  QTSS_RoleParams fRoleParams;  // module param blocks for roles.
   QTSS_ModuleState fModuleState;
 
   QTSS_Error SetupAuthLocalPath(RTSPRequest *theRTSPRequest);

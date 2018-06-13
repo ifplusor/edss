@@ -46,7 +46,9 @@
 #include "QTSSDictionary.h"
 #include "QTSSPrefs.h"
 
+#ifndef MODULE_DEBUG
 #define MODULE_DEBUG 0
+#endif
 
 class QTSSModule : public QTSSDictionary, public CF::Thread::Task {
  public:
@@ -79,9 +81,8 @@ class QTSSModule : public QTSSDictionary, public CF::Thread::Task {
   //
   // MODIFIERS
   void SetPrefsDict(QTSSPrefs *inPrefs) { fPrefs = inPrefs; }
-  void SetAttributesDict(QTSSDictionary *inAttributes) {
-    fAttributes = inAttributes;
-  }
+  void SetAttributesDict(QTSSDictionary *inAttributes) { fAttributes = inAttributes; }
+
   //
   // ACCESSORS
 
@@ -96,26 +97,20 @@ class QTSSModule : public QTSSDictionary, public CF::Thread::Task {
 
   // This calls into the module.
   QTSS_Error CallDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParams) {
-    SInt32 theRoleIndex = -1;
+#if MODULE_DEBUG
+    SInt32 theRoleIndex = GetPrivateRoleIndex(inRole);
+    this->GetValue(qtssModName)->PrintStr("QTSSModule::CallDispatch ENTER module=", " role=");
+    if (theRoleIndex != -1)
+      s_printf("%s ENTER\n", sRoleNames[theRoleIndex]);
+#endif
 
-    if (MODULE_DEBUG) {
-      this->GetValue(qtssModName)->PrintStr(
-          "QTSSModule::CallDispatch ENTER module=",
-          " role=");
-      theRoleIndex = GetPrivateRoleIndex(inRole);
-      if (theRoleIndex != -1)
-        s_printf(" %s ENTR\n", sRoleNames[theRoleIndex]);
-
-    }
     QTSS_Error theError = (fDispatchFunc)(inRole, inParams);
 
-    if (MODULE_DEBUG) {
-      this->GetValue(qtssModName)->PrintStr(
-          "QTSSModule::CallDispatch EXIT  module=",
-          " role=");
-      if (theRoleIndex != -1)
-        s_printf(" %s EXIT\n", sRoleNames[theRoleIndex]);
-    }
+#if MODULE_DEBUG
+    this->GetValue(qtssModName)->PrintStr("QTSSModule::CallDispatch EXIT module=", " role=");
+    if (theRoleIndex != -1)
+      s_printf("%s EXIT\n", sRoleNames[theRoleIndex]);
+#endif
 
     return theError;
   }

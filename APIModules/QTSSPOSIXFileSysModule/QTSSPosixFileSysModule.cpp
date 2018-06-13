@@ -112,9 +112,7 @@ QTSS_Error Register(QTSS_Register_Params *inParams) {
 
 QTSS_Error Initialize(QTSS_Initialize_Params *inParams) {
   // Setup module utils
-  QTSSModuleUtils::Initialize(inParams->inMessages,
-                              inParams->inServer,
-                              inParams->inErrorLogStream);
+  QTSSModuleUtils::Initialize(inParams->inMessages, inParams->inServer, inParams->inErrorLogStream);
   return QTSS_NoErr;
 }
 

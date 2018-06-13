@@ -343,11 +343,7 @@ void APITests_DEBUG()
 #endif
 
 inline void KeepSession(QTSS_RTSPRequestObject theRequest, bool keep) {
-  (void) QTSS_SetValue(theRequest,
-                       qtssRTSPReqRespKeepAlive,
-                       0,
-                       &keep,
-                       sizeof(keep));
+  (void) QTSS_SetValue(theRequest, qtssRTSPReqRespKeepAlive, 0, &keep, sizeof(keep));
 }
 
 // FUNCTION IMPLEMENTATIONS
@@ -356,8 +352,7 @@ QTSS_Error QTSSAdminModule_Main(void *inPrivateArgs) {
   return _stublibrary_main(inPrivateArgs, QTSSAdminModuleDispatch);
 }
 
-QTSS_Error QTSSAdminModuleDispatch(QTSS_Role inRole,
-                                   QTSS_RoleParamPtr inParams) {
+QTSS_Error QTSSAdminModuleDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParams) {
   switch (inRole) {
     case QTSS_Register_Role: return Register(&inParams->regParams);
     case QTSS_Initialize_Role: return Initialize(&inParams->initParams);
@@ -813,11 +808,7 @@ QTSS_Error AuthorizeAdminRequest(QTSS_RTSPRequestObject request) {
   }
 
   if (!allowed) {
-    if (QTSS_NoErr != QTSS_SetValue(request,
-                                    qtssRTSPReqUserAllowed,
-                                    0,
-                                    &allowed,
-                                    sizeof(allowed)))
+    if (QTSS_NoErr != QTSS_SetValue(request, qtssRTSPReqUserAllowed, 0, &allowed, sizeof(allowed)))
       return QTSS_RequestFailed; // Bail on the request. The Server will handle the error
   }
 
@@ -827,11 +818,8 @@ QTSS_Error AuthorizeAdminRequest(QTSS_RTSPRequestObject request) {
 bool AcceptSession(QTSS_RTSPSessionObject inRTSPSession) {
   char remoteAddress[20] = {0};
   StrPtrLen theClientIPAddressStr(remoteAddress, sizeof(remoteAddress));
-  QTSS_Error err = QTSS_GetValue(inRTSPSession,
-                                 qtssRTSPSesRemoteAddrStr,
-                                 0,
-                                 (void *) theClientIPAddressStr.Ptr,
-                                 &theClientIPAddressStr.Len);
+  QTSS_Error err = QTSS_GetValue(
+      inRTSPSession, qtssRTSPSesRemoteAddrStr, 0, (void *) theClientIPAddressStr.Ptr, &theClientIPAddressStr.Len);
   if (err != QTSS_NoErr) return false;
 
   return AcceptAddress(&theClientIPAddressStr);
@@ -844,28 +832,18 @@ bool StillFlushing(QTSS_Filter_Params *inParams, bool flushing) {
     err = QTSS_Flush(inParams->inRTSPRequest);
     //s_printf("Flushing session=%"   _U32BITARG_   " QTSS_Flush err =%" _S32BITARG_ "\n",sSessID,err);
   }
-  if (err == QTSS_WouldBlock) // more to flush later
-  {
+  if (err == QTSS_WouldBlock) { // more to flush later
     sFlushing = true;
-    (void) QTSS_SetValue(inParams->inRTSPRequest,
-                         sFlushingID,
-                         0,
-                         (void *) &sFlushing,
-                         sFlushingLen);
+    (void) QTSS_SetValue(inParams->inRTSPRequest, sFlushingID, 0, (void *) &sFlushing, sFlushingLen);
     err = QTSS_RequestEvent(inParams->inRTSPRequest, QTSS_WriteableEvent);
     KeepSession(inParams->inRTSPRequest, true);
     //s_printf("Flushing session=%"   _U32BITARG_   " QTSS_RequestEvent err =%" _S32BITARG_ "\n",sSessID,err);
   } else {
     sFlushing = false;
-    (void) QTSS_SetValue(inParams->inRTSPRequest,
-                         sFlushingID,
-                         0,
-                         (void *) &sFlushing,
-                         sFlushingLen);
+    (void) QTSS_SetValue(inParams->inRTSPRequest, sFlushingID, 0, (void *) &sFlushing, sFlushingLen);
     KeepSession(inParams->inRTSPRequest, false);
 
-    if (flushing) // we were flushing so reset the LastRequestTime
-    {
+    if (flushing) { // we were flushing so reset the LastRequestTime
       sLastRequestTime = QTSS_Milliseconds();
       //s_printf("Done Flushing session=%"   _U32BITARG_   "\n",sSessID);
       return true;
@@ -878,43 +856,29 @@ bool StillFlushing(QTSS_Filter_Params *inParams, bool flushing) {
 bool IsAuthentic(QTSS_Filter_Params *inParams, StringParser *fullRequestPtr) {
   bool isAuthentic = false;
 
-  if (!sAuthenticationEnabled) // no authentication
-  {
+  if (!sAuthenticationEnabled) { // no authentication
     isAuthentic = true;
-  } else // must authenticate
-  {
+  } else { // must authenticate
     StrPtrLen theClientIPAddressStr;
-    (void) QTSS_GetValuePtr(inParams->inRTSPSession,
-                            qtssRTSPSesRemoteAddrStr,
-                            0,
-                            (void **) &theClientIPAddressStr.Ptr,
-                            &theClientIPAddressStr.Len);
+    (void) QTSS_GetValuePtr(inParams->inRTSPSession, qtssRTSPSesRemoteAddrStr, 0,
+                            (void **) &theClientIPAddressStr.Ptr, &theClientIPAddressStr.Len);
     bool isLocal = IPComponentStr(&theClientIPAddressStr).IsLocal();
 
     StrPtrLen authenticateName;
     StrPtrLen authenticatePassword;
     StrPtrLen authType;
-    bool hasAuthentication = HasAuthentication(fullRequestPtr,
-                                               &authenticateName,
-                                               &authenticatePassword,
-                                               &authType);
+    bool hasAuthentication = HasAuthentication(fullRequestPtr, &authenticateName, &authenticatePassword, &authType);
     if (hasAuthentication) {
       if (authType.Equal(sAuthRef)) {
         if (isLocal)
           isAuthentic = OSXAuthenticate(&authenticatePassword);
       } else
-        isAuthentic = Authenticate(inParams->inRTSPRequest,
-                                   &authenticateName,
-                                   &authenticatePassword);
+        isAuthentic = Authenticate(inParams->inRTSPRequest, &authenticateName, &authenticatePassword);
     }
   }
   //    if (isAuthentic)
   //        isAuthentic = AuthorizeAdminRequest(inParams->inRTSPRequest);
-  (void) QTSS_SetValue(inParams->inRTSPRequest,
-                       sAuthenticatedID,
-                       0,
-                       (void *) &isAuthentic,
-                       sizeof(isAuthentic));
+  (void) QTSS_SetValue(inParams->inRTSPRequest, sAuthenticatedID, 0, (void *) &isAuthentic, sizeof(isAuthentic));
 
   return isAuthentic;
 }
