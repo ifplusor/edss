@@ -62,6 +62,9 @@
 #define    MAX(a, b) (((a)>(b))?(a):(b))
 #endif    /* MAX */
 
+/**
+ * Outbound stream
+ */
 class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
  public:
 
@@ -72,8 +75,7 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
   // CONSTRUCTOR / DESTRUCTOR
 
   RTPStream(UInt32 inSSRC, RTPSessionInterface *inSession);
-
-  virtual ~RTPStream();
+  ~RTPStream() override;
 
   //
   //ACCESS FUNCTIONS
@@ -102,8 +104,7 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
 
   // Write sends RTP data to the client. Caller must specify
   // either qtssWriteFlagsIsRTP or qtssWriteFlagsIsRTCP
-  virtual QTSS_Error Write(void *inBuffer, UInt32 inLen,
-                           UInt32 *outLenWritten, QTSS_WriteFlags inFlags);
+  virtual QTSS_Error Write(void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, QTSS_WriteFlags inFlags);
 
 
   //UTILITY FUNCTIONS:
@@ -118,17 +119,12 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
 
   //Formats a RTP-Info header for this stream.
   //Isn't useful unless you've already called Play()
-  void AppendRTPInfo(QTSS_RTSPHeader inHeader,
-                     RTSPRequestInterface *request,
-                     UInt32 inFlags,
-                     bool lastInfo);
+  void AppendRTPInfo(QTSS_RTSPHeader inHeader, RTSPRequestInterface *request, UInt32 inFlags, bool lastInfo);
 
   //
   // When we get an incoming Interleaved Packet for this stream, this
   // function should be called
-  void ProcessIncomingInterleavedData(UInt8 inChannelNum,
-                                      RTSPSessionInterface *inRTSPSession,
-                                      CF::StrPtrLen *inPacket);
+  void ProcessIncomingInterleavedData(UInt8 inChannelNum, RTSPSessionInterface *inRTSPSession, CF::StrPtrLen *inPacket);
 
   //When we get a new RTCP packet, we can directly invoke the RTP session and tell it
   //to process the packet right now!
@@ -138,14 +134,9 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
   bool ProcessAckPacket(RTCPPacket &rtcpPacket, SInt64 &curTime);
 
   //Process the incoming qtss app RTCP packet
-  bool ProcessCompressedQTSSPacket(RTCPPacket &rtcpPacket,
-                                   SInt64 &curTime,
-                                   CF::StrPtrLen &currentPtr);
+  bool ProcessCompressedQTSSPacket(RTCPPacket &rtcpPacket, SInt64 &curTime, CF::StrPtrLen &currentPtr);
 
-  bool ProcessNADUPacket(RTCPPacket &rtcpPacket,
-                         SInt64 &curTime,
-                         CF::StrPtrLen &currentPtr,
-                         UInt32 highestSeqNum);
+  bool ProcessNADUPacket(RTCPPacket &rtcpPacket, SInt64 &curTime, CF::StrPtrLen &currentPtr, UInt32 highestSeqNum);
 
   // Send a RTCP SR on this stream. Pass in true if this SR should also have a BYE
   void SendRTCPSR(const SInt64 &inTime, bool inAppendBye = false);
@@ -185,11 +176,8 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
     SetQualityLevel(minLevel - (minLevel - GetQualityLevel()) / 2);
   }
 
-  void SetMaxQualityLevelLimit(SInt32 newMaxLimit) //Changes what is the best quality level possible
-  {
-    SInt32 minLevel = MAX(0,
-                          (SInt32) fNumQualityLevels
-                              - 2); //do not drop down  to key frames
+  void SetMaxQualityLevelLimit(SInt32 newMaxLimit) { //Changes what is the best quality level possible
+    SInt32 minLevel = MAX(0, (SInt32) fNumQualityLevels - 2); //do not drop down  to key frames
     fMaxQualityLevel = MAX(MIN(minLevel, newMaxLimit), 0);
     SetQualityLevel(GetQualityLevel());
   }
@@ -240,7 +228,7 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
   int fMonitorSocket;
   UInt32 fPlayerToMonitorAddr;
 
-  //RTCP stuff
+  // RTCP stuff
   SInt64 fLastSenderReportTime;
   UInt32 fPacketCount;
   UInt32 fLastPacketCount;
@@ -249,20 +237,20 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
 
   // DICTIONARY ATTRIBUTES
 
-  //Module assigns a streamID to this object
+  // Module assigns a streamID to this object
   UInt32 fTrackID;
 
-  //low-level RTP stuff
+  // low-level RTP stuff
   UInt32 fSsrc;
   char fSsrcString[kMaxSsrcSizeInBytes];
   CF::StrPtrLen fSsrcStringPtr;
   bool fEnableSSRC;
 
-  //Payload name and codec type.
+  // Payload name and codec type.
   char fPayloadNameBuf[kDefaultPayloadBufSize];
   QTSS_RTPPayloadType fPayloadType;
 
-  //Media information.
+  // Media information.
   UInt16 fFirstSeqNumber;//used in sending the play response
   UInt32 fFirstTimeStamp;//RTP time
   UInt32 fTimescale;

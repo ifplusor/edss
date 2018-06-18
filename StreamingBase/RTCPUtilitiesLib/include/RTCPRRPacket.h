@@ -38,6 +38,35 @@
 #include "OSHeaders.h"
 #include "MyAssert.h"
 
+/*
+ *  RR: Receiver report RTCP packet
+ *
+ *     0                   1                   2                   3
+ *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |V=2|P|    RC   |   PT=RR=201   |             length            | header
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                     SSRC of packet sender                     |
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                 SSRC_1 (SSRC of first source)                 | report
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
+ *    | fraction lost |       cumulative number of packets lost       |   1
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |           extended highest sequence number received           |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                      interarrival jitter                      |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                         last SR (LSR)                         |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                   delay since last SR (DLSR)                  |
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                 SSRC_2 (SSRC of second source)                | report
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
+ *    :                               ...                             :   2
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                  profile-specific extensions                  |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ */
 class RTCPRRPacket {
   enum {
     RTP_VERSION = 2,
@@ -75,15 +104,12 @@ class RTCPRRPacket {
 
  public:
   RTCPRRPacket() : fNumReportBlocks(0) {}
-  RTCPRRPacket(StrPtrLen &newBuffer)
-      : fNumReportBlocks(0) { SetBuffer(newBuffer); }
-  RTCPRRPacket(char *newBuffer, UInt32 bufLen)
-      : fNumReportBlocks(0) { SetBuffer(newBuffer, bufLen); }
+  RTCPRRPacket(StrPtrLen &newBuffer) : fNumReportBlocks(0) { SetBuffer(newBuffer); }
+  RTCPRRPacket(char *newBuffer, UInt32 bufLen) : fNumReportBlocks(0) { SetBuffer(newBuffer, bufLen); }
 
   //Setting the buffer resets the packet content
   void SetBuffer(StrPtrLen &newBuffer) {
-    return this->SetBuffer(newBuffer.Ptr,
-                           newBuffer.Len);
+    return this->SetBuffer(newBuffer.Ptr, newBuffer.Len);
   }
   void SetBuffer(char *newBuffer, UInt32 bufLen) {
     Assert(sizeof(RTCPRRHeader) == 8);
@@ -105,8 +131,7 @@ class RTCPRRPacket {
   }
 
   void SetCount(UInt16 count) {
-    if (count > MAX_REPORTS) //5 bits
-    {
+    if (count > MAX_REPORTS) { //5 bits
       return;
     }
 
@@ -117,19 +142,13 @@ class RTCPRRPacket {
 
   }
 
-  void AddReportBlock(UInt32 SSRC,
-                      UInt8 fractionLost,
-                      SInt32 cumLostPackets,
-                      UInt32 highestSeqNum,
-                      UInt32 lsr,
-                      UInt32 dlsr) {
+  void AddReportBlock(UInt32 SSRC, UInt8 fractionLost, SInt32 cumLostPackets, UInt32 highestSeqNum, UInt32 lsr, UInt32 dlsr) {
     Assert(fBuf.Len >= GetPacketLen() + sizeof(RTCPReportBlock));
     if (fNumReportBlocks >= MAX_REPORTS) {
       return;
     }
 
-    RTCPReportBlock &reportBlock =
-        *reinterpret_cast<RTCPReportBlock *>(fBuf.Ptr + GetPacketLen());
+    RTCPReportBlock &reportBlock = *reinterpret_cast<RTCPReportBlock *>(fBuf.Ptr + GetPacketLen());
     ::memset(&reportBlock, 0, sizeof(RTCPReportBlock));
 
     reportBlock.ssrc = htonl(SSRC);
@@ -156,8 +175,7 @@ class RTCPRRPacket {
     return sizeof(RTCPRRHeader) + sizeof(RTCPReportBlock) * fNumReportBlocks;
   }
   StrPtrLen GetBufferRemaining() {
-    return StrPtrLen(fBuf.Ptr + GetPacketLen(),
-                     fBuf.Len - GetPacketLen());
+    return StrPtrLen(fBuf.Ptr + GetPacketLen(), fBuf.Len - GetPacketLen());
   }
   StrPtrLen GetPacket() { return StrPtrLen(fBuf.Ptr, GetPacketLen()); }
 

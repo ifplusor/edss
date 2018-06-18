@@ -255,18 +255,16 @@ QTSS_Error QTSSDataConverter::ConvertCHexStringToBytes(char *inValueAsString,
 
 char *QTSSDataConverter::ConvertBytesToCHexString(void *inValue,
                                                   const UInt32 inValueLen) {
-  UInt8 *theDataPtr = (UInt8 *) inValue;
+  auto *theDataPtr = (UInt8 *) inValue;
   UInt32 len = inValueLen * 2;
 
-  char *theString = new char[len + 1];
+  auto *theString = new char[len + 1];
   char *resultStr = theString;
   if (theString != NULL) {
-    UInt8 temp;
-    UInt32 count = 0;
-    for (count = 0; count < inValueLen; count++) {
-      temp = *theDataPtr++;
-      *theString++ = kHEXChars[temp >> 4];
-      *theString++ = kHEXChars[temp & 0xF];
+    for (UInt32 count = 0; count < inValueLen; count++) {
+      UInt8 temp = *theDataPtr++;
+      *theString++ = kHEXChars[temp >> 4U];
+      *theString++ = kHEXChars[temp & 0xFU];
     }
     *theString = 0;
   }

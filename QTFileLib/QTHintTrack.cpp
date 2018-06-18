@@ -224,12 +224,8 @@ QTTrack::ErrorCode QTHintTrack::Initialize() {
   //
   // Get the sample description table for this track and verify that it is an
   // RTP track.
-  if (!fSampleDescriptionAtom->FindSampleDescription(FOUR_CHARS_TO_INT('r',
-                                                                       't',
-                                                                       'p',
-                                                                       ' '),
-                                                     &sampleDescription,
-                                                     &sampleDescriptionLength))
+  if (!fSampleDescriptionAtom->FindSampleDescription(FOUR_CHARS_TO_INT('r', 't', 'p', ' '),
+                                                     &sampleDescription, &sampleDescriptionLength))
     return errInvalidQuickTimeFile;
 
   ::memcpy(&fMaxPacketSize, sampleDescription + 20, 4);

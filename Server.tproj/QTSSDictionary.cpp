@@ -773,10 +773,8 @@ QTSSDictionaryMap::QTSSDictionaryMap(UInt32 inNumReservedAttrs, UInt32 inFlags)
   ::memset(fAttrArray, 0, sizeof(QTSSAttrInfoDict *) * fAttrArraySize);
 }
 
-QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName,
-                                           QTSS_AttrFunctionPtr inFuncPtr,
-                                           QTSS_AttrDataType inDataType,
-                                           QTSS_AttrPermission inPermission) {
+QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
+                                           QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission) {
   if (inAttrName == NULL || ::strlen(inAttrName) > QTSS_MAX_ATTRIBUTE_NAME_SIZE)
     return QTSS_BadArgument;
 

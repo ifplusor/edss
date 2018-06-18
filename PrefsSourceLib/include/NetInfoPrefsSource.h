@@ -25,7 +25,7 @@
 /*
     File:       NetInfoPrefsSource.h
 
-    Contains:   Implements the PrefsSource interface wrt NetInfo database
+    Contains:   Implements the PrefsSource interface write NetInfo database
 
     Written by: Denis Serenyi
 

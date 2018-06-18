@@ -31,6 +31,11 @@
 
 
 */
+/**
+ * @file RTCPSRPacket.h
+ *
+ * A class that writes a RTCP Sender Report
+ */
 
 #ifndef __RTCP_SR_PACKET__
 #define __RTCP_SR_PACKET__
@@ -42,6 +47,104 @@
 #include <netinet/in.h> //definition of htonl
 #endif
 
+/**
+ * SR: Sender report RTCP packet
+ *
+ *     0                   1                   2                   3
+ *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |V=2|P|    RC   |   PT=SR=200   |             length            | header
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                         SSRC of sender                        |
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |              NTP timestamp, most significant word             | sender
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ info
+ *    |             NTP timestamp, least significant word             |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                         RTP timestamp                         |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                     sender's packet count                     |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                      sender's octet count                     |
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                 SSRC_1 (SSRC of first source)                 | report
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
+ *    | fraction lost |       cumulative number of packets lost       |   1
+ *    -+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |           extended highest sequence number received           |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                      interarrival jitter                      |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                         last SR (LSR)                         |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                   delay since last SR (DLSR)                  |
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                 SSRC_2 (SSRC of second source)                | report
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
+ *    :                               ...                             :   2
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                  profile-specific extensions                  |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ * @see rfc1889(section 6.3.21)
+ *
+ *
+ * RR: Receiver report RTCP packet
+ *
+ *     0                   1                   2                   3
+ *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |V=2|P|    RC   |   PT=RR=201   |             length            | header
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                     SSRC of packet sender                     |
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                 SSRC_1 (SSRC of first source)                 | report
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
+ *    | fraction lost |       cumulative number of packets lost       |   1
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |           extended highest sequence number received           |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                      interarrival jitter                      |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                         last SR (LSR)                         |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                   delay since last SR (DLSR)                  |
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                 SSRC_2 (SSRC of second source)                | report
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ block
+ *    :                               ...                             :   2
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |                  profile-specific extensions                  |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ * @see rfc1889(section 6.3.2)
+ *
+ *
+ * SDES: Source description RTCP packet
+ *
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |V=2|P|    SC   |  PT=SDES=202  |             length            | header
+ *   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *   |                          SSRC/CSRC_1                          | chunk
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+   1
+ *   |                           SDES items                          |
+ *   |                              ...                              |
+ *   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *   |                          SSRC/CSRC_2                          | chunk
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+   2
+ *   |                           SDES items                          |
+ *   |                              ...                              |
+ *   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *
+ * @see rfc1889(section 6.4)
+ *
+ */
+
+/**
+ * RTCP Sender Report Packet
+ */
 class RTCPSRPacket {
  public:
 
@@ -97,9 +200,7 @@ class RTCPSRPacket {
     kServerInfoSizeInBytes = 28,
     kByeSizeInBytes = 8
   };
-  char fSenderReportBuffer[
-      kSenderReportSizeInBytes + kMaxCNameLen + kServerInfoSizeInBytes
-          + kByeSizeInBytes];
+  char fSenderReportBuffer[kSenderReportSizeInBytes + kMaxCNameLen + kServerInfoSizeInBytes + kByeSizeInBytes];
   UInt32 fSenderReportSize;
   UInt32 fSenderReportWithServerInfoSize;
 
@@ -114,20 +215,17 @@ inline void RTCPSRPacket::SetSSRC(UInt32 inSSRC) {
 
   // Set SSRC in SERVER INFO
   Assert((fSenderReportSize & 3) == 0);
-  ((UInt32 *) &fSenderReportBuffer)[(fSenderReportSize >> 2) + 1] =
-      htonl(inSSRC);
+  ((UInt32 *) &fSenderReportBuffer)[(fSenderReportSize >> 2) + 1] = htonl(inSSRC);
 
   // Set SSRC in BYE
   Assert((fSenderReportWithServerInfoSize & 3) == 0);
-  ((UInt32 *) &fSenderReportBuffer)[(fSenderReportWithServerInfoSize >> 2)
-      + 1] = htonl(inSSRC);
+  ((UInt32 *) &fSenderReportBuffer)[(fSenderReportWithServerInfoSize >> 2) + 1] = htonl(inSSRC);
 }
 
 inline void RTCPSRPacket::SetClientSSRC(UInt32 inClientSSRC) {
   //
   // Set Client SSRC in SERVER INFO
-  ((UInt32 *) &fSenderReportBuffer)[(fSenderReportSize >> 2) + 3] =
-      htonl(inClientSSRC);
+  ((UInt32 *) &fSenderReportBuffer)[(fSenderReportSize >> 2) + 3] = htonl(inClientSSRC);
 }
 
 inline void RTCPSRPacket::SetNTPTimestamp(SInt64 inNTPTimestamp) {
@@ -153,8 +251,7 @@ inline void RTCPSRPacket::SetByteCount(UInt32 inByteCount) {
 }
 
 inline void RTCPSRPacket::SetAckTimeout(UInt32 inAckTimeoutInMsec) {
-  ((UInt32 *) &fSenderReportBuffer)[(fSenderReportWithServerInfoSize >> 2)
-      - 1] = htonl(inAckTimeoutInMsec);
+  ((UInt32 *) &fSenderReportBuffer)[(fSenderReportWithServerInfoSize >> 2) - 1] = htonl(inAckTimeoutInMsec);
 }
 
 #endif //__RTCP_SR_PACKET__

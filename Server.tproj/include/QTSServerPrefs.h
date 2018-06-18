@@ -48,7 +48,7 @@ class QTSServerPrefs : public QTSSPrefs {
   QTSServerPrefs(XMLPrefsParser *inPrefsSource, bool inWriteMissingPrefs);
   virtual ~QTSServerPrefs() {}
 
-  //This is callable at any time, and is thread safe wrt to the accessors.
+  //This is callable at any time, and is thread safe write to the accessors.
   //Pass in true if you want this function to update the prefs file if
   //any defaults need to be used. False otherwise
   void RereadServerPreferences(bool inWriteMissingPrefs);

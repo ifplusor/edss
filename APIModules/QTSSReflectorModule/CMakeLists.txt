@@ -5,7 +5,7 @@ set(HEADER_FILES
         include/ReflectorSession.h
         include/QTSSReflectorModule.h
         RCFSourceInfo.h
-        RTPSessionOutput.h)
+        RTPSessionOutput.h include/H264Packet.h)
 
 set(SOURCE_FILES
         QTSSReflectorModule.cpp

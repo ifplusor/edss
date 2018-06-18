@@ -354,6 +354,7 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA, StrPtrL
   static StrPtrLen sInterLeaved("interleaved");//match the interleaved tag
   static StrPtrLen sClientPort("client_port");
   static StrPtrLen sClientPortString(";client_port=");
+  static StrPtrLen sModePlay(";mode=\"PLAY\"");
 
   if (!fStandardHeadersWritten)
     this->WriteStandardHeaders();
@@ -374,7 +375,7 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA, StrPtrL
   (void) outFirstTransport.FindStringIgnoreCase(sClientPort, &stripClientPortStr);
   (void) outFirstTransport.FindStringIgnoreCase(sInterLeaved, &stripInterleavedStr);
 
-  // echo back the transport without the interleaved or client ports fields we will add those in ourselves
+  // echo back the transport without the 'interleaved' or 'client' ports fields we will add those in ourselves
   if (stripClientPortStr.Len != 0)
     PutTransportStripped(outFirstTransport, stripClientPortStr);
   else if (stripInterleavedStr.Len != 0)
@@ -383,7 +384,7 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA, StrPtrL
     fOutputStream->Put(outFirstTransport);
 
 
-  //The source IP addr is optional, only append it if it is provided
+  // The source IP addr is optional, only append it if it is provided
   if (serverIPAddr != NULL) {
     fOutputStream->Put(sSourceString);
     fOutputStream->Put(*serverIPAddr);
@@ -418,21 +419,23 @@ void RTSPRequestInterface::AppendTransportHeader(StrPtrLen *serverPortA, StrPtrL
     fOutputStream->Put(*channelB);
   }
 
-  if (ssrc != NULL && ssrc->Ptr != NULL && ssrc->Len != 0 &&
-      fNetworkMode == qtssRTPNetworkModeUnicast &&
-      fTransportMode == qtssRTPTransportModePlay) {
-    char *theCString = ssrc->GetAsCString();
-    CharArrayDeleter cStrDeleter(theCString);
+  if (fTransportMode == qtssRTPTransportModePlay) {
+    if (ssrc != NULL && ssrc->Ptr != NULL && ssrc->Len != 0 && fNetworkMode == qtssRTPNetworkModeUnicast) {
+      char *theCString = ssrc->GetAsCString();
+      CharArrayDeleter cStrDeleter(theCString);
 
-    UInt32 ssrcVal = 0;
-    ::sscanf(theCString, "%"   _U32BITARG_   "", &ssrcVal);
-    ssrcVal = htonl(ssrcVal);
+      UInt32 ssrcVal = 0;
+      ::sscanf(theCString, "%"   _U32BITARG_   "", &ssrcVal);
+      ssrcVal = htonl(ssrcVal);
 
-    StrPtrLen hexSSRC(QTSSDataConverter::ValueToString(&ssrcVal, sizeof(ssrcVal), qtssAttrDataTypeUnknown));
-    CharArrayDeleter hexStrDeleter(hexSSRC.Ptr);
+      StrPtrLen hexSSRC(QTSSDataConverter::ValueToString(&ssrcVal, sizeof(ssrcVal), qtssAttrDataTypeUnknown));
+      CharArrayDeleter hexStrDeleter(hexSSRC.Ptr);
 
-    fOutputStream->Put(sSSRC);
-    fOutputStream->Put(hexSSRC);
+      fOutputStream->Put(sSSRC);
+      fOutputStream->Put(hexSSRC);
+    }
+
+//    fOutputStream->Put(sModePlay);
   }
 
   fOutputStream->PutEOL();

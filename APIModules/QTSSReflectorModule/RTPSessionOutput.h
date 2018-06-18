@@ -47,7 +47,7 @@ class RTPSessionOutput : public ReflectorOutput {
   static void Register();
 
   RTPSessionOutput(QTSS_ClientSessionObject inRTPSession, ReflectorSession *inReflectorSession, QTSS_Object serverPrefs, QTSS_AttributeID inCookieAddrID);
-  virtual ~RTPSessionOutput() {}
+  ~RTPSessionOutput() override = default;
 
   ReflectorSession *GetReflectorSession() { return fReflectorSession; }
   void InitializeStreams();

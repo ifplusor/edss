@@ -684,8 +684,7 @@ void RTSPRequest::ParseClientPortSubHeader(StrPtrLen *inClientPortSubHeader) {
   theSubHeaderParser.GetThru(NULL, '-');
   theSubHeaderParser.ConsumeWhitespace();
   fClientPortB = (UInt16) theSubHeaderParser.ConsumeInteger(NULL);
-  if (fClientPortB != fClientPortA + 1) // an error in the port values
-  {
+  if (fClientPortB != fClientPortA + 1) { // an error in the port values
     // The following to setup and log the error as a message level 2.
     StrPtrLen *userAgentPtr = fHeaderDictionary.GetValue(qtssUserAgentHeader);
     ResizeableStringFormatter errorPortMessage;
@@ -695,14 +694,9 @@ void RTSPRequest::ParseClientPortSubHeader(StrPtrLen *inClientPortSubHeader) {
     errorPortMessage.PutSpace();
     errorPortMessage.Put(*inClientPortSubHeader);
     errorPortMessage.PutTerminator();
-    QTSSModuleUtils::LogError(qtssMessageVerbosity,
-                              qtssMsgNoMessage,
-                              0,
-                              errorPortMessage.GetBufPtr(),
-                              NULL);
+    QTSSModuleUtils::LogError(qtssMessageVerbosity, qtssMsgNoMessage, 0, errorPortMessage.GetBufPtr(), NULL);
 
-
-    //fix the rtcp port and hope it works.
+    // fix the rtcp port and hope it works.
     fClientPortB = fClientPortA + 1;
   }
 }

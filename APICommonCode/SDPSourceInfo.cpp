@@ -189,8 +189,7 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
   memcpy(sdpDataCopy, sdpData, sdpLen);
   fSDPData.Set(sdpDataCopy, sdpLen);
 
-  // If there is no trackID information in this SDP, we make the track IDs start
-  // at 1 -> N
+  // If there is no trackID information in this SDP, we make the track IDs start at 1 -> N
   UInt32 currentTrack = 1;
 
   bool hasGlobalStreamInfo = false;
@@ -201,17 +200,17 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
   StringParser sdpParser(&fSDPData);
   UInt32 theStreamIndex = 0;
 
-  //walk through the SDP, counting up the number of tracks
+  // walk through the SDP, counting up the number of tracks
   // Repeat until there's no more data in the SDP
   while (trackCounter.GetDataRemaining() > 0) {
-    //each 'm' line in the SDP file corresponds to another track.
+    // each 'm' line in the SDP file corresponds to another track.
     trackCounter.GetThruEOL(&sdpLine);
     if ((sdpLine.Len > 0) && (sdpLine.Ptr[0] == 'm'))
       fNumStreams++;
   }
 
-  //We should scale the # of StreamInfos to the # of trax, but we can't because
-  //of an annoying compiler bug...
+  // We should scale the # of StreamInfos to the # of trax, but we can't because
+  // of an annoying compiler bug...
 
   fStreamArray = new StreamInfo[fNumStreams];
   ::memset(fStreamArray, 0, sizeof(StreamInfo) * fNumStreams);
@@ -220,16 +219,21 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
   theGlobalStreamInfo.fDestIPAddr = INADDR_ANY;
   theGlobalStreamInfo.fTimeToLive = kDefaultTTL;
 
-  //Set bufferdelay to default of 3
+  // Set bufferdelay to default of 3
   theGlobalStreamInfo.fBufferDelay = (Float32) eDefaultBufferDelay;
 
-  //Now actually get all the data on all the streams
+  // Now actually get all the data on all the streams
   while (sdpParser.GetDataRemaining() > 0) {
     sdpParser.GetThruEOL(&sdpLine);
     if (sdpLine.Len == 0) continue;//skip over any blank lines
 
     switch (*sdpLine.Ptr) {
       case 't': {
+        /**
+         * Times, Repeat Times and Time Zones:
+         *   t=<start time>  <stop time>
+         */
+
         StringParser mParser(&sdpLine);
 
         mParser.ConsumeUntil(NULL, StringParser::sDigitMask);
@@ -243,17 +247,22 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
         break;
 
       case 'm': {
+        /**
+         * Media Announcements:
+         *   m=<media> <port> <transport> <fmt list>
+         */
+
+        // because m= line is the first for media info, we set session-level arguments to default
         if (hasGlobalStreamInfo) {
           fStreamArray[theStreamIndex].fDestIPAddr = theGlobalStreamInfo.fDestIPAddr;
           fStreamArray[theStreamIndex].fTimeToLive = theGlobalStreamInfo.fTimeToLive;
         }
-        fStreamArray[theStreamIndex].fTrackID = currentTrack;
-        currentTrack++;
+        fStreamArray[theStreamIndex].fTrackID = currentTrack++;
 
         StringParser mParser(&sdpLine);
 
-        //find out what type of track this is
-        mParser.ConsumeLength(NULL, 2);//go past 'm='
+        // find out what type of track this is
+        mParser.ConsumeLength(NULL, 2); // go past 'm='
         StrPtrLen theStreamType;
         mParser.ConsumeWord(&theStreamType);
         if (theStreamType.Equal(sVideoStr))
@@ -261,7 +270,7 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
         else if (theStreamType.Equal(sAudioStr))
           fStreamArray[theStreamIndex].fPayloadType = qtssAudioPayloadType;
 
-        //find the port for this stream
+        // find the port for this stream
         mParser.ConsumeUntil(NULL, StringParser::sDigitMask);
         SInt32 tempPort = mParser.ConsumeInteger(NULL);
         if ((tempPort > 0) && (tempPort < 65536))
@@ -271,7 +280,6 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
         mParser.ConsumeWhitespace();
         StrPtrLen transportID;
         mParser.ConsumeWordAndFSlash(&transportID);
-
         if (transportID.Equal(sTCPTransportStr))
           fStreamArray[theStreamIndex].fIsTCP = true;
 
@@ -280,13 +288,20 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
         break;
 
       case 'a': {
+        /**
+         * Attributes:
+         *   a=<attribute>
+         *   a=<attribute>:<value>
+         */
+
         StringParser aParser(&sdpLine);
-        aParser.ConsumeLength(NULL, 2);//go past 'a='
+        aParser.ConsumeLength(NULL, 2); // go past 'a='
 
         StrPtrLen aLineType;
         aParser.ConsumeWord(&aLineType);
 
-        if (aLineType.Equal(sBroadcastControlStr)) {   // found a control line for the broadcast (delete at time or delete at end of broadcast/server startup)
+        // found a control line for the broadcast (delete at time or delete at end of broadcast/server startup)
+        if (aLineType.Equal(sBroadcastControlStr)) {
 
           // s_printf("found =%s\n",sBroadcastControlStr);
 
@@ -302,13 +317,17 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
           }
         }
 
-        //if we haven't even hit an 'm' line yet, just ignore all 'a' lines
+        // if we haven't even hit an 'm' line yet, just ignore all 'a' lines
         if (theStreamIndex == 0)
           break;
 
         if (aLineType.Equal(sRtpMapStr)) {
-          //mark the codec type if this line has a codec name on it. If we already
-          //have a codec type for this track, just ignore this line
+          /**
+           * a=rtpmap:<payload type> <encoding name>/<clock rate>[/<encoding parameters>]
+           */
+
+          // mark the codec type if this line has a codec name on it. If we already
+          // have a codec type for this track, just ignore this line
           if ((fStreamArray[theStreamIndex - 1].fPayloadName.Len == 0) && (aParser.GetThru(NULL, ' '))) {
             StrPtrLen payloadNameFromParser;
             (void) aParser.GetThruEOL(&payloadNameFromParser);
@@ -322,8 +341,7 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
           //if ((fStreamArray[theStreamIndex - 1].fTrackName.Len == 0) && (aParser.GetThru(NULL, ' ')))
           {
             StrPtrLen trackNameFromParser;
-            aParser.ConsumeUntil(NULL, ':');
-            aParser.ConsumeLength(NULL, 1);
+            aParser.GetThru(NULL, ':');
             aParser.GetThruEOL(&trackNameFromParser);
 
             char *temp = trackNameFromParser.GetAsCString();
@@ -336,7 +354,8 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
             tParser.ConsumeUntil(NULL, StringParser::sDigitMask);
             fStreamArray[theStreamIndex - 1].fTrackID = tParser.ConsumeInteger(NULL);
           }
-        } else if (aLineType.Equal(sBufferDelayStr)) {   // if a BufferDelay is found then set all of the streams to the same buffer delay (it's global)
+        } else if (aLineType.Equal(sBufferDelayStr)) {
+          // if a BufferDelay is found then set all of the streams to the same buffer delay (it's global)
           aParser.ConsumeUntil(NULL, StringParser::sDigitMask);
           theGlobalStreamInfo.fBufferDelay = aParser.ConsumeFloat();
         }
@@ -344,12 +363,20 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
         break;
 
       case 'c': {
-        //get the IP address off this header
+        /**
+         * Connection Data:
+         *   c=<network type> <address type> <connection address>
+         *
+         * connection address:
+         *   <base multicast address>/<ttl>/<number of addresses>
+         */
+
+        // get the IP address off this header
         StringParser cParser(&sdpLine);
-        cParser.ConsumeLength(NULL, 9);//strip off "c=in ip4 "
+        cParser.ConsumeLength(NULL, 9); //strip off "c=in ip4 "
         UInt32 tempIPAddr = SDPSourceInfo::GetIPAddr(&cParser, '/');
 
-        //grab the ttl
+        // grab the ttl [0-255]
         SInt32 tempTtl = kDefaultTTL;
         if (cParser.GetThru(NULL, '/')) {
           tempTtl = cParser.ConsumeInteger(NULL);
@@ -358,8 +385,7 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
         }
 
         if (theStreamIndex > 0) {
-          //if this c= line is part of a stream, it overrides the
-          //global stream information
+          // if this c= line is part of a stream, it overrides the global stream information
           fStreamArray[theStreamIndex - 1].fDestIPAddr = tempIPAddr;
           fStreamArray[theStreamIndex - 1].fTimeToLive = (UInt16) tempTtl;
         } else {
@@ -372,13 +398,9 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
   }
 
   // Add the default buffer delay
-  Float32 bufferDelay = (Float32) eDefaultBufferDelay;
-  if (theGlobalStreamInfo.fBufferDelay != (Float32) eDefaultBufferDelay)
-    bufferDelay = theGlobalStreamInfo.fBufferDelay;
-
   UInt32 count = 0;
   while (count < fNumStreams) {
-    fStreamArray[count].fBufferDelay = bufferDelay;
+    fStreamArray[count].fBufferDelay = theGlobalStreamInfo.fBufferDelay;
     count++;
   }
 }
@@ -396,8 +418,6 @@ UInt32 SDPSourceInfo::GetIPAddr(StringParser *inParser, char inStopChar) {
   char endChar = ipAddrStr.Ptr[ipAddrStr.Len];
   ipAddrStr.Ptr[ipAddrStr.Len] = '\0';
 
-  //inet_addr returns numeric IP addr in network byte order, make
-  //sure to convert to host order.
   UInt32 ipAddr = Net::SocketUtils::ConvertStringToAddr(ipAddrStr.Ptr);
 
   // Make sure to put the old char back!

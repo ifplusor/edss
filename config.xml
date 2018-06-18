@@ -128,7 +128,7 @@
 	<MODULE NAME="QTSSErrorLogModule" ></MODULE>
 	<MODULE NAME="QTSSReflectorModule" >
 		<PREF NAME="reflector_bucket_offset_delay_msec" TYPE="UInt32" >73</PREF>
-		<PREF NAME="reflector_buffer_size_sec" TYPE="UInt32" >0</PREF>
+		<PREF NAME="reflector_buffer_size_sec" TYPE="UInt32" >3</PREF>
 		<PREF NAME="reflector_use_in_packet_receive_time" TYPE="bool" >false</PREF>
 		<PREF NAME="reflector_in_packet_max_receive_sec" TYPE="UInt32" >60</PREF>
 		<PREF NAME="reflector_rtp_info_offset_msec" TYPE="UInt32" >500</PREF>

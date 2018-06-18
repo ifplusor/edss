@@ -41,27 +41,15 @@ UInt64 EDSS::sLastDebugPackets = 0;
 SInt64 EDSS::sLastDebugTotalQuality = 0;
 
 
-EDSS *EDSS::StartServer(XMLPrefsParser *inPrefsSource,
-                        PrefsSource *inMessagesSource,
-                        UInt16 inPortOverride,
-                        int statsUpdateInterval,
-                        QTSS_ServerState inInitialState,
-                        bool inDontFork,
-                        UInt32 debugLevel,
-                        UInt32 debugOptions,
-                        const char *sAbsolutePath) {
+EDSS *EDSS::StartServer(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
+                        int statsUpdateInterval, QTSS_ServerState inInitialState, bool inDontFork,
+                        UInt32 debugLevel, UInt32 debugOptions, const char *sAbsolutePath) {
   static EDSS *inner = nullptr;
   if (inner == nullptr) {
     sStatusUpdateInterval = statsUpdateInterval;
 
-    inner = new EDSS(inPrefsSource,
-                     inMessagesSource,
-                     inPortOverride,
-                     inInitialState,
-                     inDontFork,
-                     debugLevel,
-                     debugOptions,
-                     sAbsolutePath);
+    inner = new EDSS(inPrefsSource, inMessagesSource, inPortOverride, inInitialState, inDontFork,
+                     debugLevel, debugOptions, sAbsolutePath);
 
     return inner;
   }
@@ -69,21 +57,11 @@ EDSS *EDSS::StartServer(XMLPrefsParser *inPrefsSource,
   return nullptr;
 }
 
-EDSS::EDSS(XMLPrefsParser *inPrefsSource,
-           PrefsSource *inMessagesSource,
-           UInt16 inPortOverride,
-           QTSS_ServerState inInitialState,
-           bool inDontFork,
-           UInt32 debugLevel,
-           UInt32 debugOptions,
+EDSS::EDSS(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
+           QTSS_ServerState inInitialState, bool inDontFork, UInt32 debugLevel, UInt32 debugOptions,
            const char *inAbsolutePath)
-    : prefsSource(inPrefsSource),
-      messagesSource(inMessagesSource),
-      portOverride(inPortOverride),
-      initialState(inInitialState),
-      dontFork(inDontFork),
-      debugLevel(debugLevel),
-      debugOptions(debugOptions) {
+    : prefsSource(inPrefsSource), messagesSource(inMessagesSource), portOverride(inPortOverride),
+      initialState(inInitialState), dontFork(inDontFork), debugLevel(debugLevel), debugOptions(debugOptions) {
   sAbsolutePath = strdup(inAbsolutePath);
   loopCount = 0;
 }

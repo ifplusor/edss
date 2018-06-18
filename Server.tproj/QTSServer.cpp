@@ -119,23 +119,20 @@ class RTSPListenerSocket : public Net::TCPListenerSocket {
 
 };
 
+/**
+ * Pool of UDP sockets for use by the RTP server
+ */
 class RTPSocketPool : public Net::UDPSocketPool {
  public:
+  RTPSocketPool() = default;
+  ~RTPSocketPool() override = default;
 
-  // Pool of UDP sockets for use by the RTP server
-
-  RTPSocketPool() {}
-
-  ~RTPSocketPool() {}
-
-  virtual Net::UDPSocketPair *ConstructUDPSocketPair();
-
-  virtual void DestructUDPSocketPair(Net::UDPSocketPair *inPair);
-
-  virtual void SetUDPSocketOptions(Net::UDPSocketPair *inPair);
+  Net::UDPSocketPair *ConstructUDPSocketPair() override;
+  void DestructUDPSocketPair(Net::UDPSocketPair *inPair) override;
+  void SetUDPSocketOptions(Net::UDPSocketPair *inPair) override;
 };
 
-char *QTSServer::sPortPrefString = "rtsp_port";
+const char *QTSServer::sPortPrefString = "rtsp_port";
 QTSS_Callbacks  QTSServer::sCallbacks;
 XMLPrefsParser *QTSServer::sPrefsSource = nullptr;
 PrefsSource *QTSServer::sMessagesSource = nullptr;
@@ -144,13 +141,13 @@ QTSServer::~QTSServer() {
   //
   // Grab the server mutex. This is to make sure all gets & set values on this
   // object complete before we start deleting stuff
-  Core::MutexLocker *serverlocker = new Core::MutexLocker(this->GetServerObjectMutex());
+  auto *serverlocker = new Core::MutexLocker(this->GetServerObjectMutex());
 
   //
   // Grab the prefs mutex. This is to make sure we can't reread prefs
   // WHILE shutting down, which would cause some weirdness for QTSS API
   // (some modules could get QTSS_RereadPrefs_Role after QTSS_Shutdown, which would be bad)
-  Core::MutexLocker *locker = new Core::MutexLocker(this->GetPrefs()->GetMutex());
+  auto *locker = new Core::MutexLocker(this->GetPrefs()->GetMutex());
 
   QTSS_ModuleState theModuleState;
   theModuleState.curRole = QTSS_Shutdown_Role;
@@ -269,6 +266,14 @@ bool QTSServer::Initialize(XMLPrefsParser *inPrefsSource, PrefsSource *inMessage
   return true;
 }
 
+/**
+ * post process for Server can use module attributes.
+ * @note this is a hacking behaviour
+ */
+void QTSServer::PostRegisterModules() {
+  RTSPSession::PostRegisterModules();
+}
+
 void QTSServer::InitModules(QTSS_ServerState inEndState) {
   //
   // LOAD AND INITIALIZE ALL MODULES
@@ -280,6 +285,7 @@ void QTSServer::InitModules(QTSS_ServerState inEndState) {
   LoadModules(fSrvrPrefs);  // 打开 module 所在目录,针对该目录下的所有文件调用 CreateModule 创建模块。
   LoadCompiledInModules();  // 加载一些已编入的模块。
   this->BuildModuleRoleArrays();
+  this->PostRegisterModules(); // hacking!!!
 
   fSrvrPrefs->SetErrorLogVerbosity(qtssWarningVerbosity); // turn off info messages while initializing compiled in modules.
 
@@ -305,11 +311,9 @@ void QTSServer::InitModules(QTSS_ServerState inEndState) {
 
   //
   // ADD REREAD PREFERENCES SERVICE
-  (void) QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kServiceDictIndex)->
-      AddAttribute(QTSS_REREAD_PREFS_SERVICE,
-                   (QTSS_AttrFunctionPtr) QTSServer::RereadPrefsService,
-                   qtssAttrDataTypeUnknown,
-                   qtssAttrModeRead);
+  (void) QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kServiceDictIndex)
+      ->AddAttribute(QTSS_REREAD_PREFS_SERVICE, (QTSS_AttrFunctionPtr) QTSServer::RereadPrefsService,
+                     qtssAttrDataTypeUnknown, qtssAttrModeRead);
 
   //
   // INVOKE INITIALIZE ROLE
@@ -426,8 +430,7 @@ bool QTSServer::CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs,
   // Now figure out which of these ports we are *already* listening on.
   // If we already are listening on that port, just move the pointer to the
   // listener over to the new array
-  Net::TCPListenerSocket **newListenerArray =
-      new Net::TCPListenerSocket *[theTotalRTSPPortTrackers];
+  auto **newListenerArray = new Net::TCPListenerSocket *[theTotalRTSPPortTrackers];
   UInt32 curPortIndex = 0;
 
   // RTSPPortTrackers check
@@ -457,8 +460,7 @@ bool QTSServer::CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs,
       // open、bind、listen 等操作,注意这里绑定的 IP 地址缺省为 0<在配置文件里对应 bind_ip_addr 项>,表示监
       // 听所有地址的连接。绑定的 Port 缺省为 7070、554、8000、8001<在配置文件里对应 rtsp_port 项>
       QTSS_Error err = newListenerArray[curPortIndex]
-          ->Initialize(theRTSPPortTrackers[count3].fIPAddr,
-                       theRTSPPortTrackers[count3].fPort);
+          ->Initialize(theRTSPPortTrackers[count3].fIPAddr, theRTSPPortTrackers[count3].fPort);
 
       char thePortStr[20];
       s_sprintf(thePortStr, "%hu", theRTSPPortTrackers[count3].fPort);
@@ -469,20 +471,11 @@ bool QTSServer::CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs,
         delete newListenerArray[curPortIndex];
 
       if (err == EADDRINUSE) {
-        QTSSModuleUtils::LogError(qtssWarningVerbosity,
-                                  qtssListenPortInUse,
-                                  0,
-                                  thePortStr);
+        QTSSModuleUtils::LogError(qtssWarningVerbosity, qtssListenPortInUse, 0, thePortStr);
       } else if (err == EACCES) {
-        QTSSModuleUtils::LogError(qtssWarningVerbosity,
-                                  qtssListenPortAccessDenied,
-                                  0,
-                                  thePortStr);
+        QTSSModuleUtils::LogError(qtssWarningVerbosity, qtssListenPortAccessDenied, 0, thePortStr);
       } else if (err != QTSS_NoErr) {
-        QTSSModuleUtils::LogError(qtssWarningVerbosity,
-                                  qtssListenPortError,
-                                  0,
-                                  thePortStr);
+        QTSSModuleUtils::LogError(qtssWarningVerbosity, qtssListenPortError, 0, thePortStr);
       } else {
         //
         // This listener was successfully created.
@@ -529,8 +522,7 @@ bool QTSServer::CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs,
   return (fNumListeners > 0);
 }
 
-UInt32 *QTSServer::GetRTSPIPAddrs(QTSServerPrefs *inPrefs,
-                                  UInt32 *outNumAddrsPtr) {
+UInt32 *QTSServer::GetRTSPIPAddrs(QTSServerPrefs *inPrefs, UInt32 *outNumAddrsPtr) {
   UInt32 numAddrs = inPrefs->GetNumValues(qtssPrefsRTSPIPAddr);
   UInt32 *theIPAddrArray = nullptr;
 
@@ -598,9 +590,7 @@ UInt16 *QTSServer::GetRTSPPorts(QTSServerPrefs *inPrefs, UInt32 *outNumPortsPtr)
 bool QTSServer::SetupUDPSockets() {
 
   UInt32 theNumAllocatedPairs = 0;
-  for (UInt32 theNumPairs = 0;
-       theNumPairs < Net::SocketUtils::GetNumIPAddrs();
-       theNumPairs++) {
+  for (UInt32 theNumPairs = 0; theNumPairs < Net::SocketUtils::GetNumIPAddrs(); theNumPairs++) {
     // 在 QTSServer::Initialize 函数里,fSocketPool=new RTPSocketPool();
     // RTPSocketPool 是 UDPSocketPool 的继承类,它们的构建函数均为空。
     // 基于同一个 ip,创建一个 socket 对。
@@ -613,7 +603,7 @@ bool QTSServer::SetupUDPSockets() {
     }
   }
 
-  //only return an error if we couldn't allocate ANY pairs of sockets
+  // only return an error if we couldn't allocate ANY pairs of sockets
   if (theNumAllocatedPairs == 0) {
     fServerState = qtssFatalErrorState; // also set the state to fatal error
     return false;

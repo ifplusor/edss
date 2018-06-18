@@ -455,8 +455,7 @@ void QTSServerPrefs::RereadServerPreferences(bool inWriteMissingPrefs) {
       if (inWriteMissingPrefs) {
         //
         // Add this value into the file, cuz we need it.
-        pref = fPrefsSource->AddPref(server, sAttributes[x].fAttrName,
-            QTSSDataConverter::TypeToTypeString(sAttributes[x].fAttrDataType));
+        pref = fPrefsSource->AddPref(server, sAttributes[x].fAttrName, QTSSDataConverter::TypeToTypeString(sAttributes[x].fAttrDataType));
         fPrefsSource->AddPrefValue(pref, sPrefInfo[x].fDefaultValue);
 
         if (sPrefInfo[x].fAdditionalDefVals != NULL) {

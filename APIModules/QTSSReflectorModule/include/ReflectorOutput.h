@@ -70,6 +70,7 @@ class ReflectorOutput {
  private:
   UInt64 fU64Seq;
   bool fNewOutput;
+
  public:
   UInt64 outPutSeq() {
     return fU64Seq;
@@ -90,22 +91,23 @@ class ReflectorOutput {
   void setNewFlag(bool flag) {
     fNewOutput = flag;
   }
-//end add
+  //end add
 
 
   inline CF::QueueElem *GetBookMarkedPacket(CF::Queue *thePacketQueue);
 
   inline bool SetBookMarkPacket(CF::QueueElem *thePacketElemPtr);
 
-  // WritePacket
-  //
-  // Pass in the packet contents, the cookie of the stream to which it will be written,
-  // and the QTSS API write flags (this should either be qtssWriteFlagsIsRTP or IsRTCP
-  // packetLateness is how many MSec's late this packet is in being delivered ( will be < 0 if its early )
-  // If this function returns QTSS_WouldBlock, timeToSendThisPacketAgain will
-  // be set to # of msec in which the packet can be sent, or -1 if unknown
-  virtual QTSS_Error WritePacket(CF::StrPtrLen *inPacket, void *inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec,
-                                 SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSec, bool firstPacket) = 0;
+  /**
+   * Pass in the packet contents, the cookie of the stream to which it will be written,
+   * and the QTSS API write flags (this should either be qtssWriteFlagsIsRTP or IsRTCP
+   * packetLateness is how many MSec's late this packet is in being delivered ( will be < 0 if its early )
+   * If this function returns QTSS_WouldBlock, timeToSendThisPacketAgain will
+   * be set to # of msec in which the packet can be sent, or -1 if unknown
+   */
+  virtual QTSS_Error WritePacket(CF::StrPtrLen *inPacket, void *inStreamCookie, UInt32 inFlags,
+                                 SInt64 packetLatenessInMSec, SInt64 *timeToSendThisPacketAgain,
+                                 UInt64 *packetIDPtr, SInt64 *arrivalTimeMSec, bool firstPacket) = 0;
 
   virtual void TearDown() = 0;
 
@@ -118,7 +120,8 @@ class ReflectorOutput {
   };
 
  protected:
-  void InititializeBookmarks(UInt32 numStreams) {
+
+  void InitializeBookmarks(UInt32 numStreams) {
     // need 2 bookmarks for each stream ( include RTCPs )
     UInt32 numBookmarks = numStreams * 2;
 
@@ -144,23 +147,19 @@ bool ReflectorOutput::SetBookMarkPacket(CF::QueueElem *thePacketElemPtr) {
   }
 
   return false;
-
 }
 
 CF::QueueElem *ReflectorOutput::GetBookMarkedPacket(CF::Queue *thePacketQueue) {
   Assert(thePacketQueue != NULL);
 
   CF::QueueElem *packetElem = NULL;
-  UInt32 curBookmark = 0;
 
   fAvailPosition = -1;
 
   // see if we've bookmarked a held packet for this Sender in this Output
-  while (curBookmark < fNumBookmarks) {
+  for (UInt32 curBookmark = 0; curBookmark < fNumBookmarks; curBookmark++) {
     CF::QueueElem *bookmarkedElem = fBookmarkedPacketsElemsArray[curBookmark];
-
-    if (bookmarkedElem)   // there may be holes in this array
-    {
+    if (bookmarkedElem) {  // there may be holes in this array
       if (bookmarkedElem->IsMember(*thePacketQueue)) {
         // this packet was previously bookmarked for this specific queue
         // remove if from the bookmark list and use it
@@ -173,9 +172,6 @@ CF::QueueElem *ReflectorOutput::GetBookMarkedPacket(CF::Queue *thePacketQueue) {
     } else {
       fAvailPosition = curBookmark;
     }
-
-    curBookmark++;
-
   }
 
   return packetElem;

@@ -118,7 +118,7 @@ class RTSPRequestInterface : public QTSSDictionary {
   }
 
   // Requests an event. Same behavior as calling RTSPSessionInterface::RequestEvent
-  virtual QTSS_Error RequestEvent(QTSS_EventType inEventMask) {
+  QTSS_Error RequestEvent(QTSS_EventType inEventMask) override {
     return fSession->RequestEvent(inEventMask);
   }
 

@@ -46,6 +46,15 @@
 #include <netinet/in.h>
 #endif
 
+/**
+ * RTCP Fixed Header Fields:
+ *
+ *     0                   1                   2                   3
+ *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |V=2|P|  SC/RC  |       PT      |             length            | header
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ */
 class RTCPPacket {
  public:
 
@@ -107,88 +116,88 @@ class RTCPPacket {
 
 class SourceDescriptionPacket : public RTCPPacket {
 
- public:
+public:
 
-  SourceDescriptionPacket() : RTCPPacket() {}
+SourceDescriptionPacket() : RTCPPacket() {}
 
-  bool ParseSourceDescription(UInt8 *inPacketBuffer, UInt32 inPacketLength) {
-    return ParsePacket(inPacketBuffer, inPacketLength);
-  }
+bool ParseSourceDescription(UInt8 *inPacketBuffer, UInt32 inPacketLength) {
+  return ParsePacket(inPacketBuffer, inPacketLength);
+}
 
- private:
+private:
 };
 
 class RTCPReceiverPacket : public RTCPPacket {
- public:
+public:
 
-  RTCPReceiverPacket() : RTCPPacket(), fRTCPReceiverReportArray(NULL) {}
+RTCPReceiverPacket() : RTCPPacket(), fRTCPReceiverReportArray(NULL) {}
 
-  //Call this before any accessor method. Returns true if successful, false otherwise
-  virtual bool ParseReport(UInt8 *inPacketBuffer, UInt32 inPacketLength);
+//Call this before any accessor method. Returns true if successful, false otherwise
+virtual bool ParseReport(UInt8 *inPacketBuffer, UInt32 inPacketLength);
 
-  inline UInt32 GetReportSourceID(int inReportNum);
-  UInt8 GetFractionLostPackets(int inReportNum);
-  UInt32 GetTotalLostPackets(int inReportNum);
-  inline UInt32 GetHighestSeqNumReceived(int inReportNum);
-  inline UInt32 GetJitter(int inReportNum);
-  inline UInt32 GetLastSenderReportTime(int inReportNum);
-  inline UInt32 GetLastSenderReportDelay(int inReportNum);    //expressed in units of 1/65536 seconds
+inline UInt32 GetReportSourceID(int inReportNum);
+UInt8 GetFractionLostPackets(int inReportNum);
+UInt32 GetTotalLostPackets(int inReportNum);
+inline UInt32 GetHighestSeqNumReceived(int inReportNum);
+inline UInt32 GetJitter(int inReportNum);
+inline UInt32 GetLastSenderReportTime(int inReportNum);
+inline UInt32 GetLastSenderReportDelay(int inReportNum);    //expressed in units of 1/65536 seconds
 
-  UInt32 GetCumulativeFractionLostPackets();
-  UInt32 GetCumulativeTotalLostPackets();
-  UInt32 GetCumulativeJitter();
+UInt32 GetCumulativeFractionLostPackets();
+UInt32 GetCumulativeTotalLostPackets();
+UInt32 GetCumulativeJitter();
 
-  //bool IsValidPacket();
+//bool IsValidPacket();
 
-  virtual void Dump(); //Override
+virtual void Dump(); //Override
 
- protected:
-  inline int RecordOffset(int inReportNum);
+protected:
+inline int RecordOffset(int inReportNum);
 
-  UInt8 *fRTCPReceiverReportArray;    //points into fReceiverPacketBuffer
+UInt8 *fRTCPReceiverReportArray;    //points into fReceiverPacketBuffer
 
-  enum {
-    kReportBlockOffsetSizeInBytes = 24,     //All are UInt32s
+enum {
+  kReportBlockOffsetSizeInBytes = 24,     //All are UInt32s
 
-    kReportBlockOffset = kPacketSourceIDOffset + kPacketSourceIDSize,
+  kReportBlockOffset = kPacketSourceIDOffset + kPacketSourceIDSize,
 
-    kReportSourceIDOffset = 0,  //SSRC for this report
-    kFractionLostOffset = 4,
-    kFractionLostMask = 0xFF000000UL,
-    kFractionLostShift = 24,
-    kTotalLostPacketsOffset = 4,
-    kTotalLostPacketsMask = 0x00FFFFFFUL,
-    kHighestSeqNumReceivedOffset = 8,
-    kJitterOffset = 12,
-    kLastSenderReportOffset = 16,
-    kLastSenderReportDelayOffset = 20
-  };
+  kReportSourceIDOffset = 0,  //SSRC for this report
+  kFractionLostOffset = 4,
+  kFractionLostMask = 0xFF000000UL,
+  kFractionLostShift = 24,
+  kTotalLostPacketsOffset = 4,
+  kTotalLostPacketsMask = 0x00FFFFFFUL,
+  kHighestSeqNumReceivedOffset = 8,
+  kJitterOffset = 12,
+  kLastSenderReportOffset = 16,
+  kLastSenderReportDelayOffset = 20
+};
 };
 
 class RTCPSenderReportPacket : public RTCPReceiverPacket {
- public:
-  bool ParseReport(UInt8 *inPacketBuffer, UInt32 inPacketLength);
-  SInt64 GetNTPTimeStamp() {
-    UInt32
-        *fieldPtr = (UInt32 *) &fReceiverPacketBuffer[kSRPacketNTPTimeStampMSW];
-    SInt64 timestamp = ntohl(*fieldPtr);
-    fieldPtr = (UInt32 *) &fReceiverPacketBuffer[kSRPacketNTPTimeStampLSW];
-    return (timestamp << 32) | ntohl(*fieldPtr);
-  }
-  UInt32 GetRTPTimeStamp() {
-    UInt32 *fieldPtr = (UInt32 *) &fReceiverPacketBuffer[kSRPacketRTPTimeStamp];
-    return ntohl(*fieldPtr);
-  }
- protected:
-  enum {
-    kRTCPSRPacketSenderInfoInBytes = 20,
-    kSRPacketNTPTimeStampMSW = 8,
-    kSRPacketNTPTimeStampLSW = 12,
-    kSRPacketRTPTimeStamp = 16
-  };
+public:
+bool ParseReport(UInt8 *inPacketBuffer, UInt32 inPacketLength);
+SInt64 GetNTPTimeStamp() {
+  UInt32
+      *fieldPtr = (UInt32 *) &fReceiverPacketBuffer[kSRPacketNTPTimeStampMSW];
+  SInt64 timestamp = ntohl(*fieldPtr);
+  fieldPtr = (UInt32 *) &fReceiverPacketBuffer[kSRPacketNTPTimeStampLSW];
+  return (timestamp << 32) | ntohl(*fieldPtr);
+}
+UInt32 GetRTPTimeStamp() {
+  UInt32 *fieldPtr = (UInt32 *) &fReceiverPacketBuffer[kSRPacketRTPTimeStamp];
+  return ntohl(*fieldPtr);
+}
+protected:
+enum {
+  kRTCPSRPacketSenderInfoInBytes = 20,
+  kSRPacketNTPTimeStampMSW = 8,
+  kSRPacketNTPTimeStampLSW = 12,
+  kSRPacketRTPTimeStamp = 16
+};
 };
 
-/**************  RTCPPacket  inlines **************/
+/**************  RTCPPacket inlines **************/
 inline int RTCPPacket::GetVersion() {
   UInt32 *theVersionPtr = (UInt32 *) &fReceiverPacketBuffer[kVersionOffset];
   UInt32 theVersion = ntohl(*theVersionPtr);
@@ -196,22 +205,19 @@ inline int RTCPPacket::GetVersion() {
 }
 
 inline bool RTCPPacket::GetHasPadding() {
-  UInt32
-      *theHasPaddingPtr = (UInt32 *) &fReceiverPacketBuffer[kHasPaddingOffset];
+  UInt32 *theHasPaddingPtr = (UInt32 *) &fReceiverPacketBuffer[kHasPaddingOffset];
   UInt32 theHasPadding = ntohl(*theHasPaddingPtr);
   return (bool) (theHasPadding & kHasPaddingMask);
 }
 
 inline int RTCPPacket::GetReportCount() {
-  UInt32 *theReportCountPtr =
-      (UInt32 *) &fReceiverPacketBuffer[kReportCountOffset];
+  UInt32 *theReportCountPtr = (UInt32 *) &fReceiverPacketBuffer[kReportCountOffset];
   UInt32 theReportCount = ntohl(*theReportCountPtr);
   return (int) ((theReportCount & kReportCountMask) >> kReportCountShift);
 }
 
 inline UInt8 RTCPPacket::GetPacketType() {
-  UInt32
-      *thePacketTypePtr = (UInt32 *) &fReceiverPacketBuffer[kPacketTypeOffset];
+  UInt32 *thePacketTypePtr = (UInt32 *) &fReceiverPacketBuffer[kPacketTypeOffset];
   UInt32 thePacketType = ntohl(*thePacketTypePtr);
   return (UInt8) ((thePacketType & kPacketTypeMask) >> kPacketTypeShift);
 }

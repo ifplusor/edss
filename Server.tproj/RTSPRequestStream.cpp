@@ -22,11 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       RTSPRequestStream.cpp
-
-    Contains:   Implementation of RTSPRequestStream class.
-*/
+/**
+ * @file RTSPRequestStream.cpp
+ *
+ * Implementation of RTSPRequestStream class.
+ */
 
 #include <CF/StringParser.h>
 #include <CF/base64.h>
@@ -139,13 +139,18 @@ QTSS_Error RTSPRequestStream::ReadRequest() {
     // See if this is an interleaved data packet
     if ('$' == *(fRequest.Ptr)) {
       /*
-       * rtsp interleaved frame layer
+       * RTSP Interleaved Frame:
        *
-       *   dollar sign   channel identifier   data length
-       * +-------------+--------------------+-------------+
-       * |     0x24    |       0x02         |  0x01 0x8d  |
-       * +-------------+--------------------+-------------+
-       *      1 byte          1 byte             2 byte
+       *     0                   1                   2                   3
+       *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+       *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       *    |     $0x24     |    channel    |          data length          | header
+       *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       *    |                          RTP packet                           |
+       *    |                              ...                              |
+       *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+       *
+       * 按 data length 读取数据包，会对封装在同一个 TCP 包的多个 RTP 包进行分拆
        */
 
       // check header length
@@ -158,7 +163,7 @@ QTSS_Error RTSPRequestStream::ReadRequest() {
       if (interleavedPacketLen > fRequest.Len)
         continue;
 
-      //put back any data that is not part of the header
+      // put back any data that is not part of the header
       fRetreatBytes += fRequest.Len - interleavedPacketLen;
       fRequest.Len = interleavedPacketLen;
 

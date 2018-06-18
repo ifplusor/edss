@@ -247,7 +247,7 @@ class RTPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
   // These variables are setup by the derived RTPSession object when
   // Play and Pause get called
 
-  //Some stream related information that is shared amongst all streams
+  // Some stream related information that is shared amongst all streams
   bool fIsFirstPlay;
   bool fAllTracksInterleaved;
   SInt64 fFirstPlayTime;//in milliseconds
@@ -371,7 +371,6 @@ class RTPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
 
   // Built in dictionary attributes
   static QTSSAttrInfoDict::AttrInfo sAttributes[];
-  //static unsigned int sRTPSessionIDCounter;
   static std::atomic_uint sRTPSessionIDCounter;
 
   // Authentication information that needs to be kept around

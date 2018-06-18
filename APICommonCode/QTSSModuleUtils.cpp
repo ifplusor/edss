@@ -894,7 +894,8 @@ bool QTSSModuleUtils::FindStringInAttributeList(QTSS_Object inObject, QTSS_Attri
     tempString.Set(tempString.Ptr);
     if (tempString.Ptr == NULL) return false;
 
-    if (tempString.Equal(StrPtrLen("*", 1))) return true;
+    static StrPtrLen sStar("*", 1);
+    if (tempString.Equal(sStar)) return true;
 
     if (inStrPtr->FindString(tempString.Ptr)) return true;
   }

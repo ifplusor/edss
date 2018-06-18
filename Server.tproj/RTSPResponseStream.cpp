@@ -22,27 +22,23 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       RTSPResponseStream.cpp
-
-    Contains:   Impelementation of object in .h
-*/
+/**
+ * @file: RTSPResponseStream.cpp
+ *
+ * Impelementation of object in .h
+ */
 
 #include <CF/Core/Time.h>
 
 #include "RTSPResponseStream.h"
 
-QTSS_Error RTSPResponseStream::WriteV(iovec *inVec,
-                                      UInt32 inNumVectors,
-                                      UInt32 inTotalLength,
-                                      UInt32 *outLengthSent,
-                                      UInt32 inSendType) {
+QTSS_Error RTSPResponseStream::
+WriteV(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength, UInt32 *outLengthSent, UInt32 inSendType) {
   QTSS_Error theErr = QTSS_NoErr;
   UInt32 theLengthSent = 0;
   UInt32 amtInBuffer = this->GetCurrentOffset() - fBytesSentInBuffer;
 
   if (amtInBuffer > 0) {
-
     // There is some data in the output buffer. Make sure to send that
     // first, using the empty space in the ioVec.
 
@@ -52,12 +48,11 @@ QTSS_Error RTSPResponseStream::WriteV(iovec *inVec,
 
     if (fPrintRTSP) {
       CF::DateBuffer theDate;
-      CF::DateTranslator::UpdateDateBuffer(&theDate,
-                                       0); // get the current GMT date and time
+      CF::DateTranslator::UpdateDateBuffer(&theDate, 0); // get the current GMT date and time
 
       s_printf("\n#S->C:\n#time: ms=%"   _U32BITARG_   " date=%s\n",
-                  (UInt32) CF::Core::Time::StartTimeMilli_Int(),
-                  theDate.GetDateBuffer());
+               (UInt32) CF::Core::Time::StartTimeMilli_Int(),
+               theDate.GetDateBuffer());
       for (UInt32 i = 0; i < inNumVectors; i++) {
         CF::StrPtrLen str((char *) inVec[i].iov_base, (UInt32) inVec[i].iov_len);
         str.PrintStrEOL();
@@ -77,12 +72,13 @@ QTSS_Error RTSPResponseStream::WriteV(iovec *inVec,
 
       fBytesSentInBuffer += theLengthSent;
       Assert(fBytesSentInBuffer < this->GetCurrentOffset());
-      theLengthSent = 0;
+      theLengthSent = 0; // because the data that we sent this time is in buffer.
     }
     // theLengthSent now represents how much data in the ioVec was sent
   } else if (inNumVectors > 1) {
     theErr = fSocket->WriteV(&inVec[1], inNumVectors - 1, &theLengthSent);
   }
+
   // We are supposed to refresh the timeout if there is a successful write.
   if (theErr == QTSS_NoErr)
     fTimeoutTask->RefreshTimeout();
@@ -130,11 +126,11 @@ QTSS_Error RTSPResponseStream::WriteV(iovec *inVec,
 
   while (curVec < inNumVectors) {
     // Copy the remaining vectors into the buffer
-    this->Put(((char *) inVec[curVec].iov_base) + theLengthSent,
-              inVec[curVec].iov_len - theLengthSent);
+    this->Put(((char *) inVec[curVec].iov_base) + theLengthSent, inVec[curVec].iov_len - theLengthSent);
     theLengthSent = 0;
     curVec++;
   }
+
   return QTSS_NoErr;
 }
 

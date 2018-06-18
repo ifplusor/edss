@@ -81,6 +81,10 @@ class SourceInfo {
 
     void Copy(const StreamInfo &copy);// Does copy dynamically allocated data
 
+    /*
+     * NOTE: where we can set fSrcIPAddr?
+     */
+
     UInt32 fSrcIPAddr;                // Src IP address of content (this may be 0 if not known for sure)
     UInt32 fDestIPAddr;               // Dest IP address of content (destination IP addr for source broadcast!)
     UInt16 fPort;                     // Dest (RTP) port of source content

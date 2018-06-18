@@ -121,10 +121,10 @@ class ErrorLogCheckTask : public Thread::Task {
     this->SetTaskName("ErrorLogCheckTask");
     this->Signal(kStartEvent);
   }
-  virtual ~ErrorLogCheckTask() {}
+  ~ErrorLogCheckTask() override = default;
 
  private:
-  virtual SInt64 Run();
+  SInt64 Run() override;
 };
 
 const UInt32 kMaxLogStringLen = 2172;

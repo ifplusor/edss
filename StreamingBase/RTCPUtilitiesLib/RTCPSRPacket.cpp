@@ -22,16 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       RTCPSRPacket.cpp
-
-    Contains:   A class that writes a RTCP Sender Report
-
-    Change History (most recent first):
-
-
-
-*/
+/**
+ * @file RTCPSRPacket.cpp
+ *
+ * A class that writes a RTCP Sender Report
+ */
 
 #include <string.h>
 
@@ -51,15 +46,12 @@ RTCPSRPacket::RTCPSRPacket() {
 
   //SDES length is the length of the CName, plus 2 32bit words, plus the 32bit word for the SSRC
   *theSRWriter = htonl(0x81ca0000 + (cNameLen >> 2) + 1);
-  ::memcpy(&fSenderReportBuffer[kSenderReportSizeInBytes],
-           theTempCName,
-           cNameLen);
+  ::memcpy(&fSenderReportBuffer[kSenderReportSizeInBytes], theTempCName, cNameLen);
   fSenderReportSize = kSenderReportSizeInBytes + cNameLen;
 
   /*
    SERVER INFO PACKET FORMAT
-  struct s_rtcp_struct
-  {
+  struct s_rtcp_struct {
       RTCPHeader      header;
       UInt32          ssrc;       // ssrc of rtcp originator
       OSType          name;
@@ -75,37 +67,45 @@ RTCPSRPacket::RTCPSRPacket() {
   UInt32 *theAckInfoWriter = (UInt32 *) &fSenderReportBuffer[fSenderReportSize];
   *theAckInfoWriter = htonl(0x81cc0006);
   theAckInfoWriter += 2;
-  *(theAckInfoWriter++) =
-      htonl(FOUR_CHARS_TO_INT('q', 't', 's', 'i')); // Ack Info APP name
-  theAckInfoWriter++; // leave space for the ssrc (again)
+  *theAckInfoWriter = htonl(FOUR_CHARS_TO_INT('q', 't', 's', 'i')); // Ack Info APP name
+  theAckInfoWriter += 2; // leave space for the ssrc (again)
   *(theAckInfoWriter++) = htonl(2); // 2 UInt32s for the 'at' field
   *(theAckInfoWriter++) = htonl(FOUR_CHARS_TO_INT('a', 't', 0, 4));
-  fSenderReportWithServerInfoSize =
-      (char *) (theAckInfoWriter + 1) - fSenderReportBuffer;
+  fSenderReportWithServerInfoSize = static_cast<UInt32>((char *) (theAckInfoWriter + 1) - fSenderReportBuffer);
 
-  UInt32 *theByeWriter =
-      (UInt32 *) &fSenderReportBuffer[fSenderReportWithServerInfoSize];
+  UInt32 *theByeWriter = (UInt32 *) &fSenderReportBuffer[fSenderReportWithServerInfoSize];
   *theByeWriter = htonl(0x81cb0001);
 }
 
+/**
+ * CNAME: Canonical end-point identifier SDES item
+ *
+ * alias of SSRC, that is fixed for that participant
+ *
+ *    0                   1                   2                   3
+ *    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *   |    CNAME=1    |     length    | user and domain name         ...
+ *   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ * @see rfc1889(section 6.4.1)
+ *
+ */
 UInt32 RTCPSRPacket::GetACName(char *ioCNameBuffer) {
-  static char *sCNameBase = "QTSS";
+  static const char *sCNameBase = "edss";
 
-  //clear out the whole buffer
+  // clear out the whole buffer
   ::memset(ioCNameBuffer, 0, kMaxCNameLen);
 
-  //cName identifier
+  // cName identifier, must 1
   ioCNameBuffer[0] = 1;
 
-  //Unique cname is constructed from the base name and the current time
-  s_sprintf(&ioCNameBuffer[1],
-               " %s%" _64BITARG_ "d",
-               sCNameBase,
-               CF::Core::Time::Milliseconds() / 1000);
+  // Unique cname is constructed from the base name and the current time
+  s_sprintf(&ioCNameBuffer[1], " %" _64BITARG_ "d@%s", CF::Core::Time::Milliseconds() / 1000, sCNameBase);
   UInt32 cNameLen = ::strlen(ioCNameBuffer);
-  //2nd byte of CName should be length
-  ioCNameBuffer[1] =
-      (UInt8) (cNameLen - 2);//don't count indicator or length byte
+
+  // 2nd byte of CName should be length
+  ioCNameBuffer[1] = (UInt8) (cNameLen - 2); // don't count indicator or length byte
 
   // This function assumes that the cName is the only item in this SDES chunk
   // (see RTP rfc for details).
@@ -114,7 +114,7 @@ UInt32 RTCPSRPacket::GetACName(char *ioCNameBuffer) {
   //
   // s_sprintf already put a NULL terminator in the cName buffer. So all we have to
   // do is pad out to the boundary.
-  cNameLen += 1; //add on the NULL character
+  cNameLen += 1; // add on the NULL character
   UInt32 paddedLength = cNameLen + (4 - (cNameLen % 4));
 
   // Pad, and zero out as we pad.

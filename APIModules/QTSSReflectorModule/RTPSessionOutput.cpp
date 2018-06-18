@@ -81,7 +81,7 @@ RTPSessionOutput::RTPSessionOutput(QTSS_ClientSessionObject inClientSession, Ref
       fMustSynch(true),
       fPreFilter(true) {
   // create a bookmark for each stream we'll reflect
-  this->InititializeBookmarks(inReflectorSession->GetNumStreams());
+  this->InitializeBookmarks(inReflectorSession->GetNumStreams());
 }
 
 void RTPSessionOutput::Register() {
@@ -190,7 +190,6 @@ void RTPSessionOutput::InitializeStreams() {
   for (SInt16 z = 0; QTSS_GetValuePtr(fClientSession, qtssCliSesStreamObjects, z, (void **) &theStreamPtr, &theLen) == QTSS_NoErr; z++) {
     (void) QTSS_SetValue(*theStreamPtr, sStreamPacketCountAttr, 0, &packetCountInitValue, sizeof(UInt32));
   }
-
 }
 
 bool RTPSessionOutput::IsUDP() {
@@ -464,51 +463,26 @@ RTPSessionOutput::TrackRTPPackets(QTSS_RTPStreamObject *theStreamPtr,
     return QTSS_NoErr;
 
   ReflectorPacket packetContainer;
-  packetContainer.SetPacketData(inPacketStrPtr->Ptr, inPacketStrPtr->Len);
-  packetContainer.fIsRTCP = false;
+  packetContainer.SetPacketData(inPacketStrPtr->Ptr, inPacketStrPtr->Len, false);
   SInt64 *theTimePtr = NULL;
   UInt32 theLen = 0;
 
-  if (QTSS_NoErr != QTSS_GetValuePtr(*theStreamPtr,
-                                     sFirstRTPArrivalTimeAttr,
-                                     0,
-                                     (void **) &theTimePtr,
-                                     &theLen)) {
-    UInt32 theSSRC = packetContainer.GetSSRC(packetContainer.fIsRTCP);
-    (void) QTSS_SetValue(*theStreamPtr,
-                         sStreamSSRCAttr,
-                         0,
-                         &theSSRC,
-                         sizeof(theSSRC));
+  if (QTSS_NoErr != QTSS_GetValuePtr(*theStreamPtr, sFirstRTPArrivalTimeAttr, 0, (void **) &theTimePtr, &theLen)) {
+    UInt32 theSSRC = packetContainer.GetSSRC();
+    (void) QTSS_SetValue(*theStreamPtr, sStreamSSRCAttr, 0, &theSSRC, sizeof(theSSRC));
 
     UInt32 rtpTime = packetContainer.GetPacketRTPTime();
-    writeErr = QTSS_SetValue(*theStreamPtr,
-                             sFirstRTPTimeStampAttr,
-                             0,
-                             &rtpTime,
-                             sizeof(rtpTime));
+    writeErr = QTSS_SetValue(*theStreamPtr, sFirstRTPTimeStampAttr, 0, &rtpTime, sizeof(rtpTime));
     Assert(writeErr == QTSS_NoErr);
 
-    writeErr = QTSS_SetValue(*theStreamPtr,
-                             sFirstRTPArrivalTimeAttr,
-                             0,
-                             arrivalTimeMSecPtr,
-                             sizeof(SInt64));
+    writeErr = QTSS_SetValue(*theStreamPtr, sFirstRTPArrivalTimeAttr, 0, arrivalTimeMSecPtr, sizeof(SInt64));
     Assert(writeErr == QTSS_NoErr);
 
-    writeErr = QTSS_SetValue(*theStreamPtr,
-                             sFirstRTPCurrentTimeAttr,
-                             0,
-                             currentTimePtr,
-                             sizeof(SInt64));
+    writeErr = QTSS_SetValue(*theStreamPtr, sFirstRTPCurrentTimeAttr, 0, currentTimePtr, sizeof(SInt64));
     Assert(writeErr == QTSS_NoErr);
 
     UInt32 initValue = 0;
-    writeErr = QTSS_SetValue(*theStreamPtr,
-                             sStreamByteCountAttr,
-                             0,
-                             &initValue,
-                             sizeof(UInt32));
+    writeErr = QTSS_SetValue(*theStreamPtr, sStreamByteCountAttr, 0, &initValue, sizeof(UInt32));
     Assert(writeErr == QTSS_NoErr);
 
     //printf("first rtp on stream stream=%"   _U32BITARG_   " ssrc=%"   _U32BITARG_   " rtpTime=%"   _U32BITARG_   " arrivalTimeMSecPtr=%qd currentTime=%qd\n",(UInt32) theStreamPtr, theSSRC, rtpTime, *arrivalTimeMSecPtr, *currentTimePtr);
@@ -518,22 +492,14 @@ RTPSessionOutput::TrackRTPPackets(QTSS_RTPStreamObject *theStreamPtr,
     UInt32 *byteCountPtr = NULL;
     UInt32 theLen = 0;
 
-    writeErr = QTSS_GetValuePtr(*theStreamPtr,
-                                sStreamByteCountAttr,
-                                0,
-                                (void **) &byteCountPtr,
-                                &theLen);
+    writeErr = QTSS_GetValuePtr(*theStreamPtr, sStreamByteCountAttr, 0, (void **) &byteCountPtr, &theLen);
     if (writeErr == QTSS_NoErr && theLen > 0)
       *byteCountPtr += inPacketStrPtr->Len - 12;// 12 header bytes
 
 
     UInt32 *theSSRCPtr = 0;
-    (void) QTSS_GetValuePtr(*theStreamPtr,
-                            sStreamSSRCAttr,
-                            0,
-                            (void **) &theSSRCPtr,
-                            &theLen);
-    if (*theSSRCPtr != packetContainer.GetSSRC(packetContainer.fIsRTCP)) {
+    (void) QTSS_GetValuePtr(*theStreamPtr, sStreamSSRCAttr, 0, (void **) &theSSRCPtr, &theLen);
+    if (*theSSRCPtr != packetContainer.GetSSRC()) {
 
       (void) QTSS_RemoveValue(*theStreamPtr, sFirstRTPArrivalTimeAttr, 0);
       (void) QTSS_RemoveValue(*theStreamPtr, sFirstRTPTimeStampAttr, 0);

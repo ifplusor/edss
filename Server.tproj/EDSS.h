@@ -15,23 +15,12 @@
 
 class EDSS : public CF::CFConfigure {
  public:
-  static EDSS *StartServer(XMLPrefsParser *inPrefsSource,
-                           PrefsSource *inMessagesSource,
-                           UInt16 inPortOverride,
-                           int statsUpdateInterval,
-                           QTSS_ServerState inInitialState,
-                           bool inDontFork,
-                           UInt32 debugLevel,
-                           UInt32 debugOptions,
-                           const char *sAbsolutePath);
+  static EDSS *StartServer(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
+                           int statsUpdateInterval, QTSS_ServerState inInitialState, bool inDontFork,
+                           UInt32 debugLevel, UInt32 debugOptions, const char *sAbsolutePath);
 
-  EDSS(XMLPrefsParser *inPrefsSource,
-       PrefsSource *inMessagesSource,
-       UInt16 inPortOverride,
-       QTSS_ServerState inInitialState,
-       bool inDontFork,
-       UInt32 debugLevel,
-       UInt32 debugOptions,
+  EDSS(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
+       QTSS_ServerState inInitialState, bool inDontFork, UInt32 debugLevel, UInt32 debugOptions,
        const char *sAbsolutePath);
   ~EDSS() override;
 

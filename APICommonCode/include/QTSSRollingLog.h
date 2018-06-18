@@ -120,7 +120,7 @@ class QTSSRollingLog : public CF::Thread::Task {
 
   //
   // Run function to roll log right at midnight
-  virtual SInt64 Run();
+  SInt64 Run() override;
 
   FILE *fLog;
   time_t fLogCreateTime;

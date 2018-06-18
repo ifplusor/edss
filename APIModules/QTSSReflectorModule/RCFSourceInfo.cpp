@@ -68,8 +68,7 @@ if (fStreamArray != NULL)
 }
 
 void RCFSourceInfo::Parse(XMLTag *relayTag) {
-  XMLTag *sourceTag =
-      relayTag->GetEmbeddedTagByNameAndAttr("OBJECT", "CLASS", "source");
+  XMLTag *sourceTag = relayTag->GetEmbeddedTagByNameAndAttr("OBJECT", "CLASS", "source");
   if (sourceTag == NULL)
     return;
 
@@ -86,8 +85,7 @@ void RCFSourceInfo::Parse(XMLTag *relayTag) {
     if (destAddrStr != NULL)
       destIPAddr = CF::Net::SocketUtils::ConvertStringToAddr(destAddrStr);
   }
-  prefTag =
-      sourceTag->GetEmbeddedTagByNameAndAttr("PREF", "NAME", "source_addr");
+  prefTag = sourceTag->GetEmbeddedTagByNameAndAttr("PREF", "NAME", "source_addr");
   if (prefTag != NULL) {
     char *srcAddrStr = prefTag->GetValue();
     if (srcAddrStr != NULL)
@@ -99,8 +97,7 @@ void RCFSourceInfo::Parse(XMLTag *relayTag) {
     if (ttlStr != NULL)
       ttl = atoi(ttlStr);
   }
-  prefTag =
-      sourceTag->GetEmbeddedTagByNameAndAttr("LIST-PREF", "NAME", "udp_ports");
+  prefTag = sourceTag->GetEmbeddedTagByNameAndAttr("LIST-PREF", "NAME", "udp_ports");
   if (prefTag != NULL) {
     fNumStreams = prefTag->GetNumEmbeddedTags();
 

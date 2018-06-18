@@ -22,17 +22,16 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       QTSServerInterface.h
-
-    Contains:   This object defines an interface for getting and setting server-wide
-                attributes, and storing global server resources.
-
-                There can be only one of these objects per process, so there
-                is a static accessor.
-
-
-*/
+/**
+ * @file QTSServerInterface.h
+ *
+ * This object defines an interface for getting and setting server-wide
+ * attributes, and storing global server resources.
+ *
+ * There can be only one of these objects per process, so there
+ * is a static accessor.
+ *
+ */
 
 
 #ifndef __QTSSERVERINTERFACE_H__
@@ -425,22 +424,14 @@ class QTSServerInterface : public QTSSDictionary {
   //stores the total number of bytes lost (as reported by clients) since startup
   UInt64 fTotalRTPPacketsLost;
 
-  //because there is no 64 bit atomic add (for obvious reasons), we efficiently
-  //implement total byte counting by atomic adding to this variable, then every
-  //once in awhile updating the sTotalBytes.
-  //unsigned int        fPeriodicRTPBytes;
-
+  // because there is no 64 bit atomic add (for obvious reasons), we efficiently
+  // implement total byte counting by atomic adding to this variable, then every
+  // once in awhile updating the sTotalBytes.
   std::atomic_uint fPeriodicRTPBytes;
-
-  //unsigned int        fPeriodicRTPPacketsLost;
-
   std::atomic_uint fPeriodicRTPPacketsLost;
-
-  //unsigned int        fPeriodicRTPPackets;
-
   std::atomic_uint fPeriodicRTPPackets;
 
-  //stores the current served bandwidth in BITS per second
+  // stores the current served bandwidth in BITS per second
   UInt32 fCurrentRTPBandwidthInBits;
   UInt32 fAvgRTPBandwidthInBits;
   UInt32 fRTPPacketsPerSecond;
@@ -493,18 +484,18 @@ class QTSServerInterface : public QTSSDictionary {
   friend class RTPStatsUpdaterTask;
 };
 
+/**
+ * This class runs periodically to compute current totals & averages,
+ * 同时如果发现RTP流量超过限制,会考虑是否发送kKillEvent信号给最近的会话。
+ */
 class RTPStatsUpdaterTask : public CF::Thread::Task {
  public:
-
-  // This class runs periodically to compute current totals & averages,
-  // 同时如果发现RTP流量超过限制,会考虑是否发送kKillEvent信号给最近的会话。
   RTPStatsUpdaterTask();
-
-  virtual ~RTPStatsUpdaterTask() {}
+  ~RTPStatsUpdaterTask() override = default;
 
  private:
 
-  virtual SInt64 Run();
+  SInt64 Run() override;
 
   RTPSessionInterface *GetNewestSession(CF::RefTable *inRTPSessionMap);
 

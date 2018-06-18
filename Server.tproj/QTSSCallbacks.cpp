@@ -47,8 +47,7 @@ using namespace CF;
 #define __QTSSCALLBACKS_DEBUG__ 0
 #define debug_printf if (__QTSSCALLBACKS_DEBUG__) s_printf
 
-void *QTSSCallbacks::QTSS_New(FourCharCode /*inMemoryIdentifier*/,
-                              UInt32 inSize) {
+void *QTSSCallbacks::QTSS_New(FourCharCode /*inMemoryIdentifier*/, UInt32 inSize) {
   //
   // This callback is now deprecated because the server no longer uses FourCharCodes
   // for memory debugging. For clients that still use it, the default, non-debugging
@@ -71,8 +70,7 @@ void QTSSCallbacks::QTSS_Milliseconds(SInt64 *outMilliseconds) {
     *outMilliseconds = Core::Time::Milliseconds();
 }
 
-void QTSSCallbacks::QTSS_ConvertToUnixTime(SInt64 *inQTSS_MilliSecondsPtr,
-                                           time_t *outSecondsPtr) {
+void QTSSCallbacks::QTSS_ConvertToUnixTime(SInt64 *inQTSS_MilliSecondsPtr, time_t *outSecondsPtr) {
   if ((NULL != outSecondsPtr) && (NULL != inQTSS_MilliSecondsPtr))
     *outSecondsPtr = Core::Time::TimeMilli_To_UnixTimeSecs(*inQTSS_MilliSecondsPtr);
 }
@@ -443,8 +441,7 @@ QTSS_Error QTSSCallbacks::QTSS_DestroySocketStream(QTSS_StreamRef inStream) {
 }
 
 QTSS_Error QTSSCallbacks::QTSS_AddService(const char *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr) {
-  QTSS_ModuleState *theState = (QTSS_ModuleState *)
-      Core::Thread::GetMainThreadData();
+  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 
@@ -457,10 +454,7 @@ QTSS_Error QTSSCallbacks::QTSS_AddService(const char *inServiceName, QTSS_Servic
     return QTSS_OutOfState;
 
   return QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kServiceDictIndex)
-      ->AddAttribute(inServiceName,
-                   (QTSS_AttrFunctionPtr) inFunctionPtr,
-                   qtssAttrDataTypeUnknown,
-                   qtssAttrModeRead);
+      ->AddAttribute(inServiceName, (QTSS_AttrFunctionPtr) inFunctionPtr, qtssAttrDataTypeUnknown, qtssAttrModeRead);
 }
 
 QTSS_Error QTSSCallbacks::QTSS_IDForService(const char *inTag, QTSS_ServiceID *outID) {
@@ -508,7 +502,8 @@ QTSS_Error QTSSCallbacks::QTSS_SendStandardRTSPResponse(QTSS_RTSPRequestObject i
     return QTSS_BadArgument;
 
   switch (((RTSPRequestInterface *) inRTSPRequest)->GetMethod()) {
-    case qtssDescribeMethod:((RTPSession *) inRTPInfo)->SendDescribeResponse((RTSPRequestInterface *) inRTSPRequest);
+    case qtssDescribeMethod:
+      ((RTPSession *) inRTPInfo)->SendDescribeResponse((RTSPRequestInterface *) inRTSPRequest);
       return QTSS_NoErr;
     case qtssSetupMethod: {
       // Because QTSS_SendStandardRTSPResponse supports sending a proper 304 Not Modified on a SETUP,
@@ -609,8 +604,7 @@ QTSS_Error QTSSCallbacks::QTSS_SignalStream(QTSS_StreamRef inStream) {
 }
 
 QTSS_Error QTSSCallbacks::QTSS_SetIdleTimer(SInt64 inMsecToWait) {
-  QTSS_ModuleState *theState = (QTSS_ModuleState *)
-      Core::Thread::GetMainThreadData();
+  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 

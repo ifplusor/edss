@@ -140,20 +140,14 @@ void QTSServerInterface::Initialize() {
   // 根据 sAttributes、sConnectedUserAttributes 进行属性信息统计。
   QTSSDictionaryMap *serverDict = QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kServerDictIndex);
   for (UInt32 x = 0; x < qtssSvrNumParams; x++) {
-    serverDict->SetAttribute(x,
-                             sAttributes[x].fAttrName,
-                             sAttributes[x].fFuncPtr,
-                             sAttributes[x].fAttrDataType,
+    serverDict->SetAttribute(x, sAttributes[x].fAttrName, sAttributes[x].fFuncPtr, sAttributes[x].fAttrDataType,
                              sAttributes[x].fAttrPermission);
   }
 
   QTSSDictionaryMap *connUserDict = QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kQTSSConnectedUserDictIndex);
   for (UInt32 y = 0; y < qtssConnectionNumParams; y++) {
-    connUserDict->SetAttribute(y,
-                               sConnectedUserAttributes[y].fAttrName,
-                               sConnectedUserAttributes[y].fFuncPtr,
-                               sConnectedUserAttributes[y].fAttrDataType,
-                               sConnectedUserAttributes[y].fAttrPermission);
+    connUserDict->SetAttribute(y, sConnectedUserAttributes[y].fAttrName, sConnectedUserAttributes[y].fFuncPtr,
+                               sConnectedUserAttributes[y].fAttrDataType, sConnectedUserAttributes[y].fAttrPermission);
   }
 
   //Write out a premade server header
@@ -286,7 +280,7 @@ void QTSServerInterface::KillAllRTPSessions() {
   Core::MutexLocker locker(fRTPMap->GetMutex());
   for (RefHashTableIter theIter(fRTPMap->GetHashTable()); !theIter.IsDone(); theIter.Next()) {
     Ref *theRef = theIter.GetCurrent();
-    RTPSessionInterface *theSession = (RTPSessionInterface *) theRef->GetObject();
+    auto *theSession = (RTPSessionInterface *) theRef->GetObject();
     theSession->Signal(Thread::Task::kKillEvent);
   }
 }
@@ -362,39 +356,28 @@ Float32 RTPStatsUpdaterTask::GetCPUTimeInSeconds() {
 }
 
 SInt64 RTPStatsUpdaterTask::Run() {
-  // 在运行StartTasks创建RTPStatsUpdaterTask类后,该Run函数就会被调度运行。
-  // 后续通过调用Task::Signal,该函数会被运行。
+  // 在运行 QTSServer::StartTasks 创建 RTPStatsUpdaterTask 类后,该 Run 函数就会被调度运行。
+  // 后续通过调用 Task::Signal, 该函数会被运行。
 
   QTSServerInterface *theServer = QTSServerInterface::sServer;
 
-  // All of this must happen atomically wrt dictionary values we are manipulating
+  // All of this must happen atomically write dictionary values we are manipulating
   Core::MutexLocker locker(&theServer->fMutex);
 
   // First update total bytes. This must be done because total bytes is a 64 bit number,
   // so no atomic functions can apply.
-  //
-  //  NOTE: The line below is not thread safe on non-PowerPC platforms. This is
-  //  because the fPeriodicRTPBytes variable is being manipulated from within an
-  //  atomic_add. On PowerPC, assignments are atomic, so the assignment below is ok.
-  //  On a non-PowerPC platform, the following would be thread safe:
-  //unsigned int periodicBytes = atomic_add(&theServer->fPeriodicRTPBytes, 0);-----------
   unsigned int periodicBytes = theServer->fPeriodicRTPBytes;
-  //(void)atomic_sub(&theServer->fPeriodicRTPBytes, periodicBytes);
-
   theServer->fPeriodicRTPBytes.fetch_sub(periodicBytes);
   theServer->fTotalRTPBytes += periodicBytes;
 
   // Same deal for packet totals
   unsigned int periodicPackets = theServer->fPeriodicRTPPackets;
-  //(void)atomic_sub(&theServer->fPeriodicRTPPackets, periodicPackets);
   theServer->fPeriodicRTPPackets.fetch_sub(periodicPackets);
   theServer->fTotalRTPPackets += periodicPackets;
 
   // ..and for lost packet totals
   unsigned int periodicPacketsLost = theServer->fPeriodicRTPPacketsLost;
-  //(void)atomic_sub(&theServer->fPeriodicRTPPacketsLost, periodicPacketsLost);
   theServer->fPeriodicRTPPacketsLost.fetch_sub(periodicPacketsLost);
-
   theServer->fTotalRTPPacketsLost += periodicPacketsLost;
 
   SInt64 curTime = CF::Core::Time::Milliseconds();
@@ -405,11 +388,11 @@ SInt64 RTPStatsUpdaterTask::Run() {
   // also update current bandwidth statistic
   if (fLastBandwidthTime != 0) {
     Assert(curTime > fLastBandwidthTime);
-    UInt32 delta = (UInt32) (curTime - fLastBandwidthTime);
-    // Prevent divide by zero errror
+    auto delta = (UInt32) (curTime - fLastBandwidthTime);
+    // Prevent divide by zero error
     if (delta < 1000) {
       WarnV(delta >= 1000, "delta < 1000");
-      (void) this->GetEvents();//we must clear the event mask!
+      (void) this->GetEvents(); // we must clear the event mask!
       return theServer->GetPrefs()->GetTotalBytesUpdateTimeInSecs() * 1000;
     }
 
@@ -420,8 +403,7 @@ SInt64 RTPStatsUpdaterTask::Run() {
     packetsPerSecond /= theTime;
     Assert(packetsPerSecond >= 0);
     theServer->fRTPPacketsPerSecond = packetsPerSecond;
-    UInt32 additionalBytes =
-        28 * packetsPerSecond; // IP headers = 20 + UDP headers = 8
+    UInt32 additionalBytes = 28 * packetsPerSecond; // IP headers = 20 + UDP headers = 8
     UInt32 headerBits = 8 * additionalBytes;
     headerBits /= theTime;
 
@@ -440,22 +422,24 @@ SInt64 RTPStatsUpdaterTask::Run() {
       theServer->fCPUPercent /= numProcessors;
   }
 
+  fLastBandwidthTime = curTime;
+
   // for cpu percent
   theServer->fCPUTimeUsedInSec = cpuTimeInSec;
 
   // also compute average bandwidth, a much more smooth value. This is done with
   // the fLastBandwidthAvg, a timestamp of the last time we did an average, and
   // fLastBytesSent, the number of bytes sent when we last did an average.
-  if ((fLastBandwidthAvg != 0) && (curTime > (fLastBandwidthAvg +
-      (theServer->GetPrefs()->GetAvgBandwidthUpdateTimeInSecs() * 1000)))) {
-    UInt32 delta = (UInt32) (curTime - fLastBandwidthAvg);
+  if ((fLastBandwidthAvg != 0) &&
+      (curTime > (fLastBandwidthAvg + (theServer->GetPrefs()->GetAvgBandwidthUpdateTimeInSecs() * 1000)))) {
+    auto delta = (UInt32) (curTime - fLastBandwidthAvg);
     SInt64 bytesSent = theServer->fTotalRTPBytes - fLastBytesSent;
     Assert(bytesSent >= 0);
 
-    //do the bandwidth computation using floating point divides
-    //for accuracy and speed.
-    Float32 bits = (Float32) (bytesSent * 8);
-    Float32 theAvgTime = (Float32) delta;
+    // do the bandwidth computation using floating point divides
+    // for accuracy and speed.
+    auto bits = (Float32) (bytesSent * 8);
+    auto theAvgTime = (Float32) delta;
     theAvgTime /= 1000;
     bits /= theAvgTime;
     Assert(bits >= 0);
@@ -464,20 +448,15 @@ SInt64 RTPStatsUpdaterTask::Run() {
     fLastBandwidthAvg = curTime;
     fLastBytesSent = theServer->fTotalRTPBytes;
 
-    // if the bandwidth is above the bandwidth setting, disconnect 1 user by sending them
-    // a BYE RTCP packet.
-    // 如果平均带宽大于配置中的最大带宽,则做出处理
+    // if the bandwidth is above the bandwidth setting, disconnect 1 user by sending them a BYE RTCP packet.
     // GetMaxKBitsBandwidth对应于配置文件中的maximum_bandwidth,缺省为 102400 K/s.
     SInt32 maxKBits = theServer->GetPrefs()->GetMaxKBitsBandwidth();
-    if ((maxKBits > -1)
-        && (theServer->fAvgRTPBandwidthInBits > ((UInt32) maxKBits * 1024))) {
-      //we need to make sure that all of this happens atomically wrt the session map
-      Core::MutexLocker locker(theServer->GetRTPSessionMap()->GetMutex());
-      RTPSessionInterface *theSession =
-          this->GetNewestSession(theServer->fRTPMap);
-      if (theSession != NULL)
-        if ((curTime - theSession->GetSessionCreateTime()) <
-            theServer->GetPrefs()->GetSafePlayDurationInSecs() * 1000)
+    if ((maxKBits > -1) && (theServer->fAvgRTPBandwidthInBits > ((UInt32) maxKBits * 1024))) {
+      //we need to make sure that all of this happens atomically write the session map
+      Core::MutexLocker locker2(theServer->GetRTPSessionMap()->GetMutex());
+      RTPSessionInterface *theSession = this->GetNewestSession(theServer->fRTPMap);
+      if (theSession != nullptr)
+        if ((curTime - theSession->GetSessionCreateTime()) < theServer->GetPrefs()->GetSafePlayDurationInSecs() * 1000)
           theSession->Signal(Thread::Task::kKillEvent);
     }
   } else if (fLastBandwidthAvg == 0) {
@@ -485,23 +464,24 @@ SInt64 RTPStatsUpdaterTask::Run() {
     fLastBytesSent = theServer->fTotalRTPBytes;
   }
 
-  (void) this->GetEvents();//we must clear the event mask!
+  (void) this->GetEvents(); // we must clear the event mask!
+
   // 对应于配置文件中的total_bytes_update,缺省为 1s。
   return theServer->GetPrefs()->GetTotalBytesUpdateTimeInSecs() * 1000;
 }
 
+/**
+ * @note Caller must lock down the RTP session map
+ */
 RTPSessionInterface *RTPStatsUpdaterTask::GetNewestSession(RefTable *inRTPSessionMap) {
-  //Caller must lock down the RTP session map
   SInt64 theNewestPlayTime = 0;
-  RTPSessionInterface *theNewestSession = NULL;
+  RTPSessionInterface *theNewestSession = nullptr;
 
-  //use the session map to iterate through all the sessions, finding the most
-  //recently connected client
-  for (RefHashTableIter theIter(inRTPSessionMap->GetHashTable());
-       !theIter.IsDone(); theIter.Next()) {
+  // use the session map to iterate through all the sessions, finding the most
+  // recently connected client
+  for (RefHashTableIter theIter(inRTPSessionMap->GetHashTable()); !theIter.IsDone(); theIter.Next()) {
     Ref *theRef = theIter.GetCurrent();
-    RTPSessionInterface
-        *theSession = (RTPSessionInterface *) theRef->GetObject();
+    auto theSession = (RTPSessionInterface *) theRef->GetObject();
     Assert(theSession->GetSessionCreateTime() > 0);
     if (theSession->GetSessionCreateTime() > theNewestPlayTime) {
       theNewestPlayTime = theSession->GetSessionCreateTime();
@@ -511,32 +491,27 @@ RTPSessionInterface *RTPStatsUpdaterTask::GetNewestSession(RefTable *inRTPSessio
   return theNewestSession;
 }
 
-void *QTSServerInterface::CurrentUnixTimeMilli(QTSSDictionary *inServer,
-                                               UInt32 *outLen) {
-  QTSServerInterface *theServer = (QTSServerInterface *) inServer;
-  theServer->fCurrentTime_UnixMilli =
-      Core::Time::TimeMilli_To_UnixTimeMilli(Core::Time::Milliseconds());
+void *QTSServerInterface::CurrentUnixTimeMilli(QTSSDictionary *inServer, UInt32 *outLen) {
+  auto *theServer = (QTSServerInterface *) inServer;
+  theServer->fCurrentTime_UnixMilli = Core::Time::TimeMilli_To_UnixTimeMilli(Core::Time::Milliseconds());
 
   // Return the result
   *outLen = sizeof(theServer->fCurrentTime_UnixMilli);
   return &theServer->fCurrentTime_UnixMilli;
 }
 
-void *QTSServerInterface::GetTotalUDPSockets(QTSSDictionary *inServer,
-                                             UInt32 *outLen) {
-  QTSServerInterface *theServer = (QTSServerInterface *) inServer;
+void *QTSServerInterface::GetTotalUDPSockets(QTSSDictionary *inServer, UInt32 *outLen) {
+  auto *theServer = (QTSServerInterface *) inServer;
   // Multiply by 2 because this is returning the number of socket *pairs*
-  theServer->fTotalUDPSockets =
-      theServer->fSocketPool->GetSocketQueue()->GetLength() * 2;
+  theServer->fTotalUDPSockets = theServer->fSocketPool->GetSocketQueue()->GetLength() * 2;
 
   // Return the result
   *outLen = sizeof(theServer->fTotalUDPSockets);
   return &theServer->fTotalUDPSockets;
 }
 
-void *QTSServerInterface::IsOutOfDescriptors(QTSSDictionary *inServer,
-                                             UInt32 *outLen) {
-  QTSServerInterface *theServer = (QTSServerInterface *) inServer;
+void *QTSServerInterface::IsOutOfDescriptors(QTSSDictionary *inServer, UInt32 *outLen) {
+  auto *theServer = (QTSServerInterface *) inServer;
 
   theServer->fIsOutOfDescriptors = false;
   for (UInt32 x = 0; x < theServer->fNumListeners; x++) {
@@ -550,11 +525,10 @@ void *QTSServerInterface::IsOutOfDescriptors(QTSSDictionary *inServer,
   return &theServer->fIsOutOfDescriptors;
 }
 
-void *QTSServerInterface::GetNumUDPBuffers(QTSSDictionary *inServer,
-                                           UInt32 *outLen) {
+void *QTSServerInterface::GetNumUDPBuffers(QTSSDictionary *inServer, UInt32 *outLen) {
   // This param retrieval function must be invoked each time it is called,
   // because whether we are out of descriptors or not is continually changing
-  QTSServerInterface *theServer = (QTSServerInterface *) inServer;
+  auto *theServer = (QTSServerInterface *) inServer;
 
   theServer->fNumUDPBuffers = RTPPacketResender::GetNumRetransmitBuffers();
 
@@ -563,11 +537,10 @@ void *QTSServerInterface::GetNumUDPBuffers(QTSSDictionary *inServer,
   return &theServer->fNumUDPBuffers;
 }
 
-void *QTSServerInterface::GetNumWastedBytes(QTSSDictionary *inServer,
-                                            UInt32 *outLen) {
+void *QTSServerInterface::GetNumWastedBytes(QTSSDictionary *inServer, UInt32 *outLen) {
   // This param retrieval function must be invoked each time it is called,
   // because whether we are out of descriptors or not is continually changing
-  QTSServerInterface *theServer = (QTSServerInterface *) inServer;
+  auto theServer = (QTSServerInterface *) inServer;
 
   theServer->fUDPWastageInBytes = RTPPacketResender::GetWastedBufferBytes();
 
@@ -576,28 +549,21 @@ void *QTSServerInterface::GetNumWastedBytes(QTSSDictionary *inServer,
   return &theServer->fUDPWastageInBytes;
 }
 
-void *QTSServerInterface::TimeConnected(QTSSDictionary *inConnection,
-                                        UInt32 *outLen) {
+void *QTSServerInterface::TimeConnected(QTSSDictionary *inConnection, UInt32 *outLen) {
   SInt64 connectTime;
   void *result;
   UInt32 len = sizeof(connectTime);
   inConnection->GetValue(qtssConnectionCreateTimeInMsec, 0, &connectTime, &len);
   SInt64 timeConnected = Core::Time::Milliseconds() - connectTime;
   *outLen = sizeof(timeConnected);
-  inConnection->SetValue(qtssConnectionTimeStorage,
-                         0,
-                         &timeConnected,
-                         sizeof(connectTime));
+  inConnection->SetValue(qtssConnectionTimeStorage, 0, &timeConnected, sizeof(connectTime));
   inConnection->GetValuePtr(qtssConnectionTimeStorage, 0, &result, outLen);
 
   // Return the result
   return result;
 }
 
-QTSS_Error QTSSErrorLogStream::Write(void *inBuffer,
-                                     UInt32 inLen,
-                                     UInt32 *outLenWritten,
-                                     UInt32 inFlags) {
+QTSS_Error QTSSErrorLogStream::Write(void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, UInt32 inFlags) {
   // For the error log stream, the flags are considered to be the verbosity
   // of the error.
   if (inFlags >= qtssIllegalVerbosity)

@@ -172,7 +172,6 @@ class RTPPacketResender {
   void RemovePacket(RTPResenderEntry *inEntry);
 
   static CF::BufferPool sBufferPool;
-  //static unsigned int sNumWastedBytes;
   static std::atomic_uint sNumWastedBytes;
 
   void UpdateCongestionWindow(SInt32 bytesToOpenBy);

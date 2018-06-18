@@ -30,11 +30,11 @@ using namespace CF;
 
 SInt32 SDPContainer::AddHeaderLine(StrPtrLen *theLinePtr) {
   Assert(theLinePtr);
-  UInt32 thisLine = fNumUsedLines;
+  UInt32 thisLine = static_cast<UInt32>(fNumUsedLines);
   Assert(fNumUsedLines < fNumSDPLines);
   fSDPLineArray[thisLine].Set(theLinePtr->Ptr, theLinePtr->Len);
   fNumUsedLines++;
-  if (fNumUsedLines == fNumSDPLines) {
+  if (fNumUsedLines == fNumSDPLines) { // expand memory
     SDPLine *tempSDPLineArray = new SDPLine[fNumSDPLines * 2];
     for (int i = 0; i < fNumSDPLines; i++) {
       tempSDPLineArray[i].Set(fSDPLineArray[i].Ptr, fSDPLineArray[i].Len);
@@ -91,8 +91,8 @@ void SDPContainer::SetLine(SInt32 index) {
 }
 
 void SDPContainer::Parse() {
-  char *validChars = "vosiuepcbtrzkam";
-  char nameValueSeparator = '=';
+  static const char *sValidChars = "vosiuepcbtrzkam";
+  static const char sNameValueSeparator = '=';
 
   bool valid = true;
 
@@ -123,13 +123,13 @@ void SDPContainer::Parse() {
       case 'o': fReqLines |= kO; break;
     }
 
-    lineParser.ConsumeUntil(&fieldName, nameValueSeparator);
-    if ((fieldName.Len != 1) || (::strchr(validChars, fieldName.Ptr[0]) == nullptr)) {
+    lineParser.ConsumeUntil(&fieldName, sNameValueSeparator);
+    if ((fieldName.Len != 1) || (::strchr(sValidChars, fieldName.Ptr[0]) == nullptr)) {
       valid = false; // line doesn't begin with one of the valid characters followed by an "="
       break;
     }
 
-    if (!lineParser.Expect(nameValueSeparator)) {
+    if (!lineParser.Expect(sNameValueSeparator)) {
       valid = false; // line doesn't have the "=" after the first char
       break;
     }
@@ -140,6 +140,7 @@ void SDPContainer::Parse() {
       valid = false; // line has whitespace after the "="
       break;
     }
+
     AddHeaderLine(&line);
   }
 

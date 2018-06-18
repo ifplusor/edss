@@ -270,6 +270,7 @@ class QTSSDictionary : public QTSSStream {
  *                       +->...
  *
  * @see QTSSDictionaryMap::kAttrInfoDictIndex
+ *
  */
 class QTSSAttrInfoDict : public QTSSDictionary {
  public:

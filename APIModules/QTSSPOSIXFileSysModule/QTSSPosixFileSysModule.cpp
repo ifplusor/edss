@@ -46,8 +46,7 @@ static QTSS_AttributeID sEventContextAttr = qtssIllegalAttrID;
 
 // FUNCTION PROTOTYPES
 
-static QTSS_Error QTSSPosixFileSysModuleDispatch(QTSS_Role inRole,
-                                                 QTSS_RoleParamPtr inParams);
+static QTSS_Error QTSSPosixFileSysModuleDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParams);
 static QTSS_Error Register(QTSS_Register_Params *inParams);
 static QTSS_Error Initialize(QTSS_Initialize_Params *inParams);
 static QTSS_Error OpenFile(QTSS_OpenFile_Params *inParams);
@@ -62,8 +61,7 @@ QTSS_Error QTSSPosixFileSysModule_Main(void *inPrivateArgs) {
   return _stublibrary_main(inPrivateArgs, QTSSPosixFileSysModuleDispatch);
 }
 
-QTSS_Error QTSSPosixFileSysModuleDispatch(QTSS_Role inRole,
-                                          QTSS_RoleParamPtr inParams) {
+QTSS_Error QTSSPosixFileSysModuleDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParams) {
   switch (inRole) {
     case QTSS_Register_Role: return Register(&inParams->regParams);
     case QTSS_Initialize_Role: return Initialize(&inParams->initParams);
@@ -86,22 +84,12 @@ QTSS_Error Register(QTSS_Register_Params *inParams) {
 
   // Add an attribute to the file object type to store a pointer to our OSFileSource
   static char *sOSFileSourceName = "QTSSPosixFileSysModuleOSFileSource";
-  (void) QTSS_AddStaticAttribute(qtssFileObjectType,
-                                 sOSFileSourceName,
-                                 NULL,
-                                 qtssAttrDataTypeVoidPointer);
-  (void) QTSS_IDForAttr(qtssFileObjectType,
-                        sOSFileSourceName,
-                        &sOSFileSourceAttr);
+  (void) QTSS_AddStaticAttribute(qtssFileObjectType, sOSFileSourceName, NULL, qtssAttrDataTypeVoidPointer);
+  (void) QTSS_IDForAttr(qtssFileObjectType, sOSFileSourceName, &sOSFileSourceAttr);
 
   static char *sEventContextName = "QTSSPosixFileSysModuleEventContext";
-  (void) QTSS_AddStaticAttribute(qtssFileObjectType,
-                                 sEventContextName,
-                                 NULL,
-                                 qtssAttrDataTypeVoidPointer);
-  (void) QTSS_IDForAttr(qtssFileObjectType,
-                        sEventContextName,
-                        &sEventContextAttr);
+  (void) QTSS_AddStaticAttribute(qtssFileObjectType, sEventContextName, NULL, qtssAttrDataTypeVoidPointer);
+  (void) QTSS_IDForAttr(qtssFileObjectType, sEventContextName, &sEventContextAttr);
 
   // Tell the server our name!
   static char *sModuleName = "QTSSPosixFileSysModule";
@@ -117,14 +105,14 @@ QTSS_Error Initialize(QTSS_Initialize_Params *inParams) {
 }
 
 QTSS_Error OpenFile(QTSS_OpenFile_Params *inParams) {
-  FileSource *theFileSource = new FileSource(inParams->inPath);
+  auto theFileSource = new FileSource(inParams->inPath);
 
   UInt64 theLength = theFileSource->GetLength();
 
   //
   // OSFileSource returns mod date as a time_t.
   // This is the same as a QTSS_TimeVal, except the latter is in msec
-  QTSS_TimeVal theModDate = (QTSS_TimeVal) theFileSource->GetModDate();
+  auto theModDate = (QTSS_TimeVal) theFileSource->GetModDate();
   theModDate *= 1000;
 
   //
@@ -136,11 +124,7 @@ QTSS_Error OpenFile(QTSS_OpenFile_Params *inParams) {
 
   //
   // Add this new file source object to the file object
-  QTSS_Error theErr = QTSS_SetValue(inParams->inFileObject,
-                                    sOSFileSourceAttr,
-                                    0,
-                                    &theFileSource,
-                                    sizeof(theFileSource));
+  QTSS_Error theErr = QTSS_SetValue(inParams->inFileObject, sOSFileSourceAttr, 0, &theFileSource, sizeof(theFileSource));
   if (theErr != QTSS_NoErr) {
     delete theFileSource;
     return QTSS_RequestFailed;
@@ -149,16 +133,10 @@ QTSS_Error OpenFile(QTSS_OpenFile_Params *inParams) {
   //
   // If caller wants async I/O, at this point we should set up the EventContext
   if (inParams->inFlags & qtssOpenFileAsync) {
-    Net::EventContext *theEventContext =
-        new Net::EventContext(Net::EventContext::kInvalidFileDesc,
-                              Net::Socket::GetEventThread());
+    auto *theEventContext = new Net::EventContext(Net::EventContext::kInvalidFileDesc, Net::Socket::GetEventThread());
     theEventContext->InitNonBlocking(theFileSource->GetFD());
 
-    theErr = QTSS_SetValue(inParams->inFileObject,
-                           sEventContextAttr,
-                           0,
-                           &theEventContext,
-                           sizeof(theEventContext));
+    theErr = QTSS_SetValue(inParams->inFileObject, sEventContextAttr, 0, &theEventContext, sizeof(theEventContext));
     if (theErr != QTSS_NoErr) {
       delete theFileSource;
       delete theEventContext;
@@ -168,16 +146,8 @@ QTSS_Error OpenFile(QTSS_OpenFile_Params *inParams) {
 
   //
   // Set up the other attribute values in the file object
-  (void) QTSS_SetValue(inParams->inFileObject,
-                       qtssFlObjLength,
-                       0,
-                       &theLength,
-                       sizeof(theLength));
-  (void) QTSS_SetValue(inParams->inFileObject,
-                       qtssFlObjModDate,
-                       0,
-                       &theModDate,
-                       sizeof(theModDate));
+  (void) QTSS_SetValue(inParams->inFileObject, qtssFlObjLength, 0, &theLength, sizeof(theLength));
+  (void) QTSS_SetValue(inParams->inFileObject, qtssFlObjModDate, 0, &theModDate, sizeof(theModDate));
 
   return QTSS_NoErr;
 }
@@ -186,11 +156,7 @@ QTSS_Error AdviseFile(QTSS_AdviseFile_Params *inParams) {
   FileSource **theFile = NULL;
   UInt32 theLen = 0;
 
-  (void) QTSS_GetValuePtr(inParams->inFileObject,
-                          sOSFileSourceAttr,
-                          0,
-                          (void **) &theFile,
-                          &theLen);
+  (void) QTSS_GetValuePtr(inParams->inFileObject, sOSFileSourceAttr, 0, (void **) &theFile, &theLen);
   Assert(theLen == sizeof(FileSource *));
   (*theFile)->Advise(inParams->inPosition, inParams->inSize);
 
@@ -201,16 +167,9 @@ QTSS_Error ReadFile(QTSS_ReadFile_Params *inParams) {
   FileSource **theFile = NULL;
   UInt32 theLen = 0;
 
-  (void) QTSS_GetValuePtr(inParams->inFileObject,
-                          sOSFileSourceAttr,
-                          0,
-                          (void **) &theFile,
-                          &theLen);
+  (void) QTSS_GetValuePtr(inParams->inFileObject, sOSFileSourceAttr, 0, (void **) &theFile, &theLen);
   Assert(theLen == sizeof(FileSource *));
-  OS_Error osErr = (*theFile)->Read(inParams->inFilePosition,
-                                    inParams->ioBuffer,
-                                    inParams->inBufLen,
-                                    inParams->outLenRead);
+  OS_Error osErr = (*theFile)->Read(inParams->inFilePosition, inParams->ioBuffer, inParams->inBufLen, inParams->outLenRead);
 
   if (osErr == EAGAIN)
     return QTSS_WouldBlock;
@@ -225,17 +184,9 @@ QTSS_Error CloseFile(QTSS_CloseFile_Params *inParams) {
   Net::EventContext **theContext = NULL;
   UInt32 theLen = 0;
 
-  QTSS_Error theErr = QTSS_GetValuePtr(inParams->inFileObject,
-                                       sOSFileSourceAttr,
-                                       0,
-                                       (void **) &theFile,
-                                       &theLen);
+  QTSS_Error theErr = QTSS_GetValuePtr(inParams->inFileObject, sOSFileSourceAttr, 0, (void **) &theFile, &theLen);
   Assert(theErr == QTSS_NoErr);
-  theErr = QTSS_GetValuePtr(inParams->inFileObject,
-                            sEventContextAttr,
-                            0,
-                            (void **) &theContext,
-                            &theLen);
+  theErr = QTSS_GetValuePtr(inParams->inFileObject, sEventContextAttr, 0, (void **) &theContext, &theLen);
 
   if (theErr == QTSS_NoErr) {
     //
@@ -250,8 +201,7 @@ QTSS_Error CloseFile(QTSS_CloseFile_Params *inParams) {
 }
 
 QTSS_Error RequestEventFile(QTSS_RequestEventFile_Params *inParams) {
-  QTSS_ModuleState
-      *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
+  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 
@@ -260,16 +210,12 @@ QTSS_Error RequestEventFile(QTSS_RequestEventFile_Params *inParams) {
   Net::EventContext **theContext = NULL;
   UInt32 theLen = 0;
 
-  QTSS_Error theErr = QTSS_GetValuePtr(inParams->inFileObject,
-                                       sEventContextAttr,
-                                       0,
-                                       (void **) &theContext,
-                                       &theLen);
+  QTSS_Error theErr = QTSS_GetValuePtr(inParams->inFileObject, sEventContextAttr, 0, (void **) &theContext, &theLen);
   if (theErr == QTSS_NoErr) {
     //
     // This call only works if the file is async!
     (*theContext)->SetTask(theState->curTask);
-    (*theContext)->RequestEvent();
+    (*theContext)->RequestEvent(EV_RE);
 
     return QTSS_NoErr;
   }

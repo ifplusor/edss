@@ -47,7 +47,7 @@ class QTSSPrefs : public QTSSDictionary {
             QTSSPrefs *parentDictionary = NULL);
   virtual ~QTSSPrefs() { if (fPrefName != NULL) delete[] fPrefName; }
 
-  //This is callable at any time, and is thread safe wrt to the accessors
+  //This is callable at any time, and is thread safe write to the accessors
   void RereadPreferences();
   void RereadObjectPreferences(ContainerRef container);
 

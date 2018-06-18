@@ -22,9 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-//
-// RTPMetaInfoPacket.h:
-//   Some defs for RTP-Meta-Info payloads. This class also parses RTP meta info packets
+/**
+ * @file RTPMetaInfoPacket.h
+ *
+ * Some defs for RTP-Meta-Info payloads. This class also parses RTP meta info packets
+ */
 
 #ifndef __QTRTP_META_INFO_PACKET_H__
 #define __QTRTP_META_INFO_PACKET_H__
@@ -43,7 +45,7 @@ class RTPMetaInfoPacket {
     kTransTimeField = 1, //TW0_CHARS_TO_INT('t', 't'),
     kFrameTypeField = 2, //TW0_CHARS_TO_INT('f', 't'),
     kPacketNumField = 3, //TW0_CHARS_TO_INT('p', 'n'),
-    kSeqNumField = 4, //TW0_CHARS_TO_INT('s', 'q'),
+    kSeqNumField = 4,    //TW0_CHARS_TO_INT('s', 'q'),
     kMediaDataField = 5, //TW0_CHARS_TO_INT('m', 'd'),
 
     kIllegalField = 6,
@@ -71,8 +73,7 @@ class RTPMetaInfoPacket {
 
   //
   // Routine that constructs a standard FieldID Array out of a x-RTP-Meta-Info header
-  static void ConstructFieldIDArrayFromHeader(CF::StrPtrLen *inHeader,
-                                              FieldID *ioFieldIDArray);
+  static void ConstructFieldIDArrayFromHeader(CF::StrPtrLen *inHeader, FieldID *ioFieldIDArray);
 
   //
   // Values for the Frame Type Field
@@ -88,25 +89,17 @@ class RTPMetaInfoPacket {
   //
   // CONSTRUCTOR
 
-  RTPMetaInfoPacket() : fPacketBuffer(NULL),
-                        fPacketLen(0),
-                        fTransmitTime(0),
-                        fFrameType(kUnknownFrameType),
-                        fPacketNumber(0),
-                        fPacketPosition(0),
-                        fMediaDataP(NULL),
-                        fMediaDataLen(0),
-                        fSeqNum(0) {}
-  ~RTPMetaInfoPacket() {}
+  RTPMetaInfoPacket()
+      : fPacketBuffer(NULL), fPacketLen(0), fTransmitTime(0), fFrameType(kUnknownFrameType), fPacketNumber(0),
+        fPacketPosition(0), fMediaDataP(NULL), fMediaDataLen(0), fSeqNum(0) {}
+  ~RTPMetaInfoPacket() = default;
 
   //
   // Call this to parse the RTP-Meta-Info packet.
   // Pass in an array of FieldIDs, make sure it is kNumFields in length.
   // This function will use the array as a guide to tell which field IDs in the
   // packet refer to which fields.
-  bool ParsePacket(UInt8 *inPacketBuffer,
-                   UInt32 inPacketLen,
-                   FieldID *inFieldIDArray);
+  bool ParsePacket(UInt8 *inPacketBuffer, UInt32 inPacketLen, FieldID *inFieldIDArray);
 
   //
   // Call this if you would like to rewrite the Meta-Info packet

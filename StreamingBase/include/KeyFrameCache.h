@@ -45,6 +45,7 @@ class CKeyFrameCache {
   char *_memory;
   int curdatalen;
   int mem_size;
+
  public:
   CKeyFrameCache(int len) : mem_size(len) {
     _memory = (char *) malloc(mem_size);

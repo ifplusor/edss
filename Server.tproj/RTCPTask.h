@@ -45,10 +45,10 @@ class RTCPTask : public CF::Thread::Task {
     this->Signal(kStartEvent);
   }
 
-  virtual ~RTCPTask() {}
+  ~RTCPTask() override = default;
 
  private:
-  virtual SInt64 Run();
+  SInt64 Run() override;
 };
 
 #endif //__RTCP_TASK_H__

@@ -22,11 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       RTCPTask.cpp
-
-    Contains:   Implementation of class defined in RTCPTask.h
-*/
+/**
+ * @file RTCPTask.cpp
+ *
+ * Contains:   Implementation of class defined in RTCPTask.h
+ */
 
 #include <CF/Net/Socket/UDPSocketPool.h>
 
@@ -50,7 +50,7 @@ SInt64 RTCPTask::Run() {
   EventFlags events = this->GetEvents(); // get and clear events
 
   if ((events & kReadEvent) || (events & kIdleEvent)) {
-    //Must be done atomically wrt the socket pool.
+    //Must be done atomically write the socket pool.
 
     // 遍历SocketPool中的socket对中的每一个socket,如果这个socket有UDPDemuxer(在
     // RTPSocketPool::ConstructUDPSocketPair函数里,用来接收RTCP数据的Socket B
@@ -62,8 +62,7 @@ SInt64 RTCPTask::Run() {
       UInt32 theRemoteAddr = 0;
       UInt16 theRemotePort = 0;
 
-      Net::UDPSocketPair *thePair = (Net::UDPSocketPair *)
-          iter.GetCurrent()->GetEnclosingObject();
+      auto *thePair = (Net::UDPSocketPair *) iter.GetCurrent()->GetEnclosingObject();
       Assert(thePair != NULL);
 
       for (UInt32 x = 0; x < 2; x++) {

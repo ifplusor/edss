@@ -49,9 +49,8 @@ class RTPSocketPool;
 class QTSServer : public QTSServerInterface {
  public:
 
-  QTSServer() {}
-
-  virtual ~QTSServer();
+  QTSServer() = default;
+  ~QTSServer() override;
 
   //
   // Initialize
@@ -100,9 +99,7 @@ class QTSServer : public QTSServerInterface {
   // This function may be called multiple times & at any time.
   // It updates the server's listeners to reflect what the preferences say.
   // Returns false if server couldn't listen on one or more of the ports, true otherwise
-  bool CreateListeners(bool startListeningNow,
-                       QTSServerPrefs *inPrefs,
-                       UInt16 inPortOverride);
+  bool CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs, UInt16 inPortOverride);
 
   //
   // SetDefaultIPAddr
@@ -114,14 +111,14 @@ class QTSServer : public QTSServerInterface {
 
   bool SwitchPersonality();
 
-  char sAbsolutePath[MAX_PATH];
+  char sAbsolutePath[MAX_PATH]{};
  private:
 
   //
   // GLOBAL TASKS
-  RTCPTask *fRTCPTask;
-  RTPStatsUpdaterTask *fStatsTask;
-  static char *sPortPrefString;
+  RTCPTask *fRTCPTask{};
+  RTPStatsUpdaterTask *fStatsTask{};
+  static const char *sPortPrefString;
   static XMLPrefsParser *sPrefsSource;
   static PrefsSource *sMessagesSource;
 
@@ -143,6 +140,8 @@ class QTSServer : public QTSServerInterface {
 
   // Adds a module to the module array
   bool AddModule(QTSSModule *inModule);
+
+  void PostRegisterModules();
 
   // Call module init roles
   void DoInitRole();
@@ -167,8 +166,8 @@ class QTSServer : public QTSServerInterface {
 
 class RereadPrefsTask : public CF::Thread::Task {
  public:
-  virtual SInt64 Run() {
-    QTSServer::RereadPrefsService(NULL);
+  SInt64 Run() override {
+    QTSServer::RereadPrefsService(nullptr);
     return -1;
   }
 };

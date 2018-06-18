@@ -113,17 +113,11 @@ RTPSession::~RTPSession() {
     // Remove this session from the qtssSvrClientSessions attribute
     UInt32 y = 0;
     for (; y < theServer->GetNumRTPSessions(); y++) {
-      QTSS_Error theErr = theServer->GetValuePtr(qtssSvrClientSessions,
-                                                 y,
-                                                 (void **) &theSession,
-                                                 &theLen,
-                                                 true);
+      QTSS_Error theErr = theServer->GetValuePtr(qtssSvrClientSessions, y, (void **) &theSession, &theLen, true);
       Assert(theErr == QTSS_NoErr);
 
       if (*theSession == this) {
-        theErr = theServer->RemoveValue(qtssSvrClientSessions,
-                                        y,
-                                        QTSSDictionary::kDontObeyReadOnly);
+        theErr = theServer->RemoveValue(qtssSvrClientSessions, y, QTSSDictionary::kDontObeyReadOnly);
         break;
       }
     }
@@ -207,10 +201,9 @@ QTSS_Error RTPSession::AddStream(RTSPRequestInterface *request, RTPStream **outS
 
   // Create a new SSRC for this stream. This should just be a random number unique
   // to all the streams in the session
-  // 创建一个和当前 session 所有 stream 的 fSsrc 不同的随机数。
   UInt32 theSSRC = 0;
   while (theSSRC == 0) {
-    theSSRC = (SInt32) ::rand();
+    theSSRC = (UInt32) ::rand();
 
     RTPStream **theStream = NULL;
     UInt32 theLen = 0;
@@ -234,7 +227,8 @@ QTSS_Error RTPSession::AddStream(RTSPRequestInterface *request, RTPStream **outS
     delete *outStream;
   } else {
     // If the stream init succeeded, then put it into the array of setup streams
-    theErr = this->SetValue(qtssCliSesStreamObjects, this->GetNumValues(qtssCliSesStreamObjects), outStream, sizeof(RTPStream *), QTSSDictionary::kDontObeyReadOnly);
+    theErr = this->SetValue(qtssCliSesStreamObjects, this->GetNumValues(qtssCliSesStreamObjects),
+        outStream, sizeof(RTPStream *), QTSSDictionary::kDontObeyReadOnly);
     Assert(theErr == QTSS_NoErr);
     fHasAnRTPStream = true;
   }
@@ -260,13 +254,11 @@ void RTPSession::SetStreamThinningParams(Float32 inLateTolerance) {
 QTSS_Error RTPSession::Play(RTSPRequestInterface *request, QTSS_PlayFlags inFlags) {
   // first setup the play associated session interface variables
   Assert(request != NULL);
-  if (fModule == NULL)
-    return QTSS_RequestFailed;//Can't play if there are no associated streams
+  if (fModule == NULL) return QTSS_RequestFailed;//Can't play if there are no associated streams
 
   // what time is this play being issued at?
   fLastBitRateUpdateTime = fNextSendPacketsTime = fPlayTime = Core::Time::Milliseconds();
-  if (fIsFirstPlay)
-    fFirstPlayTime = fPlayTime;
+  if (fIsFirstPlay) fFirstPlayTime = fPlayTime;
   fAdjustedPlayTime = fPlayTime - ((SInt64) (request->GetStartTime() * 1000));
 
   // for RTCP SRs, we also need to store the play time in NTP
@@ -367,10 +359,7 @@ void RTPSession::Pause() {
   RTPStream **theStream = NULL;
   UInt32 theLen = 0;
 
-  for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects,
-                                    x,
-                                    (void **) &theStream,
-                                    &theLen) == QTSS_NoErr; x++) {
+  for (int x = 0; this->GetValuePtr(qtssCliSesStreamObjects, x, (void **) &theStream, &theLen) == QTSS_NoErr; x++) {
     Assert(theStream != NULL);
     Assert(theLen == sizeof(RTPStream *));
     //(*theStream)->Pause();
@@ -469,8 +458,7 @@ SInt64 RTPSession::Run() {
 #endif
   EventFlags events = this->GetEvents();
   QTSS_RoleParams theParams;
-  theParams.clientSessionClosingParams.inClientSession = this;    //every single role being invoked now has this
-  // as the first parameter
+  theParams.clientSessionClosingParams.inClientSession = this; //every single role being invoked now has this as the first parameter
 
 #if RTPSESSION_DEBUGGING
   s_printf("RTPSession %" _S32BITARG_ ": In Run. Events %" _S32BITARG_ "\n", (SInt32)this, (SInt32)events);
@@ -493,6 +481,7 @@ SInt64 RTPSession::Run() {
 #if RTPSESSION_DEBUGGING
       s_printf("RTPSession %" _S32BITARG_ ": about to be killed. Eventmask = %" _S32BITARG_ "\n", (SInt32)this, (SInt32)events);
 #endif
+
       // We cannot block waiting to UnRegister, because we have to
       // give the RTSPSessionTask a chance to release the RTPSession.
       RefTable *sessionTable = QTSServerInterface::GetServer()->GetRTPSessionMap();
@@ -528,17 +517,15 @@ SInt64 RTPSession::Run() {
     // therefore there's no way another thread could get involved anyway
 
     UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kClientSessionClosingRole);
-    {
-      for (; fCurrentModule < numModules; fCurrentModule++) {
-        fModuleState.eventRequested = false;
-        fModuleState.idleTime = 0;
-        QTSSModule *theModule = QTSServerInterface::GetModule(QTSSModule::kClientSessionClosingRole, fCurrentModule);
-        (void) theModule->CallDispatch(QTSS_ClientSessionClosing_Role, &theParams);
+    for (; fCurrentModule < numModules; fCurrentModule++) {
+      fModuleState.eventRequested = false;
+      fModuleState.idleTime = 0;
+      QTSSModule *theModule = QTSServerInterface::GetModule(QTSSModule::kClientSessionClosingRole, fCurrentModule);
+      (void) theModule->CallDispatch(QTSS_ClientSessionClosing_Role, &theParams);
 
-        // If this module has requested an event, return and wait for the event to transpire
-        if (fModuleState.eventRequested)
-          return fModuleState.idleTime; // If the module has requested idle time...
-      }
+      // If this module has requested an event, return and wait for the event to transpire
+      if (fModuleState.eventRequested)
+        return fModuleState.idleTime; // If the module has requested idle time...
     }
 
     return -1; //doing this will cause the destructor to get called.

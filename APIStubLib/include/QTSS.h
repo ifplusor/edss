@@ -2471,6 +2471,7 @@ enum {
    * @property char array
    */
   easyPrefsNginxRTMPServer = 86,
+
   qtssPrefsNumParams = 87
 };
 

@@ -118,7 +118,7 @@ class RTPSession : public RTPSessionInterface {
  private:
 
   //where timeouts, deletion conditions get processed
-  virtual SInt64 Run();
+  SInt64 Run() override;
 
   // Utility function used by Play
   UInt32 PowerOf2Floor(UInt32 inNumToFloor);
@@ -152,8 +152,8 @@ class RTPSession : public RTPSessionInterface {
   QTSS_CliSesClosingReason fClosingReason;
 
   UInt32 fCurrentModule;
-  // This is here to give the ability to the ClientSessionClosing role to
-  // do asynchronous I/O
+  
+  // This is here to give the ability to the ClientSessionClosing role to do asynchronous I/O
   bool fModuleDoingAsyncStuff;
 
 #if DEBUG

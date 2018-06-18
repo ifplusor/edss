@@ -80,14 +80,8 @@ class RTCPAckPacket : public RTCPAPPPacket {
   static void GetTestPacket(CF::StrPtrLen *resultPtr) {} //todo
 
   enum {
-    kAckPacketName = FOUR_CHARS_TO_INT('q',
-                                       't',
-                                       'a',
-                                       'k'), // 'qtak'  documented Apple reliable UDP packet type
-    kAckPacketAlternateName = FOUR_CHARS_TO_INT('a',
-                                                'c',
-                                                'k',
-                                                ' '), // 'ack ' required by QT 5 and earlier
+    kAckPacketName = FOUR_CHARS_TO_INT('q', 't', 'a', 'k'), // 'qtak'  documented Apple reliable UDP packet type
+    kAckPacketAlternateName = FOUR_CHARS_TO_INT('a', 'c', 'k', ' '), // 'ack ' required by QT 5 and earlier
   };
  private:
 

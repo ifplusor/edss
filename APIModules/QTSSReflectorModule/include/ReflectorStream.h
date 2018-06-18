@@ -52,33 +52,106 @@
 
 //This will add some printfs that are useful for checking the thinning
 #define REFLECTOR_THINNING_DEBUGGING 0
-#define MAX_CACHE_SIZE  1024*1024*2
+#define MAX_CACHE_SIZE  (1024*1024*2)
 
 //Define to use new potential workaround for NAT problems
 #define NAT_WORKAROUND 1
 
-typedef struct FU_Indicator_tag {
-  unsigned char F : 1;
-  unsigned char nRI : 2;
-  unsigned char type : 5;//
-} FAU_Indicator;
-
-typedef struct FU_Head_tag {
-  unsigned char nalu_type : 5;//little 5 bit
-  unsigned char r : 1;
-  unsigned char e : 1;
-  unsigned char s : 1;//high bit
-} FU_Head;
-
 class ReflectorPacket;
-
 class ReflectorSender;
-
 class ReflectorStream;
-
 class RTPSessionOutput;
-
 class ReflectorSession;
+
+
+/**
+ * 关于字节序和位序:
+ *
+ * 一般讲大端序和小端序时，指的都是字节序，即：
+ *   - 大端序：高位低址，低位高址
+ *   - 小端序：低位低址，高位高址
+ *
+ * 常见的字节序应用场景是网络数据传输，此时区分网络字节序和主机字节序。
+ *
+ * 而位序则与位域的布局分配有关，一般来说位序和字节序保持一致。
+ * 需要记住的一个基本原则是：连续分配。即：跨字节的位域在逻辑上也是连续的。
+ *
+ * 备注：
+ *   需要注意的是：htonl、ntohl等转换函数“只转换字节序，不转换位序”！
+ *
+ *   尽管在以太网(Ethernet)中，bit的传输遵循：从最低有效比特位到最高有效比特位的发送顺序。
+ *   但这一规则是发生在网卡中的，对上层的CPU、OS等都不可见，因此在传输过程中不会出现字节值变化的问题。
+ *
+ */
+
+/**
+ * RTP Fixed Header Fields:
+ *
+ *     0                   1                   2                   3
+ *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |V=2|P|X|  CC   |M|     PT      |       sequence number         |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                           timestamp                           |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |           synchronization source (SSRC) identifier            |
+ *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+ *    |            contributing source (CSRC) identifiers             |
+ *    |                             ....                              |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *
+ * @see  rfc1889(section 5.1)
+ *
+ */
+typedef struct RTPFixedHeader {
+#if BIGENDIAN
+  unsigned char v:2;                /* protocol version */
+  unsigned char p:1;                /* padding flag */
+  unsigned char x:1;                /* header extension flag */
+  unsigned char cc:4;               /* CSRC count */
+  unsigned char m:1;                /* marker bit */
+  unsigned char pt:7;               /* payload type */
+#else
+  unsigned char cc:4;               /* CSRC count */
+  unsigned char x:1;                /* header extension flag */
+  unsigned char p:1;                /* padding flag */
+  unsigned char v:2;                /* protocol version */
+  unsigned char pt:7;               /* payload type */
+  unsigned char m:1;                /* marker bit */
+#endif
+  UInt16 seq;				       /* sequence number */
+  UInt32 ts;                       /* timestamp */
+  UInt32 ssrc;                     /* synchronization source */
+  UInt32 csrc[0];                  /* optional CSRC list */
+} RTPFixedHeader;
+
+/**
+ * RTP Header Extension:
+ *
+ *     0                   1                   2                   3
+ *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |      defined by profile       |           length              |
+ *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ *    |                        header extension                       |
+ *    |                             ....                              |
+ *
+ * @see  rfc1889(section 5.3.1)
+ *
+ *
+ * @note  RTP data packets contain no length field or other delineation,
+ *   therefore RTP relies on the underlying protocol(s) to provide a
+ *   length indication. The maximum length of RTP packets is limited only
+ *   by the underlying protocols.
+ *
+ * @see  rfc1889(section 10)
+ *
+ */
+typedef struct RTPExtHeader {
+  UInt16 profile;
+  UInt16 length;
+  char ext[0];
+} RTPExtHeader;
 
 class ReflectorPacket {
  public:
@@ -88,19 +161,22 @@ class ReflectorPacket {
     this->Reset();
   }
 
-  void Reset() { // make packet ready to reuse fQueueElem is always in use
+  /**
+   * make packet ready to reuse
+   * @note fQueueElem is always point to this
+   */
+  void Reset() {
     fBucketsSeenThisPacket = 0;
     fTimeArrived = 0;
-    //fQueueElem -- should be set to this
     fPacketPtr.Set(fPacketData, 0);
     fIsRTCP = false;
     fStreamCountID = 0;
     fNeededByOutput = false;
   }
 
-  ~ReflectorPacket() {}
+  ~ReflectorPacket() = default;
 
-  void SetPacketData(char *data, UInt32 len) {
+  void SetPacketData(char *data, UInt32 len, bool isRTCP) {
     Assert(kMaxReflectorPacketSize > len);
 
     if (len > kMaxReflectorPacketSize)
@@ -109,16 +185,14 @@ class ReflectorPacket {
     if (len > 0)
       memcpy(this->fPacketPtr.Ptr, data, len);
     this->fPacketPtr.Len = len;
+    this->fIsRTCP = isRTCP;
   }
 
   bool IsRTCP() { return fIsRTCP; }
 
   inline UInt32 GetPacketRTPTime();
-
   inline UInt16 GetPacketRTPSeqNum();
-
-  inline UInt32 GetSSRC(bool isRTCP);
-
+  inline UInt32 GetSSRC();
   inline SInt64 GetPacketNTPTime();
 
  private:
@@ -127,88 +201,82 @@ class ReflectorPacket {
     kMaxReflectorPacketSize = 2060    //jm 5/02 increased from 2048 by 12 bytes for test bytes appended to packets
   };
 
-  UInt32 fBucketsSeenThisPacket;
-  SInt64 fTimeArrived;
-  CF::QueueElem fQueueElem;
-  char fPacketData[kMaxReflectorPacketSize];
-  CF::StrPtrLen fPacketPtr;
-  bool fIsRTCP;
-  bool fNeededByOutput; // is this packet still needed for output?
   UInt64 fStreamCountID;
+  SInt64 fTimeArrived;
+  UInt32 fBucketsSeenThisPacket;
+  bool fIsRTCP; // the first field we set at beginning of ReflectorSocket::ProcessPacket
+  bool fNeededByOutput; // is this packet still needed for output?
+
+  CF::QueueElem fQueueElem;
+
+  CF::StrPtrLen fPacketPtr;
+  char fPacketData[kMaxReflectorPacketSize];
 
   friend class ReflectorSender;
-
   friend class ReflectorSocket;
-
   friend class RTPSessionOutput;
-
 };
 
-UInt32 ReflectorPacket::GetSSRC(bool isRTCP) {
-  if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 8)
-    return 0;
+UInt32 ReflectorPacket::GetSSRC() {
+  if (fPacketPtr.Ptr == NULL) return 0;
 
-  UInt32 *theSsrcPtr = (UInt32 *) fPacketPtr.Ptr;
-  if (isRTCP)// RTCP
-    return ntohl(theSsrcPtr[1]);
+  auto *theSsrcPtr = (UInt32 *) fPacketPtr.Ptr;
 
-  if (fPacketPtr.Len < 12)
-    return 0;
-
-  return ntohl(theSsrcPtr[2]);  // RTP SSRC
+  if (fIsRTCP) {
+    if (fPacketPtr.Len < 8) return 0;
+    return ntohl(theSsrcPtr[1]); // RTCP
+  } else {
+    if (fPacketPtr.Len < 12) return 0;
+    return ntohl(theSsrcPtr[2]);  // RTP SSRC
+  }
 }
 
 UInt32 ReflectorPacket::GetPacketRTPTime() {
+  if (fPacketPtr.Ptr == NULL) return 0;
 
-  UInt32 timestamp = 0;
+  auto *theTimestampPtr = (UInt32 *) fPacketPtr.Ptr;
+
   if (!fIsRTCP) {
     //The RTP timestamp number is the second long of the packet
-    if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 8)
-      return 0;
-    timestamp = ntohl(((UInt32 *) fPacketPtr.Ptr)[1]);
+    if (fPacketPtr.Len < 8) return 0;
+    return ntohl(theTimestampPtr[1]);
   } else {
-    if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 20)
-      return 0;
-    timestamp = ntohl(((UInt32 *) fPacketPtr.Ptr)[4]);
+    if (fPacketPtr.Len < 20) return 0;
+    return ntohl(theTimestampPtr[4]);
   }
-  return timestamp;
 }
 
 UInt16 ReflectorPacket::GetPacketRTPSeqNum() {
   Assert(!fIsRTCP); // not a supported type
 
-  if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 4 || fIsRTCP)
-    return 0;
+  if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 4 || fIsRTCP) return 0;
 
-  UInt16 sequence =
-      ntohs(((UInt16 *) fPacketPtr.Ptr)[1]); //The RTP sequenc number is the second short of the packet
-  return sequence;
+  return ntohs(((UInt16 *) fPacketPtr.Ptr)[1]); //The RTP sequenc number is the second short of the packet
 }
 
 SInt64 ReflectorPacket::GetPacketNTPTime() {
   Assert(fIsRTCP); // not a supported type
-  if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 16 || !fIsRTCP)
-    return 0;
 
-  UInt32 *theReport = (UInt32 *) fPacketPtr.Ptr;
-  theReport += 2;
+  if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 16 || !fIsRTCP) return 0;
+
+  auto *theReport = (UInt32 *) fPacketPtr.Ptr;
+
   SInt64 ntp = 0;
-  ::memcpy(&ntp, theReport, sizeof(SInt64));
+  ::memcpy(&ntp, &theReport[2], sizeof(SInt64));
 
-  return CF::Core::Time::Time1900Fixed64Secs_To_TimeMilli(
-      CF::Utils::NetworkToHostSInt64(ntp));
-
+  return CF::Core::Time::Time1900Fixed64Secs_To_TimeMilli(CF::Utils::NetworkToHostSInt64(ntp));
 }
 
-//Custom UDP socket classes for doing reflector packet retrieval, socket management
+/**
+ * Custom UDP socket classes for doing reflector packet retrieval, socket management
+ */
 class ReflectorSocket
     : public CF::Thread::IdleTask,
       public CF::Net::UDPSocket {
  public:
 
-  ReflectorSocket();
-
-  virtual ~ReflectorSocket();
+  explicit ReflectorSocket();
+  ~ReflectorSocket() override;
 
   void AddBroadcasterSession(QTSS_ClientSessionObject inSession) {
     CF::Core::MutexLocker locker(this->GetDemuxer()->GetMutex());
@@ -229,7 +297,9 @@ class ReflectorSocket
     return (this->GetDemuxer()->GetHashTable()->GetNumEntries() > 0);
   }
 
-  bool ProcessPacket(const SInt64 &inMilliseconds, ReflectorPacket *thePacket, UInt32 theRemoteAddr, UInt16 theRemotePort);
+  void BufferKeyFrame(ReflectorSender *theSender, ReflectorPacket *thePacket);
+
+  void ProcessPacket(const SInt64 &inMilliseconds, ReflectorPacket *thePacket, UInt32 theRemoteAddr, UInt16 theRemotePort);
 
   ReflectorPacket *GetPacket();
 
@@ -242,24 +312,21 @@ class ReflectorSocket
 
  private:
 
-  //virtual SInt64        Run();
   void GetIncomingData(const SInt64 &inMilliseconds);
 
-  void FilterInvalidSSRCs(ReflectorPacket *thePacket, bool isRTCP);
+  bool FilterInvalidSSRCs(ReflectorPacket *thePacket);
 
   //Number of packets to allocate when the socket is first created
   enum {
     kNumPreallocatedPackets = 20,   //UInt32
     kRefreshBroadcastSessionIntervalMilliSecs = 10000,
-    kSSRCTimeOut =
-    30000 // milliseconds before clearing the SSRC if no new ssrcs have come in
+    kSSRCTimeOut = 30000 // milliseconds before clearing the SSRC if no new ssrcs have come in
   };
   QTSS_ClientSessionObject fBroadcasterClientSession;
   SInt64 fLastBroadcasterTimeOutRefresh;
-  // Queue of available ReflectorPackets
-  CF::Queue fFreeQueue;
-  // Queue of senders
-  CF::Queue fSenderQueue;
+
+  CF::Queue fFreeQueue;   // Queue of available ReflectorPackets
+  CF::Queue fSenderQueue; // Queue of senders
   SInt64 fSleepTime;
 
   UInt32 fValidSSRC;
@@ -271,52 +338,44 @@ class ReflectorSocket
   UInt64 fFirstReceiveTime;
   SInt64 fFirstArrivalTime;
   UInt32 fCurrentSSRC;
-
 };
 
 class ReflectorSocketPool : public CF::Net::UDPSocketPool {
  public:
-
-  ReflectorSocketPool() {}
-
-  virtual ~ReflectorSocketPool() {}
+  ReflectorSocketPool() = default;
+  ~ReflectorSocketPool() override = default;
 
   CF::Net::UDPSocketPair *ConstructUDPSocketPair() override;
-
   void DestructUDPSocketPair(CF::Net::UDPSocketPair *inPair) override;
-
   void SetUDPSocketOptions(CF::Net::UDPSocketPair *inPair) override;
 
   void DestructUDPSocket(ReflectorSocket *socket);
-
 };
 
+/**
+ * ReflectorSender 与 ReflectorStream.fStreamInfo.fSrcIPAddr 绑定
+ */
 class ReflectorSender : public CF::Net::UDPDemuxerTask {
  public:
   ReflectorSender(ReflectorStream *inStream, UInt32 inWriteFlag);
+  ~ReflectorSender() override;
 
-  virtual ~ReflectorSender();
-
-  // Queue of senders
-  CF::Queue fSenderQueue;
-  SInt64 fSleepTime;
-
-  //Used for adjusting sequence numbers in light of thinning
+  // Used for adjusting sequence numbers in light of thinning
   UInt16 GetPacketSeqNumber(const CF::StrPtrLen &inPacket);
 
   void SetPacketSeqNumber(const CF::StrPtrLen &inPacket, UInt16 inSeqNumber);
 
   bool PacketShouldBeThinned(QTSS_RTPStreamObject inStream, const CF::StrPtrLen &inPacket);
 
-  //We want to make sure that ReflectPackets only gets invoked when there
-  //is actually work to do, because it is an expensive function
+  // We want to make sure that ReflectPackets only gets invoked when there
+  // is actually work to do, because it is an expensive function
   bool ShouldReflectNow(const SInt64 &inCurrentTime, SInt64 *ioWakeupTime);
 
-  //This function gets data from the multicast source and reflects.
-  //Returns the time at which it next needs to be invoked
+  // This function gets data from the multicast source and reflects.
+  // Returns the time at which it next needs to be invoked
   void ReflectPackets(SInt64 *ioWakeupTime, CF::Queue *inFreeQueue);
 
-  //this is the old way of doing reflect packets. It is only here until the relay code can be cleaned up.
+  // this is the old way of doing reflect packets. It is only here until the relay code can be cleaned up.
   void ReflectRelayPackets(SInt64 *ioWakeupTime, CF::Queue *inFreeQueue);
 
   CF::QueueElem *SendPacketsToOutput(ReflectorOutput *theOutput, CF::QueueElem *currentPacket,
@@ -356,9 +415,9 @@ class ReflectorSender : public CF::Net::UDPDemuxerTask {
   UInt32 fWriteFlag;
 
   CF::Queue fPacketQueue;
-  CF::QueueElem *fFirstNewPacketInQueue;
+  CF::QueueElem *fFirstNewPacketInQueue; // set in ReflectorSocket::ProcessPacket, and clear in ReflectorSender::ReflectPackets
   CF::QueueElem *fFirstPacketInQueueForNewOutput;
-  CF::QueueElem *fKeyFrameStartPacketElementPointer;//最新关键帧指针
+  CF::QueueElem *fKeyFrameStartPacketElementPointer; // 最新关键帧指针
 
   //these serve as an optimization, keeping track of when this
   //sender needs to run so it doesn't run unnecessarily
@@ -368,22 +427,24 @@ class ReflectorSender : public CF::Net::UDPDemuxerTask {
     //s_printf("SetNextTimeToRun =%"_64BITARG_"d\n", fNextTimeToRun);
   }
 
-  bool fHasNewPackets;
-  SInt64 fNextTimeToRun;
+  bool fHasNewPackets; // the flag of new packet arrived
+  SInt64 fNextTimeToRun; // real time
 
-  //how often to send RRs to the source
+  // how often to send RRs to the source
   enum {
     kRRInterval = 5000      //SInt64 (every 5 seconds)
   };
-
   SInt64 fLastRRTime;
+
   CF::QueueElem fSocketQueueElem;
 
   friend class ReflectorSocket;
-
   friend class ReflectorStream;
 };
 
+/**
+ * Inbound stream
+ */
 class ReflectorStream {
  public:
 
@@ -401,8 +462,7 @@ class ReflectorStream {
   // Uses a StreamInfo to generate a unique ID
   static void GenerateSourceID(SourceInfo::StreamInfo *inInfo, char *ioBuffer);
 
-  ReflectorStream(SourceInfo::StreamInfo *inInfo);
-
+  explicit ReflectorStream(SourceInfo::StreamInfo *inInfo);
   ~ReflectorStream();
 
   //
@@ -518,7 +578,7 @@ class ReflectorStream {
 
  private:
 
-  //Sends an RTCP receiver report to the broadcast source
+  // Sends an RTCP receiver report to the broadcast source
   void SendReceiverReport();
 
   void AllocateBucketArray(UInt32 inNumBuckets);
@@ -538,16 +598,15 @@ class ReflectorStream {
   SourceInfo::StreamInfo fStreamInfo;
 
   enum {
-    kReceiverReportSize = 16,               //UInt32
-    kAppSize = 36,                          //UInt32
-    kMinNumBuckets = 16,                    //UInt32
+    kReceiverReportSize = 16,            //UInt32, RR(2) + SDES(2)
+    kAppSize = 36,                       //UInt32
+    kMinNumBuckets = 16,                 //UInt32
     kBitRateAvgIntervalInMilSecs = 30000 // time between bitrate averages
   };
 
   // BUCKET ARRAY
-  //ReflectorOutputs are kept in a 2-dimensional array, "Buckets"
   typedef ReflectorOutput **Bucket;
-  Bucket *fOutputArray;
+  Bucket *fOutputArray; // ReflectorOutputs are kept in a 2-dimensional array, "Buckets"
 
   UInt32 fNumBuckets;        //Number of buckets currently
   UInt32 fNumElements;       //Number of reflector outputs in the array
@@ -556,21 +615,18 @@ class ReflectorStream {
   CF::Core::Mutex fBucketMutex;
 
   // RTCP RR information
-
-  char fReceiverReportBuffer[kReceiverReportSize + kAppSize + RTCPSRPacket::kMaxCNameLen];
-  UInt32 *fEyeLocation;//place in the buffer to write the eye information
+  char fReceiverReportBuffer[kReceiverReportSize + RTCPSRPacket::kMaxCNameLen + kAppSize]; // contains 3 packets(RR,SDES,APP)
+  UInt32 *fEyeLocation; // place in the buffer to write the eye information
   UInt32 fReceiverReportSize;
 
-  // This is the destination address & port for RTCP
-  // receiver reports.
-  UInt32 fDestRTCPAddr;
-  UInt16 fDestRTCPPort;
+  // This is the destination address & port for RTCP receiver reports.
+  UInt32 fDestRTCPAddr; // remote addr
+  UInt16 fDestRTCPPort; // remote port
 
   // Used for calculating average bit rate
   UInt32 fCurrentBitRate;
   SInt64 fLastBitRateSample;
-  //unsigned int        fBytesSentInThisInterval;// unsigned int because we need to atomic_add
-  std::atomic_uint fBytesSentInThisInterval;
+  std::atomic_uint fBytesSentInThisInterval; // 当前统计区间接收字节数
 
   // If incoming data is RTSP interleaved
   SInt16 fRTPChannel; //These will be -1 if not set to anything
@@ -600,18 +656,19 @@ class ReflectorStream {
   static UInt32 sRelocatePacketAgeMSec;
 
   friend class ReflectorSocket;
-
   friend class ReflectorSender;
 
  public:
   CKeyFrameCache *pkeyFrameCache;
 };
 
+/**
+ * 计算比特率
+ */
 void ReflectorStream::UpdateBitRate(SInt64 currentTime) {
   if ((fLastBitRateSample + ReflectorStream::kBitRateAvgIntervalInMilSecs) < currentTime) {
     unsigned int intervalBytes = fBytesSentInThisInterval;
-    //(void)atomic_sub(&fBytesSentInThisInterval, intervalBytes);
-    fBytesSentInThisInterval.fetch_sub(intervalBytes);
+    fBytesSentInThisInterval.fetch_sub(intervalBytes); // reset to 0
 
     // Multiply by 1000 to convert from milliseconds to seconds, and by 8 to convert from bytes to bits
     Float32 bps = (Float32) (intervalBytes * 8) / (Float32) (currentTime - fLastBitRateSample);

@@ -101,10 +101,10 @@ class LogCheckTask : public Thread::Task {
     this->SetTaskName("LogCheckTask");
     this->Signal(kStartEvent);
   }
-  virtual ~LogCheckTask() {}
+  ~LogCheckTask() override = default;
 
  private:
-  virtual SInt64 Run();
+  SInt64 Run() override;
 };
 
 class QTSSAccessLog : public QTSSRollingLog {

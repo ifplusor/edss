@@ -101,12 +101,14 @@ class RTSPSession;
 class RTSPSession : public RTSPSessionInterface {
  public:
 
-  RTSPSession(bool doReportHTTPConnectionAddress);
+  explicit RTSPSession(bool doReportHTTPConnectionAddress);
 
-  virtual ~RTSPSession();
+  ~RTSPSession() override;
 
   // Call this before using this object
   static void Initialize();
+
+  static void PostRegisterModules();
 
   bool IsPlaying() {
     if (fRTPSession == NULL) return false;

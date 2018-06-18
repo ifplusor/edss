@@ -22,12 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       RTCPPacket.cpp
-
-    Contains:   RTCPReceiverPacket de-packetizing classes
-    
-*/
+/**
+ * @file RTCPPacket.cpp
+ *
+ * RTCPReceiverPacket de-packetizing classes
+ */
 
 
 #include "RTCPPacket.h"
@@ -35,32 +34,29 @@
 
 #define RTCP_PACKET_DEBUG 0
 
-//returns true if successful, false otherwise
+/**
+ * @return true if successful, false otherwise
+ */
 bool RTCPPacket::ParsePacket(UInt8 *inPacketBuffer, UInt32 inPacketLen) {
   if (inPacketLen < kRTCPPacketSizeInBytes)
     return false;
 
   fReceiverPacketBuffer = inPacketBuffer;
   if (RTCP_PACKET_DEBUG)
-    s_printf("RTCPPacket::ParsePacket first 4 bytes of packet=%x \n",
-                ntohl(*(UInt32 *) inPacketBuffer));
+    s_printf("RTCPPacket::ParsePacket first 4 bytes of packet=%x \n", ntohl(*(UInt32 *) inPacketBuffer));
 
-  //the length of this packet can be no less than the advertised length (which is
-  //in 32-bit words, so we must multiply) plus the size of the header (4 bytes)
+  // the length of this packet can be no less than the advertised length (which is
+  // in 32-bit words, so we must multiply) plus the size of the header (4 bytes)
   if (RTCP_PACKET_DEBUG)
     s_printf("RTCPPacket::ParsePacket len=%"   _U32BITARG_   " min allowed=%"   _U32BITARG_   "\n",
-                inPacketLen,
-                (UInt32) ((this->GetPacketLength() * 4)
-                    + kRTCPHeaderSizeInBytes));
-  if (inPacketLen
-      < (UInt32) ((this->GetPacketLength() * 4) + kRTCPHeaderSizeInBytes)) {
+             inPacketLen, (UInt32) ((this->GetPacketLength() * 4) + kRTCPHeaderSizeInBytes));
+  if (inPacketLen < (UInt32) ((this->GetPacketLength() * 4) + kRTCPHeaderSizeInBytes)) {
     if (RTCP_PACKET_DEBUG)
-      s_printf("RTCPPacket::ParsePacket invalid len=%"   _U32BITARG_   "\n",
-                  inPacketLen);
+      s_printf("RTCPPacket::ParsePacket invalid len=%"   _U32BITARG_   "\n", inPacketLen);
     return false;
   }
 
-  //do some basic validation on the packet
+  // do some basic validation on the packet
   if (this->GetVersion() != kSupportedRTCPVersion) {
     if (RTCP_PACKET_DEBUG)
       s_printf("RTCPPacket::ParsePacket unsupported version\n");
@@ -70,20 +66,19 @@ bool RTCPPacket::ParsePacket(UInt8 *inPacketBuffer, UInt32 inPacketLen) {
   return true;
 }
 
-void RTCPReceiverPacket::Dump()//Override
-{
+void RTCPReceiverPacket::Dump() { //Override
   RTCPPacket::Dump();
   s_printf("\n");
   for (int i = 0; i < this->GetReportCount(); i++) {
     s_printf("              RTCP RR Report[%d] H_ssrc=%"   _U32BITARG_   ", H_frac_lost=%d, H_tot_lost=%"   _U32BITARG_   ", H_high_seq=%"   _U32BITARG_   " H_jit=%"   _U32BITARG_   ", H_last_sr_time=%"   _U32BITARG_   ", H_last_sr_delay=%"   _U32BITARG_   " \n",
-                i,
-                this->GetReportSourceID(i),
-                this->GetFractionLostPackets(i),
-                this->GetTotalLostPackets(i),
-                this->GetHighestSeqNumReceived(i),
-                this->GetJitter(i),
-                this->GetLastSenderReportTime(i),
-                this->GetLastSenderReportDelay(i));
+             i,
+             this->GetReportSourceID(i),
+             this->GetFractionLostPackets(i),
+             this->GetTotalLostPackets(i),
+             this->GetHighestSeqNumReceived(i),
+             this->GetJitter(i),
+             this->GetLastSenderReportTime(i),
+             this->GetLastSenderReportDelay(i));
   }
 
 }

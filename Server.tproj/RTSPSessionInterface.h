@@ -41,7 +41,7 @@
 
 #include "QTSS.h"
 #include "QTSSDictionary.h"
-//#include "atomic.h"
+
 
 class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
  public:
@@ -182,7 +182,7 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
     kTCPCoalesceDirectWriteSize = 0, // if > this # bytes bypass coalescing and make a direct write
     kInteleaveHeaderSize = 4  // '$ '+ 1 byte ch ID + 2 bytes length
   };
-  char *fTCPCoalesceBuffer;
+  char *fTCPCoalesceBuffer;  // 合并缓冲
   SInt32 fNumInCoalesceBuffer;
 
   //+rt  socket we get from "accept()"
@@ -195,7 +195,6 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
   // What session type are we?
   QTSS_RTSPSessionType fSessionType;
   bool fLiveSession;
-  //unsigned int        fObjectHolders;
   std::atomic_uint fObjectHolders;
   UInt8 fCurChannelNum;
   CF::StrPtrLen *fChNumToSessIDMap;
@@ -217,7 +216,6 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
   SInt32 fRoundTripTime;
   bool fRoundTripTimeCalculation;
 
-  //static unsigned int sSessionIDCounter;
   static std::atomic_uint sSessionIDCounter;
 
   static bool sDoBase64Decoding;

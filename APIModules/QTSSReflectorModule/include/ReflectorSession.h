@@ -76,9 +76,9 @@ class ReflectorSession : public CF::Thread::Task {
   //
   // Caller may also provide a SourceInfo object, though it is not needed and
   // will also need to be provided to SetupReflectorSession when that is called.
-  ReflectorSession(CF::StrPtrLen *inSourceID, UInt32 inChannelNum = 0, SourceInfo *inInfo = NULL);
+  explicit ReflectorSession(CF::StrPtrLen *inSourceID, UInt32 inChannelNum = 0, SourceInfo *inInfo = nullptr);
 
-  virtual ~ReflectorSession();
+  ~ReflectorSession() override;
 
   //
   // MODIFIERS
@@ -95,11 +95,8 @@ class ReflectorSession : public CF::Thread::Task {
     kIsPushSession = 4  // When setting up streams handle port conflicts by allocating.
   };
 
-  QTSS_Error SetupReflectorSession(SourceInfo *inInfo,
-                                   QTSS_StandardRTSP_Params *inParams,
-                                   UInt32 inFlags = kMarkSetup,
-                                   bool filterState = true,
-                                   UInt32 filterTimeout = 30);
+  QTSS_Error SetupReflectorSession(SourceInfo *inInfo, QTSS_StandardRTSP_Params *inParams, UInt32 inFlags = kMarkSetup,
+                                   bool filterState = true, UInt32 filterTimeout = 30);
 
   QTSS_Error SetSessionName();
 
@@ -224,7 +221,7 @@ class ReflectorSession : public CF::Thread::Task {
   bool fHasVideoKeyFrameUpdate;
 
  private:
-  virtual SInt64 Run();
+  SInt64 Run() override;
 };
 
 #endif
