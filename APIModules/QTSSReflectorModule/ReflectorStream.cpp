@@ -543,14 +543,17 @@ void ReflectorStream::SendReceiverReport() {
   // eye count field for app packet
   UInt32 theEyeCount = this->GetEyeCount();
   UInt32 *theEyeWriter = fEyeLocation;
-  *theEyeWriter++ = htonl(theEyeCount) & 0x7fffffff;
-  *theEyeWriter++ = htonl(theEyeCount) & 0x7fffffff;
-  *theEyeWriter   = htonl(0) & 0x7fffffff;
+  *theEyeWriter++ = htonl(theEyeCount) & 0x7fffffffU;
+  *theEyeWriter++ = htonl(theEyeCount) & 0x7fffffffU;
+  *theEyeWriter   = htonl(0) & 0x7fffffffU;
 
   // send the 3 packets(RR,SDES,APP) to the multicast RTCP addr & port for this stream
   (void) fSockets->GetSocketB()->SendTo(fDestRTCPAddr, fDestRTCPPort, fReceiverReportBuffer, fReceiverReportSize);
 }
 
+/**
+ * 将 Packet 转发给响应的 ReflectorSocket 进行处理
+ */
 void ReflectorStream::PushPacket(char *packet, UInt32 packetLen, bool isRTCP) {
   if (packetLen <= 0) return;;
 
@@ -588,9 +591,9 @@ ReflectorSender::ReflectorSender(ReflectorStream *inStream, UInt32 inWriteFlag)
 }
 
 ReflectorSender::~ReflectorSender() {
-  //d equeue and delete every buffer
+  // dequeue and delete every buffer
   while (fPacketQueue.GetLength() > 0) {
-    ReflectorPacket *packet = (ReflectorPacket *) fPacketQueue.DeQueue()->GetEnclosingObject();
+    auto *packet = (ReflectorPacket *) fPacketQueue.DeQueue()->GetEnclosingObject();
     delete packet;
   }
 }
@@ -621,8 +624,7 @@ UInt32 ReflectorSender::GetOldestPacketRTPTime(bool *foundPtr) {
   if (packetElem == NULL)
     return 0;
 
-  ReflectorPacket
-      *thePacket = (ReflectorPacket *) packetElem->GetEnclosingObject();
+  auto thePacket = (ReflectorPacket *) packetElem->GetEnclosingObject();
   if (thePacket == NULL)
     return 0;
 
@@ -643,8 +645,7 @@ UInt16 ReflectorSender::GetFirstPacketRTPSeqNum(bool *foundPtr) {
   if (packetElem == NULL)
     return 0;
 
-  ReflectorPacket
-      *thePacket = (ReflectorPacket *) packetElem->GetEnclosingObject();
+  auto *thePacket = (ReflectorPacket *) packetElem->GetEnclosingObject();
   if (thePacket == NULL)
     return 0;
 
@@ -970,7 +971,7 @@ void ReflectorSender::ReflectRelayPackets(SInt64 *ioWakeupTime, Queue *inFreeQue
  *  When we write a packet to the ReflectorOutput he matches it's payload
  *  to one of his streams and sends it there.
  *
- *  To smooth the bandwitdth (server, not user) requirements of the reflected streams, the Sender
+ *  To smooth the bandwidth (server, not user) requirements of the reflected streams, the Sender
  *  groups the ReflectorOutput's into buckets.  The input streams are reflected to
  *  each bucket progressively later in time.  So rather than send a single packet
  *  to say 1000 clients all at once, we send it to just the first 16, then then next 16
@@ -991,13 +992,13 @@ void ReflectorSender::ReflectPackets(SInt64 *ioWakeupTime, Queue *inFreeQueue) {
   // make sure to reset these state variables
   fHasNewPackets = false;
 
-  fNextTimeToRun = 1000; // init to 1 secs
-
   // we set fWriteFlag in ReflectorStream constructor
   //   - fRTPSender: qtssWriteFlagsIsRTP
   //   - fRTCPSender: qtssWriteFlagsIsRTCP
   if (fWriteFlag == qtssWriteFlagsIsRTCP)
-    fNextTimeToRun = 1000;
+    fNextTimeToRun = 999;  // in fact, it is 1000
+  else
+    fNextTimeToRun = 1000; // init to 1 secs
 
   // determine if we need to send a receiver report to the multicast source
   if ((fWriteFlag == qtssWriteFlagsIsRTCP) && (currentTime > (fLastRRTime + kRRInterval))) {
@@ -1034,21 +1035,21 @@ void ReflectorSender::ReflectPackets(SInt64 *ioWakeupTime, Queue *inFreeQueue) {
 
   bool firstPacket = false;
 
-  // 我们在 QTSSReflectorModule::DoSetup 里面看到,对于一个 ReflectorSession 的每一个
-  // ReflectorStream,都调用了 AddOutput 添加了一个 RTPSessionOutput 对象。
-  // 在开启 n 个窗口同时播放同一个 sdp 文件的情况下,会有 n 个 theOutput 对应 n 个 RTPStream,
+  // 我们在 QTSSReflectorModule::DoSetup 里面看到, 对于一个 ReflectorSession 的每一个
+  // ReflectorStream, 都调用了 AddOutput 添加了一个 RTPSessionOutput 对象。
+  // 在开启 n 个窗口同时播放同一个 sdp 文件的情况下, 会有 n 个 theOutput 对应 n 个 RTPStream,
   // 依次通过这 n 个 theOutput 发送 RTP 数据。
   for (UInt32 bucketIndex = 0; bucketIndex < fStream->fNumBuckets; bucketIndex++) {
     for (UInt32 bucketMemberIndex = 0; bucketMemberIndex < ReflectorStream::sBucketSize; bucketMemberIndex++) {
       ReflectorOutput *theOutput = fStream->fOutputArray[bucketIndex][bucketMemberIndex];
-      if (theOutput == NULL || !theOutput->IsPlaying()) continue;
+      if (theOutput == nullptr || !theOutput->IsPlaying()) continue;
 
       {
-        Core::MutexLocker locker(&theOutput->fMutex);
+        Core::MutexLocker locker2(&theOutput->fMutex);
 
         // 返回既在 fBookmarkedPacketsElemsArray 数组同时属于 fPacketQueue 的成员
         QueueElem *packetElem = theOutput->GetBookMarkedPacket(&fPacketQueue);
-        if (packetElem == NULL) { // should only be a new output
+        if (packetElem == nullptr) { // should only be a new output
           // everybody starts at the oldest packet in the buffer delay or uses a bookmark
           packetElem = fFirstPacketInQueueForNewOutput;
           firstPacket = true;
@@ -1057,7 +1058,7 @@ void ReflectorSender::ReflectPackets(SInt64 *ioWakeupTime, Queue *inFreeQueue) {
           firstPacket = false;
         }
 
-        // sBucketDelayInMsec 对应于配置文件中的 reflector_bucket_offset_delay_msec,缺省值为 73.
+        // sBucketDelayInMsec 对应于配置文件中的 reflector_bucket_offset_delay_msec, 缺省值为 73.
         SInt64 bucketDelay = ReflectorStream::sBucketDelayInMsec * (SInt64) bucketIndex;
         packetElem = this->SendPacketsToOutput(theOutput, packetElem, currentTime, bucketDelay, firstPacket);
         if (packetElem) {
@@ -1072,7 +1073,7 @@ void ReflectorSender::ReflectPackets(SInt64 *ioWakeupTime, Queue *inFreeQueue) {
   }
 
   this->RemoveOldPackets(inFreeQueue);
-  fFirstNewPacketInQueue = NULL;
+  fFirstNewPacketInQueue = nullptr;
 
   // Don't forget that the caller also wants to know when we next want to run
   // ReflectorSocket::Run 根据 *ioWakeupTime 来决定 idelTimer 的值。
@@ -1227,7 +1228,7 @@ void ReflectorSender::RemoveOldPackets(Queue *inFreeQueue) {
         if (keyPacket == thePacket) break;
       }
 
-      // TODO(james):
+      // 被 mark 的 packet 仅在本轮不会被清理，下一轮照常清理
       thePacket->fNeededByOutput = false; // mark not needed.. will be set next time through reflect packets
 
       // this packet is going to be kept around as well as the ones that follow.
@@ -1239,26 +1240,25 @@ void ReflectorSender::RemoveOldPackets(Queue *inFreeQueue) {
 /**
  * if current packet over max packetAgeTime, we need relocate the BookMark to
  * the new fKeyFrameStartPacketElementPointer
+ *
+ * @note
+ *   1. 判断当前 Packet 是否已经超过了最大缓冲周期时间(不判断音/视频、I/P帧)
+ *   2. 当时间超过了阀值, 查找最新的 fKeyFrameStartPacketElementPointer
+ *   3. 返回最新的 fKeyFrameStartPacketElementPointer 做为最新的 BookMark
  */
 QueueElem *ReflectorSender::NeedRelocateBookMark(QueueElem *elem) {
   Assert(elem);
-
-  // 1. 判断当前Packet是否已经超过了最大缓冲周期时间(不判断音/视频、I/P帧)
-  // 2. 当时间超过了阀值,查找最新的fKeyFrameStartPacketElementPointer
-  // 3. 返回最新的fKeyFrameStartPacketElementPointer做为最新的BookMark
-
   SInt64 theCurrentTime = Core::Time::Milliseconds();
   SInt64 packetDelay = 0;
   SInt64 currentMaxPacketDelay = ReflectorStream::sRelocatePacketAgeMSec;
 
-  ReflectorPacket *thePacket = (ReflectorPacket *) elem->GetEnclosingObject();
+  auto *thePacket = (ReflectorPacket *) elem->GetEnclosingObject();
   Assert(thePacket);
 
   packetDelay = theCurrentTime - thePacket->fTimeArrived;
-
   if ((packetDelay > currentMaxPacketDelay) && IsKeyFrameFirstPacket(thePacket)) { // or IsFrameFirstPacket
     if (fKeyFrameStartPacketElementPointer) {
-      ReflectorPacket *keyPacket = (ReflectorPacket *) (fKeyFrameStartPacketElementPointer->GetEnclosingObject());
+      auto *keyPacket = (ReflectorPacket *) (fKeyFrameStartPacketElementPointer->GetEnclosingObject());
       if (keyPacket->fTimeArrived > thePacket->fTimeArrived) {
         this->fStream->GetMyReflectorSession()->SetHasVideoKeyFrameUpdate(true);
         return fKeyFrameStartPacketElementPointer;
@@ -1305,41 +1305,6 @@ QueueElem *ReflectorSender:: GetNewestKeyFrameFirstPacket(QueueElem *currentElem
   return requestedPacket;
 }
 
-char const* nal_unit_type_description_h264[32] = {
-    "Unspecified", //0
-    "Coded slice of a non-IDR picture", //1
-    "Coded slice data partition A", //2
-    "Coded slice data partition B", //3
-    "Coded slice data partition C", //4
-    "Coded slice of an IDR picture", //5
-    "Supplemental enhancement information (SEI)", //6
-    "Sequence parameter set", //7
-    "Picture parameter set", //8
-    "Access unit delimiter", //9
-    "End of sequence", //10
-    "End of stream", //11
-    "Filler data", //12
-    "Sequence parameter set extension", //13
-    "Prefix NAL unit", //14
-    "Subset sequence parameter set", //15
-    "Reserved", //16
-    "Reserved", //17
-    "Reserved", //18
-    "Coded slice of an auxiliary coded picture without partitioning", //19
-    "Coded slice extension", //20
-    "Reserved", //21
-    "Reserved", //22
-    "Reserved", //23
-    "Unspecified", //24
-    "Unspecified", //25
-    "Unspecified", //26
-    "Unspecified", //27
-    "Unspecified", //28
-    "Unspecified", //29
-    "Unspecified", //30
-    "Unspecified" //31
-};
-
 
 /**
  * 判断当前RTP包是否为H.264 I关键帧的第一个RTP包
@@ -1347,8 +1312,8 @@ char const* nal_unit_type_description_h264[32] = {
  */
 bool ReflectorSender::IsKeyFrameFirstPacket(ReflectorPacket *thePacket) {
   Assert(thePacket);
-
-  if ((thePacket->fPacketPtr.Ptr != NULL) && (thePacket->fPacketPtr.Len >= 20)) {
+  if (thePacket == nullptr) return false;
+  if ((thePacket->fPacketPtr.Ptr != nullptr) && (thePacket->fPacketPtr.Len >= 20)) {
     auto *rtpHeader = reinterpret_cast<RTPFixedHeader*>(thePacket->fPacketPtr.Ptr);
     UInt32 rtpHeaderLen = sizeof(RTPFixedHeader) + rtpHeader->cc * sizeof(UInt32);
     auto *nalHeader = reinterpret_cast<NALUHeader*>(&thePacket->fPacketPtr.Ptr[rtpHeaderLen]);
@@ -1401,53 +1366,8 @@ bool ReflectorSender::IsKeyFrameFirstPacket(ReflectorPacket *thePacket) {
   return false;
 }
 
-bool ReflectorSender::IsFrameFirstPacket(ReflectorPacket *thePacket) {
-  //printf("[geyijun] IsKeyFrameFirstPacket--->RtpSeq[%d]\n",thePacket->GetPacketRTPSeqNum());
-  Assert(thePacket);
-  if ((thePacket->fPacketPtr.Ptr != NULL)
-      && (thePacket->fPacketPtr.Len >= 20)) {
-    UInt8 csrc_count = thePacket->fPacketPtr.Ptr[0] & 0x0f;
-    UInt32 rtp_head_size = /*sizeof(struct RTPHeader)*/
-        12 + csrc_count * sizeof(UInt32);
-    UInt8 nal_unit_type = thePacket->fPacketPtr.Ptr[rtp_head_size + 0] & 0x1F;
-    if ((nal_unit_type >= 1) && (nal_unit_type <= 23)) {    //单一包
-      return true;
-    } else if (nal_unit_type == 24) { //STAP-A
-      return true;
-    } else if (nal_unit_type == 25) { //STAP-B
-      return true;
-    } else if (nal_unit_type == 26) { //MTAP16
-      return true;
-    } else if (nal_unit_type == 27) { //MTAP24
-      return true;
-    } else if ((nal_unit_type == 28) || (nal_unit_type == 29)) { //FU-A/B
-      if (thePacket->fPacketPtr.Len > rtp_head_size + 1) {
-        UInt8 startBit = thePacket->fPacketPtr.Ptr[rtp_head_size + 1] & 0x80;
-        if (startBit) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-}
-
-bool ReflectorSender::IsFrameLastPacket(ReflectorPacket *thePacket) {
-  //printf("[geyijun] IsFrameLastPacket--->RtpSeq[%d]\n",thePacket->GetPacketRTPSeqNum());
-  Assert(thePacket);
-  if ((thePacket->fPacketPtr.Ptr != NULL) && (thePacket->fPacketPtr.Len >= 20)) {
-    UInt8 markBit = thePacket->fPacketPtr.Ptr[1] & 0x80;
-    if (markBit) {
-      //printf("[geyijun] IsFrameLastPacket --->OK\n");
-      return true;
-    }
-  }
-  return false;
-}
-
 void ReflectorSocketPool::SetUDPSocketOptions(Net::UDPSocketPair *inPair) {
-  // Fix add ReuseAddr for compatibility with MPEG4IP broadcaster which likes to use the same
-  //sockets.
+  // Fix add ReuseAddr for compatibility with MPEG4IP broadcaster which likes to use the same sockets.
 
   //Make sure this works with PlaylistBroadcaster
   //inPair->GetSocketA()->ReuseAddr();
@@ -1505,7 +1425,7 @@ ReflectorSocket::ReflectorSocket()
   for (UInt32 numPackets = 0; numPackets < kNumPreallocatedPackets; numPackets++) {
     // If the local port # of this socket is odd, then all the packets
     // used for this socket are rtcp packets.
-    ReflectorPacket *packet = new ReflectorPacket();
+    auto *packet = new ReflectorPacket();
     fFreeQueue.EnQueue(&packet->fQueueElem);  // put this packet onto the free queue
   }
 }
@@ -1550,8 +1470,7 @@ SInt64 ReflectorSocket::Run() {
   EventFlags theEvents = this->GetEvents();
 
   //if we have been told to delete ourselves, do so.
-  if (theEvents & kKillEvent)
-    return -1;
+  if (theEvents & kKillEvent) return -1;
 
   Core::MutexLocker locker(this->GetDemuxer()->GetMutex());
   SInt64 theMilliseconds = Core::Time::Milliseconds();
@@ -1572,11 +1491,12 @@ SInt64 ReflectorSocket::Run() {
 #endif
 
   fSleepTime = 0;
+
   // Now that we've gotten all available packets, have the streams reflect
   for (QueueIter iter2(&fSenderQueue); !iter2.IsDone(); iter2.Next()) {
-    ReflectorSender *theSender2 = (ReflectorSender *) iter2.GetCurrent()->GetEnclosingObject();
+    auto *theSender2 = (ReflectorSender *) iter2.GetCurrent()->GetEnclosingObject();
     // 根据 fNextTimeToRun 和当前时间判断是否马上进行 Reflect.
-    if (theSender2 != NULL && theSender2->ShouldReflectNow(theMilliseconds, &fSleepTime))
+    if (theSender2 != nullptr && theSender2->ShouldReflectNow(theMilliseconds, &fSleepTime))
       theSender2->ReflectPackets(&fSleepTime, &fFreeQueue);
   }
 
@@ -1588,6 +1508,7 @@ SInt64 ReflectorSocket::Run() {
   // fSleepTime 实际上是 Sender 的 fNextTimeToRun,利用 IdleTimerThread 实现下一次的继续运行。
   if (fSleepTime > 0)
     this->SetIdleTimer(fSleepTime);
+
 #if DEBUG
   //The debugging check above expects real time.
   fSleepTime += theMilliseconds;

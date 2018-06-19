@@ -22,15 +22,12 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       QTSS_Private.h
-
-    Contains:   Implementation-specific structures and typedefs used by the
-                implementation of QTSS API in the Darwin Streaming Server
-                    
-    
-    
-*/
+/**
+ * @file QTSS_Private.h
+ *
+ * Implementation-specific structures and typedefs used by the
+ * implementation of QTSS API in the Darwin Streaming Server
+ */
 
 
 #ifndef QTSS_PRIVATE_H
@@ -53,13 +50,15 @@ class QTSSModule;
 typedef QTSS_Error  (*QTSS_CallbackProcPtr)(...);
 typedef void *(*QTSS_CallbackPtrProcPtr)(...);
 
+/**
+ * Indexes for each callback routine. Addresses of the callback routines get
+ * placed in an array.
+ *
+ * @note When adding new callbacks, add only to the end of the list and increment the
+ *       kLastCallback value. Inserting or changing the index order will break dynamic modules
+ *       built with another release.
+ */
 enum {
-  // Indexes for each callback routine. Addresses of the callback routines get
-  // placed in an array.
-  // IMPORTANT: When adding new callbacks, add only to the end of the list and increment the
-  //            kLastCallback value. Inserting or changing the index order will break dynamic modules
-  //            built with another release.
-
   kNewCallback = 0,
   kDeleteCallback = 1,
   kMillisecondsCallback = 2,
@@ -126,8 +125,7 @@ enum {
 };
 
 typedef struct {
-  // Callback function pointer array
-  QTSS_CallbackProcPtr addr[kLastCallback];
+  QTSS_CallbackProcPtr addr[kLastCallback]; // Callback function pointer array
 } QTSS_Callbacks, *QTSS_CallbacksPtr;
 
 typedef struct {

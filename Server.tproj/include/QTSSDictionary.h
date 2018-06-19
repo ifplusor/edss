@@ -97,10 +97,11 @@ class QTSSDictionary : public QTSSStream {
   };
 
   /**
-   * @brief   This version of GetValue copies the element into a buffer provided by the caller
-   * @returns QTSS_BadArgument,
-   * @returns QTSS_NotPreemptiveSafe (if attribute is not preemptive safe),
-   * @returns QTSS_BadIndex (if inIndex is bad)
+   * @brief This version of GetValue copies the element into a buffer provided by the caller
+   *
+   * @return QTSS_BadArgument,
+   * @return QTSS_NotPreemptiveSafe (if attribute is not preemptive safe),
+   * @return QTSS_BadIndex (if inIndex is bad)
    */
   QTSS_Error GetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, void *ioValueBuffer, UInt32 *ioValueLen);
 
@@ -116,36 +117,36 @@ class QTSSDictionary : public QTSSStream {
   /**
    * @brief  This version of GetValue converts the value to a string before returning it.
    * @note   Memory for the string is allocated internally.
-   * @returns QTSS_BadArgument,
-   * @returns QTSS_BadIndex,
-   * @returns QTSS_ValueNotFound
+   * @return QTSS_BadArgument,
+   * @return QTSS_BadIndex,
+   * @return QTSS_ValueNotFound
    */
   QTSS_Error GetValueAsString(QTSS_AttributeID inAttrID, UInt32 inIndex, char **outString);
 
   /**
-   * @returns QTSS_BadArgument,
-   * @returns QTSS_ReadOnly (if attribute is read only),
-   * @returns QTSS_BadIndex (attempt to set indexed parameter with param retrieval)
+   * @return QTSS_BadArgument,
+   * @return QTSS_ReadOnly (if attribute is read only),
+   * @return QTSS_BadIndex (attempt to set indexed parameter with param retrieval)
    * @note this method will copy inBuffer#inLen to internally memory
    */
   QTSS_Error SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32 inLen, UInt32 inFlags = kNoFlags);
 
   /**
-   * @returns QTSS_BadArgument
-   * @returns QTSS_ReadOnly (if attribute is read only),
+   * @return QTSS_BadArgument
+   * @return QTSS_ReadOnly (if attribute is read only),
    */
   QTSS_Error SetValuePtr(QTSS_AttributeID inAttrID, const void *inBuffer, UInt32 inLen, UInt32 inFlags = kNoFlags);
 
   /**
-   * @returns QTSS_BadArgument,
-   * @returns QTSS_ReadOnly (if attribute is read only),
+   * @return QTSS_BadArgument,
+   * @return QTSS_ReadOnly (if attribute is read only),
    */
   QTSS_Error CreateObjectValue(QTSS_AttributeID inAttrID, UInt32 *outIndex, QTSSDictionary **newObject, QTSSDictionaryMap *inMap = NULL, UInt32 inFlags = kNoFlags);
 
   /**
-   * @returns QTSS_BadArgument,
-   * @returns QTSS_ReadOnly,
-   * @returns QTSS_BadIndex
+   * @return QTSS_BadArgument,
+   * @return QTSS_ReadOnly,
+   * @return QTSS_BadIndex
    */
   QTSS_Error RemoveValue(QTSS_AttributeID inAttrID, UInt32 inIndex, UInt32 inFlags = kNoFlags);
 

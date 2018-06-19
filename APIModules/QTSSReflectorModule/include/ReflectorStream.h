@@ -407,10 +407,6 @@ class ReflectorSender : public CF::Net::UDPDemuxerTask {
 
   bool IsKeyFrameFirstPacket(ReflectorPacket *thePacket);
 
-  bool IsFrameFirstPacket(ReflectorPacket *thePacket);
-
-  bool IsFrameLastPacket(ReflectorPacket *thePacket);
-
   ReflectorStream *fStream;
   UInt32 fWriteFlag;
 
@@ -668,7 +664,7 @@ class ReflectorStream {
 void ReflectorStream::UpdateBitRate(SInt64 currentTime) {
   if ((fLastBitRateSample + ReflectorStream::kBitRateAvgIntervalInMilSecs) < currentTime) {
     unsigned int intervalBytes = fBytesSentInThisInterval;
-    fBytesSentInThisInterval.fetch_sub(intervalBytes); // reset to 0
+    fBytesSentInThisInterval.fetch_sub(intervalBytes); // reduce to 0, accurate for concurrent
 
     // Multiply by 1000 to convert from milliseconds to seconds, and by 8 to convert from bytes to bits
     Float32 bps = (Float32) (intervalBytes * 8) / (Float32) (currentTime - fLastBitRateSample);

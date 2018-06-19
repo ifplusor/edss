@@ -138,8 +138,9 @@ bool ReflectorOutput::SetBookMarkPacket(CF::QueueElem *thePacketElemPtr) {
   if (fAvailPosition != -1 && thePacketElemPtr) {
     fBookmarkedPacketsElemsArray[fAvailPosition] = thePacketElemPtr;
 
+    // 定位到另一个的可用位置
     for (UInt32 i = 0; i < fNumBookmarks; i++) {
-      if (fBookmarkedPacketsElemsArray[i] == NULL) {
+      if (fBookmarkedPacketsElemsArray[i] == nullptr) {
         fAvailPosition = i;
         return true;
       }
@@ -150,9 +151,9 @@ bool ReflectorOutput::SetBookMarkPacket(CF::QueueElem *thePacketElemPtr) {
 }
 
 CF::QueueElem *ReflectorOutput::GetBookMarkedPacket(CF::Queue *thePacketQueue) {
-  Assert(thePacketQueue != NULL);
+  Assert(thePacketQueue != nullptr);
 
-  CF::QueueElem *packetElem = NULL;
+  CF::QueueElem *packetElem = nullptr;
 
   fAvailPosition = -1;
 
@@ -164,7 +165,7 @@ CF::QueueElem *ReflectorOutput::GetBookMarkedPacket(CF::Queue *thePacketQueue) {
         // this packet was previously bookmarked for this specific queue
         // remove if from the bookmark list and use it
         // to jump ahead into the Sender's over all packet queue
-        fBookmarkedPacketsElemsArray[curBookmark] = NULL;
+        fBookmarkedPacketsElemsArray[curBookmark] = nullptr;
         fAvailPosition = curBookmark;
         packetElem = bookmarkedElem;
         break;

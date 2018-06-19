@@ -41,24 +41,24 @@ extern "C" {
 #include <sys/uio.h>
 #endif
 
-#define QTSS_API_VERSION                0x00050000
+#define QTSS_API_VERSION                 0x00050000
 #define QTSS_MAX_MODULE_NAME_LENGTH     64
 #define QTSS_MAX_SESSION_ID_LENGTH      64
 #define QTSS_MAX_ATTRIBUTE_NAME_SIZE    64
-#define QTSS_MAX_URL_LENGTH             512
-#define QTSS_MAX_NAME_LENGTH            128
+#define QTSS_MAX_URL_LENGTH                 512
+#define QTSS_MAX_NAME_LENGTH             128
 #define QTSS_MAX_REQUEST_BUFFER_SIZE    (2*1024)
-#define EASY_ACCENCODER_BUFFER_SIZE_LEN    (16*1024*4)
 #define QTSS_MAX_ATTRIBUTE_NUMS         128
 
+#define EASY_ACCENCODER_BUFFER_SIZE_LEN    (16*1024*4)
 #define EASY_KEY_SPLITER                "-"
 
 //*******************************
 // ENUMERATED TYPES
 
-/**********************************/
-// Error Codes
-
+/**
+ * Error Codes
+ */
 enum {
   QTSS_NoErr = 0,
   QTSS_RequestFailed = -1,
@@ -85,7 +85,9 @@ enum {
 };
 typedef SInt32 QTSS_Error;
 
-// QTSS_AddStreamFlags used in the QTSS_AddStream Callback function
+/**
+ * QTSS_AddStreamFlags used in the QTSS_AddStream Callback function
+ */
 enum {
   qtssASFlagsNoFlags = 0x00000000,
   qtssASFlagsAllowDestination = 0x00000001,
@@ -95,16 +97,18 @@ enum {
 };
 typedef UInt32 QTSS_AddStreamFlags;
 
-// QTSS_PlayFlags used in the QTSS_Play Callback function.
+/**
+ * QTSS_PlayFlags used in the QTSS_Play Callback function.
+ */
 enum {
-  qtssPlayFlagsSendRTCP =
-  0x00000010,   // have the server generate RTCP Sender Reports
-  qtssPlayFlagsAppendServerInfo =
-  0x00000020    // have the server append the server info APP packet to your RTCP Sender Reports
+  qtssPlayFlagsSendRTCP = 0x00000010,   // have the server generate RTCP Sender Reports
+  qtssPlayFlagsAppendServerInfo = 0x00000020    // have the server append the server info APP packet to your RTCP Sender Reports
 };
 typedef UInt32 QTSS_PlayFlags;
 
-// Flags for QTSS_Write when writing to a QTSS_ClientSessionObject.
+/**
+ * Flags for QTSS_Write when writing to a QTSS_ClientSessionObject.
+ */
 enum {
   qtssWriteFlagsNoFlags = 0x00000000,
   qtssWriteFlagsIsRTP = 0x00000001,
@@ -114,13 +118,17 @@ enum {
 };
 typedef UInt32 QTSS_WriteFlags;
 
-// Flags for QTSS_SendStandardRTSPResponse
+/**
+ * Flags for QTSS_SendStandardRTSPResponse
+ */
 enum {
   qtssPlayRespWriteTrackInfo = 0x00000001,
   qtssSetupRespDontWriteSSRC = 0x00000002
 };
 
-// Flags for the qtssRTSPReqAction attribute in a QTSS_RTSPRequestObject.
+/**
+ * Flags for the qtssRTSPReqAction attribute in a QTSS_RTSPRequestObject.
+ */
 enum {
   qtssActionFlagsNoFlags = 0x00000000,
   qtssActionFlagsRead = 0x00000001,
@@ -137,20 +145,22 @@ enum {
 };
 typedef UInt32 Easy_RedisAction;
 
-/**********************************/
-// RTP SESSION STATES
-//
-// Is this session playing, paused, or what?
+/**
+ * RTP SESSION STATES
+ *
+ * Is this session playing, paused, or what?
+ */
 enum {
   qtssPausedState = 0,
   qtssPlayingState = 1
 };
 typedef UInt32 QTSS_RTPSessionState;
 
-//*********************************/
-// CLIENT SESSION CLOSING REASON
-//
-// Why is this Client going away?
+/**
+ * CLIENT SESSION CLOSING REASON
+ *
+ * Why is this Client going away?
+ */
 enum {
   qtssCliSesCloseClientTeardown = 0, // QTSS_Teardown was called on this session
   qtssCliSesCloseTimeout = 1, // Server is timing this session out
@@ -158,31 +168,35 @@ enum {
 };
 typedef UInt32 QTSS_CliSesClosingReason;
 
-// CLIENT SESSION TEARDOWN REASON
-//
-//  An attribute in the QTSS_ClientSessionObject 
-//
-//  When calling QTSS_Teardown, a module should specify the QTSS_CliSesTeardownReason in the QTSS_ClientSessionObject 
-//  if the tear down was not a client request.
-//  
+/**
+ * CLIENT SESSION TEARDOWN REASON
+ *
+ * An attribute in the QTSS_ClientSessionObject
+ *
+ * When calling QTSS_Teardown, a module should specify the QTSS_CliSesTeardownReason in the QTSS_ClientSessionObject
+ *  if the tear down was not a client request.
+ */
 enum {
   qtssCliSesTearDownClientRequest = 0,
   qtssCliSesTearDownUnsupportedMedia = 1,
   qtssCliSesTearDownServerShutdown = 2,
   qtssCliSesTearDownServerInternalErr = 3,
   qtssCliSesTearDownBroadcastEnded = 4 // A broadcast the client was watching ended
-
 };
 typedef UInt32 QTSS_CliSesTeardownReason;
 
-// Events
+/**
+ * Events
+ */
 enum {
   QTSS_ReadableEvent = 1,
   QTSS_WriteableEvent = 2
 };
 typedef UInt32 QTSS_EventType;
 
-// Authentication schemes
+/**
+ * Authentication schemes
+ */
 enum {
   qtssAuthNone = 0,
   qtssAuthBasic = 1,
@@ -376,18 +390,22 @@ enum {
 typedef UInt32 QTSS_AttrRights; // see QTSS_UserProfileObject
 
 
-/**********************************/
-//BUILT IN SERVER ATTRIBUTES
+/*
+ * BUILT IN SERVER ATTRIBUTES
+ *
+ * The server maintains many attributes internally, and makes these available to plug-ins.
+ * Each value is a standard attribute, with a name and everything. Plug-ins may resolve the id's of
+ * these values by name if they'd like, but in the initialize role they will receive a struct of
+ * all the ids of all the internally maintained server parameters. This enumerated type block defines the indexes
+ * in that array for the id's.
+ */
 
-//The server maintains many attributes internally, and makes these available to plug-ins.
-//Each value is a standard attribute, with a name and everything. Plug-ins may resolve the id's of
-//these values by name if they'd like, but in the initialize role they will receive a struct of
-//all the ids of all the internally maintained server parameters. This enumerated type block defines the indexes
-//in that array for the id's.
-
+/**
+ * @brief QTSS_RTPStreamObject parameters.
+ *
+ * All of these are preemptive safe.
+ */
 enum {
-  //QTSS_RTPStreamObject parameters. All of these are preemptive safe.
-
 
   /**
    * Unique ID identifying each stream. This will default to 0 unless set explicitly by a module.
@@ -689,9 +707,12 @@ enum {
 };
 typedef UInt32 QTSS_RTPStreamAttributes;
 
+/**
+ * @brief QTSS_ClientSessionObject parameters.
+ *
+ * All of these are preemptive safe
+ */
 enum {
-  //QTSS_ClientSessionObject parameters. All of these are preemptive safe
-
 
   /**
    * Iterated attribute. All the QTSS_RTPStreamRefs belonging to this session.
@@ -970,11 +991,11 @@ enum {
 };
 typedef UInt32 QTSS_ClientSessionAttributes;
 
+/**
+ * QTSS_RTSPSessionObject parameters
+ */
 enum {
-  //QTSS_RTSPSessionObject parameters
-
-  //Valid in any role that receives a QTSS_RTSPSessionObject
-
+  //  Valid in any role that receives a QTSS_RTSPSessionObject
 
   /**
    * This is a unique ID for each session since the server started up.
@@ -1088,9 +1109,10 @@ enum {
 };
 typedef UInt32 QTSS_RTSPSessionAttributes;
 
+/**
+ * Easy_HTTPSessionObject parameters
+ */
 enum {
-  //Easy_HTTPSessionObject parameters
-
 
   /**
    * This is a unique ID for each session since the server started up.
@@ -1553,9 +1575,10 @@ enum {
 };
 typedef UInt32 QTSS_RTSPRequestAttributes;
 
+/**
+ * QTSS_ServerObject parameters
+ */
 enum {
-  //QTSS_ServerObject parameters
-
   // These parameters ARE pre-emptive safe.
 
 
@@ -1845,9 +1868,10 @@ enum {
 };
 typedef UInt32 QTSS_ServerAttributes;
 
+/**
+ * QTSS_PrefsObject parameters
+ */
 enum {
-  //QTSS_PrefsObject parameters
-
   // Valid in all methods. None of these are pre-emptive safe, so the version
   // of QTSS_GetAttribute that copies data must be used.
 
@@ -3274,10 +3298,10 @@ QTSS_Error QTSS_GetNumAttributes(QTSS_Object inObject, UInt32 *outNumAttributes)
 
 /**
  * @note NOT TO BE USED WITH NON-PREEMPTIVE-SAFE attributes (or provide your own locking using QTSS_LockObject).
- * @returns QTSS_NoErr
- * @returns QTSS_BadArgument: Bad argument
- * @returns QTSS_NotPreemptiveSafe: Attempt to get a non-preemptive safe attribute
- * @returns QTSS_BadIndex: Attempt to get non-existent index.
+ * @return QTSS_NoErr
+ * @return QTSS_BadArgument: Bad argument
+ * @return QTSS_NotPreemptiveSafe: Attempt to get a non-preemptive safe attribute
+ * @return QTSS_BadIndex: Attempt to get non-existent index.
  */
 QTSS_Error QTSS_GetValuePtr(QTSS_Object inObject, QTSS_AttributeID inID, UInt32 inIndex, void **outBuffer, UInt32 *outLen);
 
@@ -3760,10 +3784,10 @@ QTSS_Error QTSS_DestroySocketStream(QTSS_SocketStream inStream);
 //  The module can do this by using the provided "event" callback routines.
 
 /**
- * @returns QTSS_NoErr
- * @returns QTSS_BadArgument: Bad argument
- * @returns QTSS_OutOfState: if this callback is made from a role that doesn't allow async I/O events
- * @returns QTSS_RequestFailed: Not currently possible to request an event.
+ * @return QTSS_NoErr
+ * @return QTSS_BadArgument: Bad argument
+ * @return QTSS_OutOfState: if this callback is made from a role that doesn't allow async I/O events
+ * @return QTSS_RequestFailed: Not currently possible to request an event.
  */
 
 QTSS_Error QTSS_RequestEvent(QTSS_StreamRef inStream, QTSS_EventType inEventMask);
@@ -3777,40 +3801,42 @@ bool QTSS_IsGlobalLocked();
 QTSS_Error QTSS_GlobalUnLock();
 
 
-/*****************************************/
-//  AUTHENTICATE and AUTHORIZE CALLBACKS
-//
-//  All modules that want Authentication outside of the 
-//  QTSS_RTSPAuthenticate_Role must use the QTSS_Authenticate callback 
-//  and must pass in the request object
-//      All modules that want Authorization outside of the
-//      QTSS_RTSPAuthorize_Role should use the QTSS_Authorize callback
-//      and must pass in the request object
-/********************************************************************/
+/*
+ * AUTHENTICATE and AUTHORIZE CALLBACKS
+ * All modules that want Authentication outside of the
+ * QTSS_RTSPAuthenticate_Role must use the QTSS_Authenticate callback
+ * and must pass in the request object
+ *     All modules that want Authorization outside of the
+ *     QTSS_RTSPAuthorize_Role should use the QTSS_Authorize callback
+ *     and must pass in the request object
+ */
 
-//  QTSS_Authenticate
-//
-//  Arguments inputs:   inAuthUserName:         the username that is to be authenticated
-//                      inAuthResourceLocalPath:the resource that is to be authorized access
-//                      inAuthMoviesDir:        the movies directory (reqd. for finding the access file)
-//                      inAuthRequestAction:    the action that is performed for the resource
-//                      inAuthScheme:           the authentication scheme (the password retrieved will be based on it)
-//                      ioAuthRequestObject:    the request object 
-//                                              The object is filled with the attributes passed in  
-//  Returns:            QTSS_NoErr
-//                      QTSS_BadArgument        if any of the input arguments are null
+/**
+ * QTSS_Authenticate
+ *
+ * @param inAuthUserName           the username that is to be authenticated
+ * @param inAuthResourceLocalPath  the resource that is to be authorized access
+ * @param inAuthMoviesDir          the movies directory (reqd. for finding the access file)
+ * @param inAuthRequestAction      the action that is performed for the resource
+ * @param inAuthScheme             the authentication scheme (the password retrieved will be based on it)
+ * @param ioAuthRequestObject      the request object
+ *                                 The object is filled with the attributes passed in
+ *
+ * @return QTSS_NoErr
+ * @return QTSS_BadArgument  if any of the input arguments are null
+ */
 QTSS_Error QTSS_Authenticate(const char *inAuthUserName, const char *inAuthResourceLocalPath, const char *inAuthMoviesDir,
                              QTSS_ActionFlags inAuthRequestAction, QTSS_AuthScheme inAuthScheme, QTSS_RTSPRequestObject ioAuthRequestObject);
 
-//  QTSS_Authorize
-//
-//  Arguments inputs:   inAuthRequestObject:    the request object
-//
-//            outputs:  outAuthRealm:           the authentication realm 
-//                      outAuthUserAllowed:     true if user is allowed, and false otherwise
-//  
-//  Returns:            QTSS_NoErr
-//                      QTSS_BadArgument
+/**
+ * QTSS_Authorize
+ *
+ * @param inAuthRequestObject  the request object
+ * @param outAuthRealm         the authentication realm
+ * @param outAuthUserAllowed   true if user is allowed, and false otherwise
+ *
+ * @returns  QTSS_NoErr, QTSS_BadArgument
+ */
 QTSS_Error QTSS_Authorize(QTSS_RTSPRequestObject inAuthRequestObject, char **outAuthRealm, bool *outAuthUserAllowed);
 
 void QTSS_LockStdLib();
@@ -3823,8 +3849,7 @@ void *Easy_GetRTSPPushSessions();
 
 // Legacy routines
 // QTSS_AddAttribute has been replaced by QTSS_AddStaticAttribute
-QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inObjectType, const char* inAttributeName,
-                                void* inUnused);
+QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inObjectType, const char* inAttributeName, void* inUnused);
 
 #endif
 

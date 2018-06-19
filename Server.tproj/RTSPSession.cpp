@@ -253,7 +253,7 @@ SInt64 RTSPSession::Run() {
           // and still don't have a full request. Wait for more data.
 
           // +rt use the socket that reads the data, may be different now.
-          fInputSocketP->RequestEvent(EV_RE);  // 重新申请监听
+//          fInputSocketP->RequestEvent(EV_RE);  // 重新申请监听
           return 0;
         }
 
@@ -336,7 +336,7 @@ SInt64 RTSPSession::Run() {
           // and still don't have a full request. Wait for more data.
 
           //+rt use the socket that reads the data, may be different now.
-          fInputSocketP->RequestEvent(EV_RE);
+//          fInputSocketP->RequestEvent(EV_RE);
           return 0;
         }
 
@@ -1040,7 +1040,7 @@ SInt64 RTSPSession::Run() {
           err = this->DumpRequestData();
 
           if (err == EAGAIN) {
-            fInputSocketP->RequestEvent(EV_RE);
+//            fInputSocketP->RequestEvent(EV_RE);
             this->ForceSameThread();    // We are holding mutexes, so we need to force
             // the same thread to be used for next Run()
             return 0;

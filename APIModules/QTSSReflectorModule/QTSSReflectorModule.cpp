@@ -22,10 +22,11 @@
 * @APPLE_LICENSE_HEADER_END@
 *
 */
-/*
-	File:       QTSSReflectorModule.cpp
-	Contains:   Implementation of QTSSReflectorModule class.
-*/
+/**
+ * @file QTSSReflectorModule.cpp
+ *
+ * Implementation of QTSSReflectorModule class.
+ */
 
 #include <CF/ArrayObjectDeleter.h>
 #include <CF/Net/Http/QueryParamList.h>
@@ -583,26 +584,26 @@ QTSS_Error ProcessRTPData(QTSS_IncomingData_Params *inParams) {
     return QTSS_NoErr;
 
   //s_printf("QTSSReflectorModule:ProcessRTPData inRTSPSession=%"   _U32BITARG_   " inClientSession=%"   _U32BITARG_   "\n",inParams->inRTSPSession, inParams->inClientSession);
-  ReflectorSession *theSession = NULL;
+  ReflectorSession *theSession = nullptr;
   UInt32 theLen = sizeof(theSession);
   QTSS_Error theErr = QTSS_GetValue(inParams->inRTSPSession, sRTSPBroadcastSessionAttr, 0, &theSession, &theLen); // set in DoPlay()
 
   //s_printf("QTSSReflectorModule.cpp:ProcessRTPData    sClientBroadcastSessionAttr=%"   _U32BITARG_   " theSession=%"   _U32BITARG_   " err=%" _S32BITARG_ " \n",sClientBroadcastSessionAttr, theSession,theErr);
-  if (theSession == NULL || theErr != QTSS_NoErr) return QTSS_NoErr;
+  if (theSession == nullptr || theErr != QTSS_NoErr) return QTSS_NoErr;
 
   // it is a broadcaster session
   //s_printf("QTSSReflectorModule.cpp:is broadcaster session\n");
 
   SourceInfo *theSoureInfo = theSession->GetSourceInfo();
-  Assert(theSoureInfo != NULL);
-  if (theSoureInfo == NULL) return QTSS_NoErr;
+  Assert(theSoureInfo != nullptr);
+  if (theSoureInfo == nullptr) return QTSS_NoErr;
 
   UInt32 numStreams = theSession->GetNumStreams();
   //s_printf("QTSSReflectorModule.cpp:ProcessRTPData numStreams=%"   _U32BITARG_   "\n",numStreams);
   {
     /*
      * Stream data such as RTP packets is encapsulated by an ASCII dollar
-     * sign (24 hexadecimal), followed by a one-byte channel identifier,
+     * sign (0x24), followed by a one-byte channel identifier,
      * followed by the length of the encapsulated binary data as a binary,
      * two-byte integer in network byte order. The stream data follows
      * immediately afterwards, without a CRLF, but including the upper-layer
@@ -627,21 +628,19 @@ QTSS_Error ProcessRTPData(QTSS_IncomingData_Params *inParams) {
     //s_printf("QTSSReflectorModule.cpp:ProcessRTPData channel=%u theSoureInfo=%"   _U32BITARG_   " packetLen=%"   _U32BITARG_   " packetDatalen=%u\n",(UInt16) packetChannel,theSoureInfo,inParams->inPacketLen,packetDataLen);
 
 
-    UInt32 inIndex = packetChannel >> 1; // one stream per every 2 channels rtcp channel handled below
+    UInt32 inIndex = packetChannel >> 1U; // one stream per every 2 channels rtcp channel handled below
     if (inIndex < numStreams) {
       ReflectorStream *theStream = theSession->GetStreamByIndex(inIndex);
-      if (theStream == NULL) return QTSS_Unimplemented;
+      if (theStream == nullptr) return QTSS_Unimplemented;
 
       SourceInfo::StreamInfo *theStreamInfo = theStream->GetStreamInfo();
       UInt16 serverReceivePort = theStreamInfo->fPort;
 
-      if (theStream != NULL) {
-        bool isRTCP = static_cast<bool>(packetChannel & 1U);
-        if (isRTCP) serverReceivePort++;
+      auto isRTCP = static_cast<bool>(packetChannel & 1U);
+      if (isRTCP) serverReceivePort++;
 
-        theStream->PushPacket(rtpPacket, rtpPacketLen, isRTCP);
-        //s_printf("QTSSReflectorModule.cpp:ProcessRTPData Send RTSP packet channel=%u to UDP localServerAddr=%"   _U32BITARG_   " serverReceivePort=%"   _U32BITARG_   " packetDataLen=%u \n", (UInt16) packetChannel, localServerAddr, serverReceivePort,packetDataLen);
-      }
+      theStream->PushPacket(rtpPacket, rtpPacketLen, isRTCP);
+      //s_printf("QTSSReflectorModule.cpp:ProcessRTPData Send RTSP packet channel=%u to UDP localServerAddr=%"   _U32BITARG_   " serverReceivePort=%"   _U32BITARG_   " packetDataLen=%u \n", (UInt16) packetChannel, localServerAddr, serverReceivePort,packetDataLen);
     }
   }
 

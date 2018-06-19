@@ -1,17 +1,19 @@
 set(HEADER_FILES
         include/SequenceNumberMap.h
         include/ReflectorOutput.h
+        include/H264Packet.h
         include/ReflectorStream.h
         include/ReflectorSession.h
         include/QTSSReflectorModule.h
         RCFSourceInfo.h
-        RTPSessionOutput.h include/H264Packet.h)
+        RTPSessionOutput.h)
 
 set(SOURCE_FILES
         QTSSReflectorModule.cpp
         RCFSourceInfo.cpp
         RTPSessionOutput.cpp
         ReflectorSession.cpp
+        H264Packet.cpp
         ReflectorStream.cpp
         SequenceNumberMap.cpp)
 

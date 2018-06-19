@@ -36,12 +36,15 @@
 
 #include <CF/Thread/Task.h>
 
+/**
+ * This task handles all incoming RTCP data.
+ */
 class RTCPTask : public CF::Thread::Task {
  public:
-  //This task handles all incoming RTCP data. It just polls, so make sure
-  //to start the polling process by signalling a start event.
   RTCPTask() : Task() {
     this->SetTaskName("RTCPTask");
+
+    // It just polls, so make sure to start the polling process by signalling a start event.
     this->Signal(kStartEvent);
   }
 
