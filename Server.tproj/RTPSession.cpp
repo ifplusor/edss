@@ -141,7 +141,7 @@ RTPSession::~RTPSession() {
 
 QTSS_Error RTPSession::Activate(const StrPtrLen &inSessionID) {
   // 该函数执行了以下操作:
-  // 1. 拷贝到fRTSPSessionIDBuf,
+  // 1. 拷贝到 fRTSPSessionIDBuf,
   // 2. puts the session into the RTPSession Map: theServer->GetRTPSessionMap()->Register(&fRTPMapElem);
   // 3. 调用IncrementTotalRTPSessions()
 
@@ -155,10 +155,9 @@ QTSS_Error RTPSession::Activate(const StrPtrLen &inSessionID) {
 
   QTSServerInterface *theServer = QTSServerInterface::GetServer();
 
-  //Activate puts the session into the RTPSession Map
+  // Activate puts the session into the RTPSession Map
   QTSS_Error err = theServer->GetRTPSessionMap()->Register(&fRTPMapElem);
-  if (err == EPERM)
-    return err;
+  if (err == EPERM) return err;
   Assert(err == QTSS_NoErr);
 
   //

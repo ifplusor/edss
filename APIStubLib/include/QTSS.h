@@ -1785,7 +1785,7 @@ enum {
   qtssSvrMessages = 26,
 
   /**
-   *  An object containing all client sessions stored as indexed QTSS_ClientSessionObject(s).
+   * An object containing all client sessions stored as indexed QTSS_ClientSessionObject(s).
    * @property read
    * @property QTSS_Object
    */

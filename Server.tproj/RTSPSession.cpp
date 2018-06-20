@@ -253,7 +253,7 @@ SInt64 RTSPSession::Run() {
           // and still don't have a full request. Wait for more data.
 
           // +rt use the socket that reads the data, may be different now.
-//          fInputSocketP->RequestEvent(EV_RE);  // 重新申请监听
+          fInputSocketP->RequestEvent(EV_RE | EV_OS);  // 重新申请监听
           return 0;
         }
 
@@ -305,7 +305,7 @@ SInt64 RTSPSession::Run() {
         if (err == EAGAIN) {
           // If we get this error, we are currently flow-controlled and should
           // wait for the socket to become writeable again
-          fSocket.RequestEvent(EV_WR);
+          fSocket.RequestEvent(EV_WR | EV_OS);
         }
         return 0;
         //continue;
@@ -336,7 +336,7 @@ SInt64 RTSPSession::Run() {
           // and still don't have a full request. Wait for more data.
 
           //+rt use the socket that reads the data, may be different now.
-//          fInputSocketP->RequestEvent(EV_RE);
+          fInputSocketP->RequestEvent(EV_RE | EV_OS);
           return 0;
         }
 
@@ -1016,7 +1016,7 @@ SInt64 RTSPSession::Run() {
         if (err == EAGAIN) {
           // If we get this error, we are currently flow-controlled and should
           // wait for the socket to become writeable again
-          fSocket.RequestEvent(EV_WR);
+          fSocket.RequestEvent(EV_WR | EV_OS);
           // We are holding mutexes[fReadMutex.Lock(); fSessionMutex.Lock();],
           // so we need to force the same thread to be used for next Run()
           this->ForceSameThread();
@@ -1038,7 +1038,7 @@ SInt64 RTSPSession::Run() {
           err = this->DumpRequestData();
 
           if (err == EAGAIN) {
-//            fInputSocketP->RequestEvent(EV_RE);
+            fInputSocketP->RequestEvent(EV_RE | EV_OS);
             this->ForceSameThread();    // We are holding mutexes, so we need to force
             // the same thread to be used for next Run()
             return 0;

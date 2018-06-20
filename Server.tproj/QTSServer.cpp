@@ -391,15 +391,14 @@ bool QTSServer::CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs,
   // Get the IP addresses from the pref
   UInt32 theNumAddrs = 0;
   UInt32 *theIPAddrs = this->GetRTSPIPAddrs(inPrefs, &theNumAddrs);
-  UInt32 index = 0;
 
   // Stat Total Num of RTSP Port
-  // 参数 portOverride 是由 main.cpp 的 thePort 传进来(thePort 是指 RTSP Server 的监听端口,缺
-  // 省为 0,可以通过-p 参数来指定)。
+  // 参数 portOverride 是由 main.cpp 的 thePort 传进来(thePort 是指 RTSP Server 的监听端口,
+  // 缺省为 0,可以通过-p 参数来指定)。
   if (inPortOverride != 0) {
     theTotalRTSPPortTrackers = theNumAddrs; // one port tracking struct for each IP addr
     theRTSPPortTrackers = new PortTracking[theTotalRTSPPortTrackers];
-    for (index = 0; index < theNumAddrs; index++) {
+    for (UInt32 index = 0; index < theNumAddrs; index++) {
       theRTSPPortTrackers[index].fPort = inPortOverride;
       theRTSPPortTrackers[index].fIPAddr = theIPAddrs[index];
     }
@@ -411,11 +410,9 @@ bool QTSServer::CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs,
     theRTSPPortTrackers = new PortTracking[theTotalRTSPPortTrackers];
 
     UInt32 currentIndex = 0;
-
-    for (index = 0; index < theNumAddrs; index++) {
+    for (UInt32 index = 0; index < theNumAddrs; index++) {
       for (UInt32 portIndex = 0; portIndex < theNumPorts; portIndex++) {
         currentIndex = (theNumPorts * index) + portIndex;
-
         theRTSPPortTrackers[currentIndex].fPort = thePorts[portIndex];
         theRTSPPortTrackers[currentIndex].fIPAddr = theIPAddrs[index];
       }
@@ -423,8 +420,8 @@ bool QTSServer::CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs,
 
     delete[] thePorts;
   }
-
   delete[] theIPAddrs;
+
   //
   // Now figure out which of these ports we are *already* listening on.
   // If we already are listening on that port, just move the pointer to the
@@ -438,8 +435,8 @@ bool QTSServer::CreateListeners(bool startListeningNow, QTSServerPrefs *inPrefs,
   // 到新创建的 newListenerArray 数组。
   for (UInt32 count = 0; count < theTotalRTSPPortTrackers; count++) {
     for (UInt32 count2 = 0; count2 < fNumListeners; count2++) {
-      if ((fListeners[count2]->GetLocalPort() == theRTSPPortTrackers[count].fPort)
-          && (fListeners[count2]->GetLocalAddr() == theRTSPPortTrackers[count].fIPAddr)) {
+      if ((fListeners[count2]->GetLocalPort() == theRTSPPortTrackers[count].fPort) &&
+          (fListeners[count2]->GetLocalAddr() == theRTSPPortTrackers[count].fIPAddr)) {
         theRTSPPortTrackers[count].fNeedsCreating = false;
         newListenerArray[curPortIndex++] = fListeners[count2];
         Assert(curPortIndex <= theTotalRTSPPortTrackers);
@@ -1120,8 +1117,8 @@ Net::UDPSocketPair *RTPSocketPool::ConstructUDPSocketPair() {
   // 系的 Task 进行处理。
   // 注意这里传入的是 fRTCPTask!
   return new Net::UDPSocketPair(
-      new Net::UDPSocket(theTask, Net::Socket::kNonBlockingSocketType),
-      new Net::UDPSocket(theTask, Net::UDPSocket::kWantsDemuxer | Net::Socket::kNonBlockingSocketType));
+      new Net::UDPSocket(theTask, Net::Socket::kNonBlockingSocketType | Net::Socket::kEdgeTriggeredSocketMode),
+      new Net::UDPSocket(theTask, Net::UDPSocket::kWantsDemuxer | Net::Socket::kNonBlockingSocketType | Net::Socket::kEdgeTriggeredSocketMode));
 }
 
 void RTPSocketPool::DestructUDPSocketPair(Net::UDPSocketPair *inPair) {

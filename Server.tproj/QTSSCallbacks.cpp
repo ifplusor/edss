@@ -575,18 +575,18 @@ QTSS_Error QTSSCallbacks::QTSS_RefreshTimeOut(QTSS_ClientSessionObject inClientS
 QTSS_Error QTSSCallbacks::QTSS_RequestEvent(QTSS_StreamRef inStream, QTSS_EventType inEventMask) {
   // First thing to do is to alter the thread's module state to reflect the fact
   // that an event is outstanding.
-  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
-  if (Core::Thread::GetCurrent() != NULL)
+  auto *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
+  if (Core::Thread::GetCurrent() != nullptr)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 
-  if (theState == NULL) return QTSS_RequestFailed;
+  if (theState == nullptr) return QTSS_RequestFailed;
 
-  if (theState->curTask == NULL) return QTSS_OutOfState;
+  if (theState->curTask == nullptr) return QTSS_OutOfState;
 
   theState->eventRequested = true;
 
   // Now, tell this stream to be ready for the requested event
-  QTSSStream *theStream = (QTSSStream *) inStream;
+  auto *theStream = (QTSSStream *) inStream;
   theStream->SetTask(theState->curTask);
   theStream->RequestEvent(inEventMask);
   return QTSS_NoErr;

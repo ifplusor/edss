@@ -1406,8 +1406,8 @@ void ReflectorSocketPool::DestructUDPSocketPair(Net::UDPSocketPair *inPair) {
 
 ReflectorSocket::ReflectorSocket()
     : IdleTask(),
-      UDPSocket(NULL, Net::Socket::kNonBlockingSocketType | Net::UDPSocket::kWantsDemuxer),
-      fBroadcasterClientSession(NULL),
+      UDPSocket(nullptr, Net::Socket::kNonBlockingSocketType | Net::Socket::kEdgeTriggeredSocketMode | Net::UDPSocket::kWantsDemuxer),
+      fBroadcasterClientSession(nullptr),
       fLastBroadcasterTimeOutRefresh(0),
       fSleepTime(0),
       fValidSSRC(0),

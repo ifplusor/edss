@@ -337,7 +337,8 @@ CF_Error CFInit(int argc, char **argv) {
         theInitialState = qtssShuttingDownState;
         dontFork = true;
         break;
-      case 'I':theInitialState = qtssIdleState;
+      case 'I':
+        theInitialState = qtssIdleState;
         break;
       case 'h':usage();
         ::exit(0);
