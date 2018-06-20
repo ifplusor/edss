@@ -39,7 +39,7 @@ class EDSS : public CF::CFConfigure {
   CF_Error AfterConfigThreads(UInt32 numThreads) override;
   CF_Error AfterConfigFramework() override;
   CF_Error StartupCustomServices() override;
-  CF_Error DoIdle() override;
+  void DoIdle() override;
 
   //
   // User Settings

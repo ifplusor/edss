@@ -126,6 +126,7 @@ void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
     if (sendtochild(sig, myPID)) {
       return;// ok we're done
     } else {
+      s_printf("receive SIGINT\n");
       // Tell the server that there has been a SigInt, the main thread will start
       // the shutdown process because of this. The parent and child processes will quit.
       if (sSigIntCount == 0)
@@ -135,6 +136,7 @@ void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
   }
 
   if (sig == SIGTERM || sig == SIGQUIT) { // kill child then quit
+    s_printf("receive SIGTERM\n");
     if (sendtochild(sig, myPID)) {
       return;// ok we're done
     } else {
@@ -544,11 +546,14 @@ CF_Error CFInit(int argc, char **argv) {
 
 CF_Error CFExit(CF_Error exitCode) {
   EDSS::CleanPid(false);
-  if (exitCode == CF_NoErr) {
-    return EXIT_SUCCESS;
+  if (exitCode == CF_Restart) {
+    s_printf("service will stop by restart\n");
+    return -2; // 当子进程退出返回 -2 时，父进程重启子进程
   } else if (exitCode == CF_FatalError) {
+    s_printf("service will stop by fatal error\n");
     return -1; // 当子进程退出返回 -1 时，父进程也随之退出
   } else {
-    return -2; // 当子进程退出返回 -2 时，父进程重启子进程
+    s_printf("service will shutdown\n");
+    return EXIT_SUCCESS;
   }
 }

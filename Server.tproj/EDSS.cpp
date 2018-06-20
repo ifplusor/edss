@@ -126,10 +126,10 @@ CF_Error EDSS::StartupCustomServices() {
   return CF_FatalError;
 }
 
-CF_Error EDSS::DoIdle() {
+void EDSS::DoIdle() {
+  static bool restartServer = false;
   QTSS_ServerState theServerState = sServer->GetServerState();
-  if ((theServerState != qtssShuttingDownState) &&
-      (theServerState != qtssFatalErrorState)) {
+  if ((theServerState != qtssShuttingDownState) && (theServerState != qtssFatalErrorState)) {
     LogStatus(theServerState);
 
     if (sStatusUpdateInterval) {
@@ -154,18 +154,19 @@ CF_Error EDSS::DoIdle() {
       theServerState = qtssShuttingDownState;
       (void) QTSS_SetValue(QTSServerInterface::GetServer(), qtssSvrState, 0, &theServerState, sizeof(theServerState));
 
-      if (sServer->SigIntSet())
-        bool restartServer = true;
+      restartServer = !sServer->SigIntSet();
     }
 
     theServerState = sServer->GetServerState();
     if (theServerState == qtssIdleState)
       sServer->KillAllRTPSessions();
   } else {
-    CFEnv::Exit(CF_ShuttingDown);
+    if (restartServer) {
+      CFEnv::Exit(CF_Restart);
+    } else {
+      CFEnv::Exit(CF_ShuttingDown);
+    }
   }
-
-  return CF_NoErr;
 }
 
 //
@@ -299,7 +300,7 @@ void EDSS::LogStatus(QTSS_ServerState theServerState) {
 
   // If the total number of RTSP sessions is 0  then we
   // might not need to update the "server_status" file.
-  char *thePrefStr = NULL;
+  char *thePrefStr = nullptr;
   // We start lastRTSPSessionCount off with an impossible value so that
   // we force the "server_status" file to be written at least once.
   static int lastRTSPSessionCount = -1;
@@ -307,7 +308,7 @@ void EDSS::LogStatus(QTSS_ServerState theServerState) {
   (void) QTSS_GetValueAsString(sServer, qtssRTSPCurrentSessionCount, 0, &thePrefStr);
   int currentRTSPSessionCount = ::atoi(thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
   if (currentRTSPSessionCount == 0
       && currentRTSPSessionCount == lastRTSPSessionCount) {
     // we don't need to update the "server_status" file except the
@@ -324,16 +325,16 @@ void EDSS::LogStatus(QTSS_ServerState theServerState) {
 
   CF::StrPtrLenDel pathStr(sServer->GetPrefs()->GetErrorLogDir());
   CF::StrPtrLenDel fileNameStr(sServer->GetPrefs()->GetStatsMonitorFileName());
-  CF::ResizeableStringFormatter pathBuffer(NULL, 0);
+  CF::ResizeableStringFormatter pathBuffer(nullptr, 0);
   pathBuffer.PutFilePath(&pathStr, &fileNameStr);
   pathBuffer.PutTerminator();
 
   char *filePath = pathBuffer.GetBufPtr();
   FILE *statusFile = ::fopen(filePath, "w");
-  char *theAttributeValue = NULL;
+  char *theAttributeValue = nullptr;
   int i;
 
-  if (statusFile != NULL) {
+  if (statusFile != nullptr) {
     ::chmod(filePath, 0640);
     for (i = 0; i < numHeaderLines; i++) {
       s_fprintf(statusFile, "%s\n", sPLISTHeader[i]);
@@ -345,11 +346,11 @@ void EDSS::LogStatus(QTSS_ServerState theServerState) {
     // show each element value
     for (i = 0; i < numAttributes; i++) {
       (void) QTSS_GetValueAsString(sServer, QTSSModuleUtils::GetAttrID(sServer, sAttributes[i]), 0, &theAttributeValue);
-      if (theAttributeValue != NULL) {
+      if (theAttributeValue != nullptr) {
         s_fprintf(statusFile, sKey, sAttributes[i]);
         s_fprintf(statusFile, sValue, theAttributeValue);
         delete[] theAttributeValue;
-        theAttributeValue = NULL;
+        theAttributeValue = nullptr;
       }
     }
 
@@ -373,7 +374,7 @@ void FormattedTotalBytesBuffer(char *outBuffer, int outBufferLen, UInt64 totalBy
 void FormattedTotalBytesBuffer(char *outBuffer, int outBufferLen, UInt64 totalBytes) {
   Float32 displayBytes = 0.0;
   char sizeStr[] = "B";
-  char *format = NULL;
+  char const *format = nullptr;
 
   if (totalBytes > 1073741824) { //GBytes
     displayBytes = (Float32) ((Float64) (SInt64) totalBytes / (Float64) (SInt64) 1073741824);
@@ -398,7 +399,7 @@ void FormattedTotalBytesBuffer(char *outBuffer, int outBufferLen, UInt64 totalBy
 }
 
 void EDSS::PrintStatus(bool printHeader) {
-  char *thePrefStr = NULL;
+  char *thePrefStr = nullptr;
   UInt32 theLen = 0;
 
   if (printHeader) {
@@ -409,17 +410,17 @@ void EDSS::PrintStatus(bool printHeader) {
   (void) QTSS_GetValueAsString(sServer, qtssRTPSvrCurConn, 0, &thePrefStr);
   s_printf("%11s", thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   (void) QTSS_GetValueAsString(sServer, qtssRTSPCurrentSessionCount, 0, &thePrefStr);
   s_printf("%11s", thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   (void) QTSS_GetValueAsString(sServer, qtssRTSPHTTPCurrentSessionCount, 0, &thePrefStr);
   s_printf("%11s", thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   UInt32 curBandwidth = 0;
   theLen = sizeof(curBandwidth);
@@ -429,12 +430,12 @@ void EDSS::PrintStatus(bool printHeader) {
   (void) QTSS_GetValueAsString(sServer, qtssRTPSvrCurPackets, 0, &thePrefStr);
   s_printf("%11s", thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   (void) QTSS_GetValueAsString(sServer, qtssRTPSvrTotalConn, 0, &thePrefStr);
   s_printf("%11s", thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   UInt64 totalBytes = sServer->GetTotalRTPBytes();
   char displayBuff[32] = "";
@@ -457,7 +458,7 @@ void print_status(FILE *file, FILE *console, char *format, char *theStr) {
 }
 
 void EDSS::DebugLevel_1(FILE *statusFile, FILE *stdOut, bool printHeader) {
-  char *thePrefStr = NULL;
+  char *thePrefStr = nullptr;
   static char numStr[12] = "";
   static char dateStr[25] = "";
   UInt32 theLen = 0;
@@ -471,17 +472,17 @@ void EDSS::DebugLevel_1(FILE *statusFile, FILE *stdOut, bool printHeader) {
   print_status(statusFile, stdOut, "%11s", thePrefStr);
 
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   (void) QTSS_GetValueAsString(sServer, qtssRTSPCurrentSessionCount, 0, &thePrefStr);
   print_status(statusFile, stdOut, "%11s", thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   (void) QTSS_GetValueAsString(sServer, qtssRTSPHTTPCurrentSessionCount, 0, &thePrefStr);
   print_status(statusFile, stdOut, "%11s", thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   UInt32 curBandwidth = 0;
   theLen = sizeof(curBandwidth);
@@ -492,7 +493,7 @@ void EDSS::DebugLevel_1(FILE *statusFile, FILE *stdOut, bool printHeader) {
   (void) QTSS_GetValueAsString(sServer, qtssRTPSvrCurPackets, 0, &thePrefStr);
   print_status(statusFile, stdOut, "%11s", thePrefStr);
   delete[] thePrefStr;
-  thePrefStr = NULL;
+  thePrefStr = nullptr;
 
   UInt32 currentPlaying = sServer->GetNumRTPPlayingSessions();
   s_snprintf(numStr, sizeof(numStr) - 1, "%"   _U32BITARG_   "", currentPlaying);
@@ -549,7 +550,7 @@ FILE *EDSS::LogDebugEnabled() {
     static CF::StrPtrLen statsFileNameStr("server_debug_status");
 
     CF::StrPtrLenDel pathStr(sServer->GetPrefs()->GetErrorLogDir());
-    CF::ResizeableStringFormatter pathBuffer(NULL, 0);
+    CF::ResizeableStringFormatter pathBuffer(nullptr, 0);
     pathBuffer.PutFilePath(&pathStr, &statsFileNameStr);
     pathBuffer.PutTerminator();
 
@@ -557,11 +558,11 @@ FILE *EDSS::LogDebugEnabled() {
     return ::fopen(filePath, "a");
   }
 
-  return NULL;
+  return nullptr;
 }
 
 FILE *EDSS::DisplayDebugEnabled() {
-  return (DebugDisplayOn(sServer)) ? stdout : NULL;
+  return (DebugDisplayOn(sServer)) ? stdout : nullptr;
 }
 
 void EDSS::DebugStatus(UInt32 debugLevel, bool printHeader) {
