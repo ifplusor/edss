@@ -41,10 +41,10 @@
 using namespace CF;
 
 #ifdef __linux__
-size_t strlcpy(char *dst, const char *src, size_t siz);
-size_t strlcpy(char *dst, const char *src, size_t siz) {
+size_t strlcpy(char *dst, char const *src, size_t siz);
+size_t strlcpy(char *dst, char const *src, size_t siz) {
   char *d = dst;
-  const char *s = src;
+  char const *s = src;
   size_t n = siz;
 
   /* Copy as many bytes as will fit */

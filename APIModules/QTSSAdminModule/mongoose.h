@@ -30,10 +30,10 @@ extern "C" {
 
 // This structure contains information about HTTP request.
 struct mg_connection {
-  const char *request_method; // "GET", "POST", etc
-  const char *uri;            // URL-decoded URI
-  const char *http_version;   // E.g. "1.0", "1.1"
-  const char *query_string;   // URL part after '?', not including '?', or NULL
+  char const *request_method; // "GET", "POST", etc
+  char const *uri;            // URL-decoded URI
+  char const *http_version;   // E.g. "1.0", "1.1"
+  char const *query_string;   // URL part after '?', not including '?', or NULL
 
   char remote_ip[48];         // Max IPv6 string length is 45 characters
   char local_ip[48];          // Local IP address
@@ -42,8 +42,8 @@ struct mg_connection {
 
   int num_headers;            // Number of HTTP headers
   struct mg_header {
-    const char *name;         // HTTP header name
-    const char *value;        // HTTP header value
+    char const *name;         // HTTP header name
+    char const *value;        // HTTP header value
   } http_headers[30];
 
   char *content;              // POST (or websocket message) data, or NULL
@@ -89,65 +89,65 @@ enum {
 // Server management functions
 struct mg_server *mg_create_server(void *server_param, mg_handler_t handler);
 void mg_destroy_server(struct mg_server **);
-const char *mg_set_option(struct mg_server *, const char *opt, const char *val);
+char const *mg_set_option(struct mg_server *, char const *opt, char const *val);
 time_t mg_poll_server(struct mg_server *, int milliseconds);
-const char **mg_get_valid_option_names(void);
-const char *mg_get_option(const struct mg_server *server, const char *name);
+char const **mg_get_valid_option_names(void);
+char const *mg_get_option(const struct mg_server *server, char const *name);
 void mg_copy_listeners(struct mg_server *from, struct mg_server *to);
 struct mg_connection *mg_next(struct mg_server *, struct mg_connection *);
 void mg_wakeup_server(struct mg_server *);
-void mg_wakeup_server_ex(struct mg_server *, mg_handler_t, const char *, ...);
-struct mg_connection *mg_connect(struct mg_server *, const char *);
+void mg_wakeup_server_ex(struct mg_server *, mg_handler_t, char const *, ...);
+struct mg_connection *mg_connect(struct mg_server *, char const *);
 
 // Connection management functions
 void mg_send_status(struct mg_connection *, int status_code);
-void mg_send_header(struct mg_connection *, const char *name, const char *val);
+void mg_send_header(struct mg_connection *, char const *name, char const *val);
 size_t mg_send_data(struct mg_connection *, const void *data, int data_len);
-size_t mg_printf_data(struct mg_connection *, const char *format, ...);
+size_t mg_printf_data(struct mg_connection *, char const *format, ...);
 size_t mg_write(struct mg_connection *, const void *buf, size_t len);
-size_t mg_printf(struct mg_connection *conn, const char *fmt, ...);
+size_t mg_printf(struct mg_connection *conn, char const *fmt, ...);
 
 size_t mg_websocket_write(struct mg_connection *, int opcode,
-                          const char *data, size_t data_len);
+                          char const *data, size_t data_len);
 size_t mg_websocket_printf(struct mg_connection *conn, int opcode,
-                           const char *fmt, ...);
+                           char const *fmt, ...);
 
-void mg_send_file(struct mg_connection *, const char *path, const char *);
+void mg_send_file(struct mg_connection *, char const *path, char const *);
 void mg_send_file_data(struct mg_connection *, int fd);
 
 void mg_easy_send(struct mg_connection *c);
 
-const char *mg_get_header(const struct mg_connection *, const char *name);
-const char *mg_get_mime_type(const char *name, const char *default_mime_type);
-int mg_get_var(const struct mg_connection *conn, const char *var_name,
+char const *mg_get_header(const struct mg_connection *, char const *name);
+char const *mg_get_mime_type(char const *name, char const *default_mime_type);
+int mg_get_var(const struct mg_connection *conn, char const *var_name,
                char *buf, size_t buf_len);
-int mg_parse_header(const char *hdr, const char *var_name, char *buf, size_t);
-int mg_parse_multipart(const char *buf, int buf_len,
+int mg_parse_header(char const *hdr, char const *var_name, char *buf, size_t);
+int mg_parse_multipart(char const *buf, int buf_len,
                        char *var_name, int var_name_len,
                        char *file_name, int file_name_len,
-                       const char **data, int *data_len);
+                       char const **data, int *data_len);
 
 // Utility functions
 void *mg_start_thread(void *(*func)(void *), void *param);
 char *mg_md5(char buf[33], ...);
 int mg_authorize_digest(struct mg_connection *c, FILE *fp);
-size_t mg_url_encode(const char *src, size_t s_len, char *dst, size_t dst_len);
-int mg_url_decode(const char *src,
+size_t mg_url_encode(char const *src, size_t s_len, char *dst, size_t dst_len);
+int mg_url_decode(char const *src,
                   size_t src_len,
                   char *dst,
                   size_t dst_len,
                   int);
-int mg_terminate_ssl(struct mg_connection *c, const char *cert);
-int mg_forward(struct mg_connection *c, const char *addr);
+int mg_terminate_ssl(struct mg_connection *c, char const *cert);
+int mg_forward(struct mg_connection *c, char const *addr);
 void *mg_mmap(FILE *fp, size_t size);
 void mg_munmap(void *p, size_t size);
 
 // Templates support
 struct mg_expansion {
-  const char *keyword;
+  char const *keyword;
   void (*handler)(struct mg_connection *);
 };
-void mg_template(struct mg_connection *, const char *text,
+void mg_template(struct mg_connection *, char const *text,
                  struct mg_expansion *expansions);
 
 #ifdef __cplusplus

@@ -11,11 +11,6 @@
 #include <sys/stat.h>
 #endif
 
-enum {
-  kRunServerDebug_Off = 0,
-  kRunServerDebugDisplay_On = 1 << 0,
-  kRunServerDebugLogging_On = 1 << 1 // not implemented
-};
 
 inline bool DebugOn(QTSServer *server) {
   return server->GetDebugOptions() != kRunServerDebug_Off;
@@ -27,13 +22,10 @@ inline bool DebugLogOn(QTSServer *server) {
   return (server->GetDebugOptions() & kRunServerDebugLogging_On) != 0;
 }
 
-void WritePid(bool forked);
-void CleanPid(bool force);
-
 
 using namespace CF;
 
-QTSServer *EDSS::sServer = NULL;
+QTSServer *EDSS::sServer = nullptr;
 int EDSS::sStatusUpdateInterval = 0;
 bool EDSS::sHasPID = false;
 UInt64 EDSS::sLastStatusPackets = 0;
@@ -41,9 +33,10 @@ UInt64 EDSS::sLastDebugPackets = 0;
 SInt64 EDSS::sLastDebugTotalQuality = 0;
 
 
+// 单例工厂
 EDSS *EDSS::StartServer(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
                         int statsUpdateInterval, QTSS_ServerState inInitialState, bool inDontFork,
-                        UInt32 debugLevel, UInt32 debugOptions, const char *sAbsolutePath) {
+                        UInt32 debugLevel, UInt32 debugOptions, char const *sAbsolutePath) {
   static EDSS *inner = nullptr;
   if (inner == nullptr) {
     sStatusUpdateInterval = statsUpdateInterval;
@@ -59,7 +52,7 @@ EDSS *EDSS::StartServer(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSo
 
 EDSS::EDSS(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
            QTSS_ServerState inInitialState, bool inDontFork, UInt32 debugLevel, UInt32 debugOptions,
-           const char *inAbsolutePath)
+           char const *inAbsolutePath)
     : prefsSource(inPrefsSource), messagesSource(inMessagesSource), portOverride(inPortOverride),
       initialState(inInitialState), dontFork(inDontFork), debugLevel(debugLevel), debugOptions(debugOptions) {
   sAbsolutePath = strdup(inAbsolutePath);
@@ -68,6 +61,8 @@ EDSS::EDSS(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 
 
 EDSS::~EDSS() {
   free(sAbsolutePath);
+  delete prefsSource;
+  delete messagesSource;
 }
 
 //
@@ -157,11 +152,7 @@ CF_Error EDSS::DoIdle() {
       //
       // start the shutdown process
       theServerState = qtssShuttingDownState;
-      (void) QTSS_SetValue(QTSServerInterface::GetServer(),
-                           qtssSvrState,
-                           0,
-                           &theServerState,
-                           sizeof(theServerState));
+      (void) QTSS_SetValue(QTSServerInterface::GetServer(), qtssSvrState, 0, &theServerState, sizeof(theServerState));
 
       if (sServer->SigIntSet())
         bool restartServer = true;
@@ -208,35 +199,32 @@ UInt32 EDSS::GetBlockingThreads() {
 
 //
 // ===========================
+void EDSS::WritePid(bool forked) {
+#if !__Win32__ && !__MinGW__
+  // WRITE PID TO FILE
+  CF::CharArrayDeleter thePidFileName(sServer->GetPrefs()->GetPidFilePath());
+  FILE *thePidFile = fopen(thePidFileName, "w");
+  if (thePidFile) {
+    if (!forked) {
+      fprintf(thePidFile, "%d\n", getpid());    // write own pid
+    } else {
+      fprintf(thePidFile, "%d\n", getppid());    // write parent pid
+      fprintf(thePidFile, "%d\n", getpid());    // and our own pid in the next line
+    }
+    fclose(thePidFile);
+    sHasPID = true;
+  }
+#endif
+}
 
-void WritePid(bool forked);
-//void WritePid(bool forked) {
-//#if !__Win32__ && !__MinGW__
-//  // WRITE PID TO FILE
-//  CF::CharArrayDeleter thePidFileName(sServer->GetPrefs()->GetPidFilePath());
-//  FILE *thePidFile = fopen(thePidFileName, "w");
-//  if (thePidFile) {
-//    if (!forked) {
-//      fprintf(thePidFile, "%d\n", getpid());    // write own pid
-//    } else {
-//      fprintf(thePidFile, "%d\n", getppid());    // write parent pid
-//      fprintf(thePidFile, "%d\n", getpid());    // and our own pid in the next line
-//    }
-//    fclose(thePidFile);
-//    sHasPID = true;
-//  }
-//#endif
-//}
-
-void CleanPid(bool force);
-//void CleanPid(bool force) {
-//#if !__Win32__ && !__MinGW__
-//  if (sHasPID || force) {
-//    CF::CharArrayDeleter thePidFileName(sServer->GetPrefs()->GetPidFilePath());
-//    unlink(thePidFileName);
-//  }
-//#endif
-//}
+void EDSS::CleanPid(bool force) {
+#if !__Win32__ && !__MinGW__
+  if (sHasPID || force) {
+    CF::CharArrayDeleter thePidFileName(sServer->GetPrefs()->GetPidFilePath());
+    unlink(thePidFileName);
+  }
+#endif
+}
 
 
 void EDSS::LogStatus(QTSS_ServerState theServerState) {
@@ -382,32 +370,32 @@ bool EDSS::PrintLine(UInt32 loopCount) {
 }
 
 void FormattedTotalBytesBuffer(char *outBuffer, int outBufferLen, UInt64 totalBytes);
-//void FormattedTotalBytesBuffer(char *outBuffer, int outBufferLen, UInt64 totalBytes) {
-//  Float32 displayBytes = 0.0;
-//  char sizeStr[] = "B";
-//  char *format = NULL;
-//
-//  if (totalBytes > 1073741824) { //GBytes
-//    displayBytes = (Float32) ((Float64) (SInt64) totalBytes / (Float64) (SInt64) 1073741824);
-//    sizeStr[0] = 'G';
-//    format = "%.4f%s ";
-//  } else if (totalBytes > 1048576) { //MBytes
-//    displayBytes = (Float32) (SInt32) totalBytes / (Float32) (SInt32) 1048576;
-//    sizeStr[0] = 'M';
-//    format = "%.3f%s ";
-//  } else if (totalBytes > 1024) { //KBytes
-//    displayBytes = (Float32) (SInt32) totalBytes / (Float32) (SInt32) 1024;
-//    sizeStr[0] = 'K';
-//    format = "%.2f%s ";
-//  } else {
-//    displayBytes = (Float32) (SInt32) totalBytes;  //Bytes
-//    sizeStr[0] = 'B';
-//    format = "%4.0f%s ";
-//  }
-//
-//  outBuffer[outBufferLen - 1] = 0;
-//  s_snprintf(outBuffer, outBufferLen - 1, format, displayBytes, sizeStr);
-//}
+void FormattedTotalBytesBuffer(char *outBuffer, int outBufferLen, UInt64 totalBytes) {
+  Float32 displayBytes = 0.0;
+  char sizeStr[] = "B";
+  char *format = NULL;
+
+  if (totalBytes > 1073741824) { //GBytes
+    displayBytes = (Float32) ((Float64) (SInt64) totalBytes / (Float64) (SInt64) 1073741824);
+    sizeStr[0] = 'G';
+    format = "%.4f%s ";
+  } else if (totalBytes > 1048576) { //MBytes
+    displayBytes = (Float32) (SInt32) totalBytes / (Float32) (SInt32) 1048576;
+    sizeStr[0] = 'M';
+    format = "%.3f%s ";
+  } else if (totalBytes > 1024) { //KBytes
+    displayBytes = (Float32) (SInt32) totalBytes / (Float32) (SInt32) 1024;
+    sizeStr[0] = 'K';
+    format = "%.2f%s ";
+  } else {
+    displayBytes = (Float32) (SInt32) totalBytes;  //Bytes
+    sizeStr[0] = 'B';
+    format = "%4.0f%s ";
+  }
+
+  outBuffer[outBufferLen - 1] = 0;
+  s_snprintf(outBuffer, outBufferLen - 1, format, displayBytes, sizeStr);
+}
 
 void EDSS::PrintStatus(bool printHeader) {
   char *thePrefStr = NULL;
@@ -463,10 +451,10 @@ void EDSS::PrintStatus(bool printHeader) {
 }
 
 void print_status(FILE *file, FILE *console, char *format, char *theStr);
-//void print_status(FILE *file, FILE *console, char *format, char *theStr) {
-//  if (file) s_fprintf(file, format, theStr);
-//  if (console) s_fprintf(console, format, theStr);
-//}
+void print_status(FILE *file, FILE *console, char *format, char *theStr) {
+  if (file) s_fprintf(file, format, theStr);
+  if (console) s_fprintf(console, format, theStr);
+}
 
 void EDSS::DebugLevel_1(FILE *statusFile, FILE *stdOut, bool printHeader) {
   char *thePrefStr = NULL;
@@ -477,7 +465,6 @@ void EDSS::DebugLevel_1(FILE *statusFile, FILE *stdOut, bool printHeader) {
   if (printHeader) {
     print_status(statusFile, stdOut, "%s",
                  "     RTP-Conns RTSP-Conns HTTP-Conns  kBits/Sec   Pkts/Sec   RTP-Playing   AvgDelay CurMaxDelay  MaxDelay  AvgQuality  NumThinned      Time\n");
-
   }
 
   (void) QTSS_GetValueAsString(sServer, qtssRTPSvrCurConn, 0, &thePrefStr);

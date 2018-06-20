@@ -144,7 +144,7 @@ QTFile::~QTFile() {
 
 //
 // Open a movie file and generate the atom table of contents.
-QTFile::ErrorCode QTFile::Open(const char *MoviePath) {
+QTFile::ErrorCode QTFile::Open(char const *MoviePath) {
   // General vars
   AtomTOCEntry *TOCEntry;
 
@@ -334,12 +334,12 @@ void QTFile::AllocateBuffers(UInt32 inUnitSizeInK,
 
 //
 // Table of Contents functions.
-bool QTFile::FindTOCEntry(const char *AtomPath,
+bool QTFile::FindTOCEntry(char const *AtomPath,
                           AtomTOCEntry **TOCEntry,
                           AtomTOCEntry *LastFoundTOCEntry) {
   // General vars
   AtomTOCEntry *Atom, *CurParent;
-  const char *pCurAtomType = AtomPath;
+  char const *pCurAtomType = AtomPath;
 
   UInt32 RootTOCID = 0;
 

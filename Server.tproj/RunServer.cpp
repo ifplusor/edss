@@ -62,7 +62,7 @@ QTSS_ServerState StartServer(XMLPrefsParser *inPrefsSource,
                              bool inDontFork,
                              UInt32 debugLevel,
                              UInt32 debugOptions,
-                             const char *sAbsolutePath) {
+                             char const *sAbsolutePath) {
   //Mark when we are done starting up. If auto-restart is enabled, we want to make sure
   //to always exit with a status of 0 if we encountered a problem WHILE STARTING UP. This
   //will prevent infinite-auto-restart-loop type problems

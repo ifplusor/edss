@@ -78,7 +78,7 @@ void QTRTPFile::Initialize() {
   QTRTPFile::gFileCacheAddMutex = new CF::Core::Mutex();
 }
 
-QTRTPFile::ErrorCode QTRTPFile::new_QTFile(const char *filePath,
+QTRTPFile::ErrorCode QTRTPFile::new_QTFile(char const *filePath,
                                            QTFile **theQTFile,
                                            bool debugFlag,
                                            bool deepDebugFlag) {
@@ -207,7 +207,7 @@ void QTRTPFile::delete_QTFile(QTFile *theQTFile) {
   }
 }
 
-void QTRTPFile::AddFileToCache(const char *inFilename,
+void QTRTPFile::AddFileToCache(char const *inFilename,
                                QTRTPFile::RTPFileCacheEntry **newListEntry) {
   // General vars
   CF::Core::MutexLocker fileCacheMutex(QTRTPFile::gFileCacheMutex);
@@ -287,7 +287,7 @@ void QTRTPFile::AddFileToCache(const char *inFilename,
   }
 }
 
-bool QTRTPFile::FindAndRefcountFileCacheEntry(const char *inFilename,
+bool QTRTPFile::FindAndRefcountFileCacheEntry(char const *inFilename,
                                               QTRTPFile::RTPFileCacheEntry **cacheEntry) {
   // General vars
   CF::Core::MutexLocker fileCacheMutex(QTRTPFile::gFileCacheMutex);
@@ -379,7 +379,7 @@ QTRTPFile::~QTRTPFile() {
 // -------------------------------------
 // Initialization functions.
 //
-QTRTPFile::ErrorCode QTRTPFile::Initialize(const char *filePath) {
+QTRTPFile::ErrorCode QTRTPFile::Initialize(char const *filePath) {
   // Temporary vars
   QTRTPFile::ErrorCode rc;
 
@@ -1313,8 +1313,7 @@ SInt32 QTRTPFile::GetMovieHintType() {
     {
       movieHintType = trackHintType;
 
-    } else if ((movieHintType == 0) && trackHintType
-        < 0) // only set optimized if movie type is uninitialized
+    } else if ((movieHintType == 0) && trackHintType < 0) // only set optimized if movie type is uninitialized
     {
       movieHintType = trackHintType;
     }

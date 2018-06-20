@@ -115,7 +115,7 @@ StrPtrLen RTSPSession::sHTTPResponseNoServerHeaderPtr(sHTTPResponseNoServerHeade
 // stock response with place holder for server header and
 // optional "x-server-ip-address" header ( %s%s%s for  "x-server-ip-address" + ip address + \r\n )
 // the optional version must be generated at runtime to include a valid IP address for the actual interface
-const char *RTSPSession::sHTTPResponseFormatStr =
+char const *RTSPSession::sHTTPResponseFormatStr =
     "HTTP/1.0 200 OK\r\n"
     "%s%s%s%s\r\n"
     "Connection: close\r\n"
@@ -124,7 +124,7 @@ const char *RTSPSession::sHTTPResponseFormatStr =
     "Pragma: no-cache\r\n"
     "Content-Type: application/x-rtsp-tunnelled\r\n\r\n";
 
-const char *RTSPSession::sHTTPNoServerResponseFormatStr =
+char const *RTSPSession::sHTTPNoServerResponseFormatStr =
     "HTTP/1.0 200 OK\r\n"
     "%s%s%s%s"
     "Connection: close\r\n"
@@ -1164,11 +1164,11 @@ bool RTSPSession::ParseProxyTunnelHTTP() {
     if (fWasHTTPRequest) {
       // it's HTTP and one of the methods we like....
       // now, find the Session ID and Accept headers
-      const char *kSessionHeaderName = "X-SessionCookie:";// SessionCookie字段
+      char const *kSessionHeaderName = "X-SessionCookie:";// SessionCookie字段
       const int kSessionHeaderNameLen = ::strlen(kSessionHeaderName);
-      const char *kAcceptHeaderName = "Accept:";// Accept字段
+      char const *kAcceptHeaderName = "Accept:";// Accept字段
       const int kAcceptHeaderNameLen = ::strlen(kAcceptHeaderName);
-      //const char* kAcceptData = "application/x-rtsp-tunnelled";
+      //char const* kAcceptData = "application/x-rtsp-tunnelled";
       //const int kAcceptDataLen = ::strlen(kAcceptData);
 
       while (parser.GetDataRemaining() > 0) {
@@ -1694,7 +1694,7 @@ void RTSPSession::CleanupRequest() {
     fRoleParams.rtspRequestParams.inClientSession = nullptr;
   }
 
-  if (this->IsLiveSession() == false) { //clear out the ID so it can't be re-used.
+  if (!this->IsLiveSession()) { //clear out the ID so it can't be re-used.
     fLastRTPSessionID[0] = 0;
     fLastRTPSessionIDPtr.Set(fLastRTPSessionID, 0);
   }
@@ -1778,7 +1778,7 @@ QTSS_Error RTSPSession::CreateNewRTPSession(RefTable *inRefTable) {
       // ok, some module has bound this session, we can activate it.
       // At this point, we may find out that this new session ID is a duplicate.
       // If that's the case, we'll simply retry until we get a unique ID
-      activationError = fRTPSession->Activate(fLastRTPSessionID);
+      activationError = fRTPSession->Activate(fLastRTPSessionIDPtr);
     }
     Assert(activationError == QTSS_NoErr);
   }
@@ -1903,9 +1903,8 @@ bool RTSPSession::OverMaxConnections(UInt32 buffer) {
   if (maxConns > -1) // limit connections
   {
     UInt32 maxConnections = (UInt32) maxConns + buffer;
-    if ((theServer->GetNumRTPSessions() > maxConnections)
-        || (theServer->GetNumRTSPSessions()
-            + theServer->GetNumRTSPHTTPSessions() > maxConnections)) {
+    if ((theServer->GetNumRTPSessions() > maxConnections) ||
+        (theServer->GetNumRTSPSessions() + theServer->GetNumRTSPHTTPSessions() > maxConnections)) {
       overLimit = true;
     }
   }

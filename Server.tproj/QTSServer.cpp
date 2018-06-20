@@ -131,7 +131,7 @@ class RTPSocketPool : public Net::UDPSocketPool {
   void SetUDPSocketOptions(Net::UDPSocketPair *inPair) override;
 };
 
-const char *QTSServer::sPortPrefString = "rtsp_port";
+char const *QTSServer::sPortPrefString = "rtsp_port";
 QTSS_Callbacks  QTSServer::sCallbacks;
 XMLPrefsParser *QTSServer::sPrefsSource = nullptr;
 PrefsSource *QTSServer::sMessagesSource = nullptr;
@@ -170,7 +170,7 @@ QTSServer::~QTSServer() {
 
 // 在 startServer 函数创建 sServer 对象后,该函数被调用。
 bool QTSServer::Initialize(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
-                           bool createListeners, const char *inAbsolutePath) {
+                           bool createListeners, char const *inAbsolutePath) {
   static const UInt32 kRTPSessionMapSize = 2000;
   static const UInt32 kReflectorSessionMapSize = 2000;
   fServerState = qtssFatalErrorState;

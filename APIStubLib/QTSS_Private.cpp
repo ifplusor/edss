@@ -92,7 +92,7 @@ QTSS_Error QTSS_CreateObjectType(QTSS_ObjectType *outType) {
   return (sCallbacks->addr[kCreateObjectTypeCallback])(outType);
 }
 
-QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inType, const char *inTag, void *inUnused) {
+QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inType, char const *inTag, void *inUnused) {
   return (sCallbacks->addr[kAddAttributeCallback])(inType, inTag, inUnused);
 }
 
@@ -108,7 +108,7 @@ QTSS_Error QTSS_RemoveInstanceAttribute(QTSS_Object inObject, QTSS_AttributeID i
   return (sCallbacks->addr[kRemoveInstanceAttributeCallback])(inObject, inID);
 }
 
-QTSS_Error QTSS_IDForAttr(QTSS_ObjectType inType, const char *inTag, QTSS_AttributeID *outID) {
+QTSS_Error QTSS_IDForAttr(QTSS_ObjectType inType, char const *inTag, QTSS_AttributeID *outID) {
   return (sCallbacks->addr[kIDForTagCallback])(inType, inTag, outID);
 }
 
@@ -136,7 +136,7 @@ QTSS_Error QTSS_GetValueAsString(QTSS_Object inObject, QTSS_AttributeID inID, UI
   return (sCallbacks->addr[kGetValueAsStringCallback])(inObject, inID, inIndex, outString);
 }
 
-QTSS_Error QTSS_TypeStringToType(const char *inTypeString, QTSS_AttrDataType *outType) {
+QTSS_Error QTSS_TypeStringToType(char const *inTypeString, QTSS_AttrDataType *outType) {
   return (sCallbacks->addr[kTypeStringToTypeCallback])(inTypeString, outType);
 }
 
@@ -144,7 +144,7 @@ QTSS_Error QTSS_TypeToTypeString(const QTSS_AttrDataType inType, char **outTypeS
   return (sCallbacks->addr[kTypeToTypeStringCallback])(inType, outTypeString);
 }
 
-QTSS_Error QTSS_StringToValue(const char *inValueAsString, const QTSS_AttrDataType inType, void *ioBuffer, UInt32 *ioBufSize) {
+QTSS_Error QTSS_StringToValue(char const *inValueAsString, const QTSS_AttrDataType inType, void *ioBuffer, UInt32 *ioBufSize) {
   return (sCallbacks->addr[kStringToValueCallback])(inValueAsString, inType, ioBuffer, ioBufSize);
 }
 
@@ -204,11 +204,11 @@ QTSS_Error QTSS_Advise(QTSS_StreamRef inRef, UInt64 inPosition, UInt32 inAdviseS
 
 // SERVICE ROUTINES
 
-QTSS_Error QTSS_AddService(const char *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr) {
+QTSS_Error QTSS_AddService(char const *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr) {
   return (sCallbacks->addr[kAddServiceCallback])(inServiceName, inFunctionPtr);
 }
 
-QTSS_Error QTSS_IDForService(const char *inTag, QTSS_ServiceID *outID) {
+QTSS_Error QTSS_IDForService(char const *inTag, QTSS_ServiceID *outID) {
   return (sCallbacks->addr[kIDForServiceCallback])(inTag, outID);
 }
 
@@ -222,7 +222,7 @@ QTSS_Error QTSS_SendRTSPHeaders(QTSS_RTSPRequestObject inRef) {
   return (sCallbacks->addr[kSendRTSPHeadersCallback])(inRef);
 }
 
-QTSS_Error QTSS_AppendRTSPHeader(QTSS_RTSPRequestObject inRef, QTSS_RTSPHeader inHeader, const char *inValue, UInt32 inValueLen) {
+QTSS_Error QTSS_AppendRTSPHeader(QTSS_RTSPRequestObject inRef, QTSS_RTSPHeader inHeader, char const *inValue, UInt32 inValueLen) {
   return (sCallbacks->addr[kAppendRTSPHeadersCallback])(inRef, inHeader, inValue, inValueLen);
 }
 
@@ -314,7 +314,7 @@ QTSS_Error QTSS_UnlockObject(QTSS_Object inObject) {
 }
 
 // AUTHENTICATION AND AUTHORIZATION ROUTINE
-QTSS_Error QTSS_Authenticate(const char *inAuthUserName, const char *inAuthResourceLocalPath, const char *inAuthMoviesDir,
+QTSS_Error QTSS_Authenticate(char const *inAuthUserName, char const *inAuthResourceLocalPath, char const *inAuthMoviesDir,
                              QTSS_ActionFlags inAuthRequestAction, QTSS_AuthScheme inAuthScheme, QTSS_RTSPRequestObject ioAuthRequestObject) {
   return (sCallbacks->addr[kAuthenticateCallback])(inAuthUserName, inAuthResourceLocalPath, inAuthMoviesDir, inAuthRequestAction, inAuthScheme, ioAuthRequestObject);
 }

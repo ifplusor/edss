@@ -1199,8 +1199,7 @@ void ElementNode::RespondWithSelf(QTSS_StreamRef inStream, QueryURI *queryPtr) {
     return;
   }
 
-  if (GetNodeName()
-      == NULL) {   //s_printf("ElementNode::RespondWithSelf Node = %s is Uninitialized no name so LEAVE\n",GetNodeName() );
+  if (GetNodeName() == NULL) {   //s_printf("ElementNode::RespondWithSelf Node = %s is Uninitialized no name so LEAVE\n",GetNodeName() );
     return;
   }
 
@@ -1923,8 +1922,7 @@ void ElementNode::RespondWithAllElements(QTSS_StreamRef inStream,
   //s_printf("ElementNode::RespondWithAllElements %s\n",GetNodeName());
   //s_printf("ElementNode::RespondWithAllElements fDataFieldsStop = %d \n",fDataFieldsStop);
 
-  if (GetNodeName()
-      == NULL) {   //s_printf("ElementNode::RespondWithAllElements %s is Uninitialized LEAVE\n",GetNodeName());
+  if (GetNodeName() == NULL) {   //s_printf("ElementNode::RespondWithAllElements %s is Uninitialized LEAVE\n",GetNodeName());
     return;
   }
 
@@ -2002,8 +2000,7 @@ void ElementNode::RespondWithAllNodes(QTSS_StreamRef inStream,
     return;
   }
 
-  if (GetNodeName()
-      == NULL) {   //s_printf("ElementNode::RespondWithAllNodes %s is Uninitialized LEAVE\n",GetNodeName());
+  if (GetNodeName() == NULL) {   //s_printf("ElementNode::RespondWithAllNodes %s is Uninitialized LEAVE\n",GetNodeName());
     return;
   }
 
@@ -2043,8 +2040,7 @@ void ElementNode::RespondToQuery(QTSS_StreamRef inStream,
 
   }
 
-  if (GetNodeName()
-      == NULL) {   //s_printf("ElementNode::RespondToQuery %s is Uninitialized LEAVE\n",GetNodeName());
+  if (GetNodeName() == NULL) {   //s_printf("ElementNode::RespondToQuery %s is Uninitialized LEAVE\n",GetNodeName());
     return;
   }
 

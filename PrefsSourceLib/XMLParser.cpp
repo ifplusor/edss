@@ -33,37 +33,34 @@
 using namespace CF;
 
 XMLParser::XMLParser(char *inPath, DTDVerifier *verifier)
-    : fRootTag(NULL), fFilePath(NULL) {
-  StrPtrLen thePath(inPath);
-  fFilePath = thePath.GetAsCString();
+    : fRootTag(nullptr), fFilePath(nullptr) {
+  fFilePath = StrPtrLen::CopyAsCString(inPath);
   fFile.Set(inPath);
   fVerifier = verifier;
 }
 
 XMLParser::~XMLParser() {
-  if (fRootTag)
-    delete fRootTag;
-
+  delete fRootTag;
   delete[] fFilePath;
 }
 
 bool XMLParser::ParseFile(char *errorBuffer, int errorBufferSize) {
-  if (fRootTag != NULL) {
+  if (fRootTag != nullptr) {
     delete fRootTag;    // flush old data
-    fRootTag = NULL;
+    fRootTag = nullptr;
   }
 
   fFile.Set(fFilePath);
 
   if (errorBufferSize < 500)
-    errorBuffer = NULL;  // Just a hack to avoid checking everywhere
+    errorBuffer = nullptr;  // Just a hack to avoid checking everywhere
   if ((fFile.GetLength() == 0) || fFile.IsDir()) {
-    if (errorBuffer != NULL)
+    if (errorBuffer != nullptr)
       s_snprintf(errorBuffer, errorBufferSize, "Couldn't read xml file");
     return false;   // we don't have a valid file;
   }
 
-  char *fileData = new char[(SInt32) (fFile.GetLength() + 1)];
+  auto *fileData = new char[(SInt32) (fFile.GetLength() + 1)];
   UInt32 theLengthRead = 0;
   fFile.Read(0, fileData, (UInt32) fFile.GetLength(), &theLengthRead);
 
@@ -127,18 +124,17 @@ bool XMLParser::CanWriteFile() {
 }
 
 void XMLParser::SetRootTag(XMLTag *tag) {
-  if (fRootTag != NULL)
-    delete fRootTag;
+  delete fRootTag;
   fRootTag = tag;
 }
 
-void XMLParser::WriteToFile(char **fileHeader) {
+void XMLParser::WriteToFile(char const **fileHeader) {
   char theBuffer[8192];
   ResizeableStringFormatter formatter(theBuffer, 8192);
 
   //
   // Write the file header
-  for (UInt32 a = 0; fileHeader[a] != NULL; a++) {
+  for (UInt32 a = 0; fileHeader[a] != nullptr; a++) {
     formatter.Put(fileHeader[a]);
     formatter.Put(kEOLString);
   }
@@ -150,8 +146,7 @@ void XMLParser::WriteToFile(char **fileHeader) {
   // New libC code. This seems to work better on Win32
   formatter.PutTerminator();
   FILE *theFile = ::fopen(fFilePath, "w");
-  if (theFile == NULL)
-    return;
+  if (theFile == nullptr) return;
 
   s_fprintf(theFile, "%s", formatter.GetBufPtr());
   ::fclose(theFile);
@@ -165,59 +160,56 @@ void XMLParser::WriteToFile(char **fileHeader) {
 #endif
 }
 
-UInt8 XMLTag::sNonNameMask[] =
-    {
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //0-9
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //10-19
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //20-29
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //30-39
-        1, 1, 1, 1, 1, 0, 0, 1, 0, 0, //40-49 '.' and '-' are name chars
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, //50-59 ':' is a name char
-        1, 1, 1, 1, 1, 0, 0, 0, 0,
-        0, //60-69 //stop on every character except a letter or number
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //70-79
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //80-89
-        0, 1, 1, 1, 1, 0, 1, 0, 0, 0, //90-99 '_' is a name char
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //100-109
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //110-119
-        0, 0, 0, 1, 1, 1, 1, 1, 1, 1, //120-129
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //130-139
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //140-149
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //150-159
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //160-169
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //170-179
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //180-189
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //190-199
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //200-209
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //210-219
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //220-229
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //230-239
-        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //240-249
-        1, 1, 1, 1, 1, 1             //250-255
-    };
+UInt8 XMLTag::sNonNameMask[] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //0-9
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //10-19
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //20-29
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //30-39
+    1, 1, 1, 1, 1, 0, 0, 1, 0, 0, //40-49 '.' and '-' are name chars
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, //50-59 ':' is a name char
+    1, 1, 1, 1, 1, 0, 0, 0, 0, 0, //60-69 //stop on every character except a letter or number
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //70-79
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //80-89
+    0, 1, 1, 1, 1, 0, 1, 0, 0, 0, //90-99 '_' is a name char
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //100-109
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //110-119
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, //120-129
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //130-139
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //140-149
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //150-159
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //160-169
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //170-179
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //180-189
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //190-199
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //200-209
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //210-219
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //220-229
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //230-239
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //240-249
+    1, 1, 1, 1, 1, 1              //250-255
+};
 
-XMLTag::XMLTag() : fTag(NULL), fValue(NULL), fElem(NULL) {
+XMLTag::XMLTag() : fTag(nullptr), fValue(nullptr), fElem(nullptr) {
   fElem = this;
 }
 
-XMLTag::XMLTag(char *tagName) : fTag(NULL), fValue(NULL), fElem(NULL) {
+XMLTag::XMLTag(char const *tagName) : fTag(nullptr), fValue(nullptr), fElem(nullptr) {
   fElem = this;
-  StrPtrLen temp(tagName);
-  fTag = temp.GetAsCString();
+  fTag = StrPtrLen::CopyAsCString(tagName);
 }
 
 XMLTag::~XMLTag() {
-  if (fTag) delete[] fTag;
-  if (fValue) delete[] fValue;
+  delete[] fTag;
+  delete[] fValue;
 
   QueueElem *elem;
-  while ((elem = fAttributes.DeQueue()) != NULL) {
-    XMLAttribute *attr = (XMLAttribute *) elem->GetEnclosingObject();
+  while ((elem = fAttributes.DeQueue()) != nullptr) {
+    auto *attr = (XMLAttribute *) elem->GetEnclosingObject();
     delete attr;
   }
 
-  while ((elem = fEmbeddedTags.DeQueue()) != NULL) {
-    XMLTag *tag = (XMLTag *) elem->GetEnclosingObject();
+  while ((elem = fEmbeddedTags.DeQueue()) != nullptr) {
+    auto *tag = (XMLTag *) elem->GetEnclosingObject();
     delete tag;
   }
 
@@ -228,17 +220,17 @@ XMLTag::~XMLTag() {
 void XMLTag::ConsumeIfComment(StringParser *parser) {
   if ((parser->GetDataRemaining() > 2) && ((*parser)[0] == '!') && ((*parser)[1] == '-') && ((*parser)[2] == '-')) {
     // this is a comment, so skip to end of comment
-    parser->ConsumeLength(NULL, 3); // skip '!--'
+    parser->ConsumeLength(nullptr, 3); // skip '!--'
 
     // look for -->
     while ((parser->GetDataRemaining() > 2) &&
         ((parser->PeekFast() != '-') || ((*parser)[1] != '-') || ((*parser)[2] != '>'))) {
-      if (parser->PeekFast() == '-') parser->ConsumeLength(NULL, 1);
-      parser->ConsumeUntil(NULL, '-');
+      if (parser->PeekFast() == '-') parser->ConsumeLength(nullptr, 1);
+      parser->ConsumeUntil(nullptr, '-');
     }
 
     if (parser->GetDataRemaining() > 2)
-      parser->ConsumeLength(NULL, 3); // consume -->
+      parser->ConsumeLength(nullptr, 3); // consume -->
   }
 }
 
@@ -428,7 +420,7 @@ bool XMLTag::ParseTag(StringParser *parser, DTDVerifier *verifier, char *errorBu
   return true;
 }
 
-char *XMLTag::GetAttributeValue(const char *attrName) {
+char *XMLTag::GetAttributeValue(char const *attrName) {
   for (QueueIter iter(&fAttributes); !iter.IsDone(); iter.Next()) {
     XMLAttribute *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
     if (!strcmp(attr->fAttrName, attrName))
@@ -451,7 +443,7 @@ XMLTag *XMLTag::GetEmbeddedTag(const UInt32 index) {
   return (XMLTag *) result->GetEnclosingObject();
 }
 
-XMLTag *XMLTag::GetEmbeddedTagByName(const char *tagName, const UInt32 index) {
+XMLTag *XMLTag::GetEmbeddedTagByName(char const *tagName, const UInt32 index) {
   if (fEmbeddedTags.GetLength() <= index)
     return NULL;
 
@@ -472,7 +464,7 @@ XMLTag *XMLTag::GetEmbeddedTagByName(const char *tagName, const UInt32 index) {
   return result;
 }
 
-XMLTag *XMLTag::GetEmbeddedTagByAttr(const char *attrName, const char *attrValue, const UInt32 index) {
+XMLTag *XMLTag::GetEmbeddedTagByAttr(char const *attrName, char const *attrValue, const UInt32 index) {
   if (fEmbeddedTags.GetLength() <= index) return nullptr;
 
   XMLTag *result = nullptr;
@@ -493,7 +485,7 @@ XMLTag *XMLTag::GetEmbeddedTagByAttr(const char *attrName, const char *attrValue
 }
 
 XMLTag *XMLTag::
-GetEmbeddedTagByNameAndAttr(const char *tagName, const char *attrName, const char *attrValue, const UInt32 index) {
+GetEmbeddedTagByNameAndAttr(char const *tagName, char const *attrName, char const *attrValue, const UInt32 index) {
   if (fEmbeddedTags.GetLength() <= index)
     return NULL;
 
@@ -516,19 +508,16 @@ GetEmbeddedTagByNameAndAttr(const char *tagName, const char *attrName, const cha
   return result;
 }
 
-void XMLTag::AddAttribute(char *attrName, char *attrValue) {
-  XMLAttribute *attr = new XMLAttribute;
-  StrPtrLen temp(attrName);
-  attr->fAttrName = temp.GetAsCString();
-  temp.Set(attrValue);
-  attr->fAttrValue = temp.GetAsCString();
-
+void XMLTag::AddAttribute(char const *attrName, char const *attrValue) {
+  auto *attr = new XMLAttribute;
+  attr->fAttrName = StrPtrLen::CopyAsCString(attrName);
+  attr->fAttrValue = StrPtrLen::CopyAsCString(attrValue);
   fAttributes.EnQueue(&attr->fElem);
 }
 
-void XMLTag::RemoveAttribute(char *attrName) {
+void XMLTag::RemoveAttribute(char const *attrName) {
   for (QueueIter iter(&fAttributes); !iter.IsDone(); iter.Next()) {
-    XMLAttribute *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
+    auto *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
     if (!strcmp(attr->fAttrName, attrName)) {
       fAttributes.Remove(&attr->fElem);
       delete attr;
@@ -545,29 +534,16 @@ void XMLTag::RemoveEmbeddedTag(XMLTag *tag) {
   fEmbeddedTags.Remove(&tag->fElem);
 }
 
-void XMLTag::SetTagName(char *name) {
-  Assert(name != NULL);  // can't have a tag without a name!
-
-  if (fTag != NULL)
-    delete fTag;
-
-  StrPtrLen temp(name);
-  fTag = temp.GetAsCString();
+void XMLTag::SetTagName(char const *name) {
+  Assert(name != nullptr);  // can't have a tag without a name!
+  delete fTag;
+  fTag = StrPtrLen::CopyAsCString(name);
 }
 
-void XMLTag::SetValue(char *value) {
-  if (fEmbeddedTags.GetLength() > 0)
-    return;     // can't have a value with embedded tags
-
-  if (fValue != NULL)
-    delete fValue;
-
-  if (value == NULL) {
-    fValue = NULL;
-  } else {
-    StrPtrLen temp(value);
-    fValue = temp.GetAsCString();
-  }
+void XMLTag::SetValue(char const *value) {
+  if (fEmbeddedTags.GetLength() > 0) return; // can't have a value with embedded tags
+  delete fValue;
+  fValue = value == nullptr ? nullptr : StrPtrLen::CopyAsCString(value);
 }
 
 void XMLTag::FormatData(ResizeableStringFormatter *formatter, UInt32 indent) {
@@ -578,7 +554,7 @@ void XMLTag::FormatData(ResizeableStringFormatter *formatter, UInt32 indent) {
   if (fAttributes.GetLength() > 0) {
     formatter->PutChar(' ');
     for (QueueIter iter(&fAttributes); !iter.IsDone(); iter.Next()) {
-      XMLAttribute *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
+      auto *attr = (XMLAttribute *) iter.GetCurrent()->GetEnclosingObject();
       formatter->Put(attr->fAttrName);
       formatter->Put("=\"");
       formatter->Put(attr->fAttrValue);

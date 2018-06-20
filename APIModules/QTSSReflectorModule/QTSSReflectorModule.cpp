@@ -713,7 +713,7 @@ ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams, QTSS_Attrib
 //  Net::QueryParamList parList(const_cast<char *>(queryTemp.c_str()));
 
   UInt32 theChannelNum = 1;
-//  const char *chnNum = parList.DoFindCGIValueForParam(EASY_TAG_CHANNEL);
+//  char const *chnNum = parList.DoFindCGIValueForParam(EASY_TAG_CHANNEL);
 //  if (chnNum) {
 //    theChannelNum = (UInt32) stoi(chnNum);
 //  }
@@ -867,7 +867,7 @@ QTSS_Error DoAnnounce(QTSS_StandardRTSP_Params *inParams) {
 //  QueryParamList parList(const_cast<char *>(queryTemp.c_str()));
 
   UInt32 theChannelNum = 1;
-//  const char *chnNum = parList.DoFindCGIValueForParam(EASY_TAG_CHANNEL);
+//  char const *chnNum = parList.DoFindCGIValueForParam(EASY_TAG_CHANNEL);
 //  if (chnNum) {
 //    theChannelNum = stoi(chnNum);
 //  }
@@ -1335,6 +1335,9 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
     // 检查全部的 stream 是否都可以被转发
     if (!theInfo->IsReflectable()) {
       delete theInfo;
+#ifdef REFLECTORSESSION_DEBUG
+      s_printf( "QTSSReflectorModule.cpp:FindOrCreateSession Session =%p source info is not reflectable\n", theSessionRef);
+#endif
       return nullptr;
     }
 

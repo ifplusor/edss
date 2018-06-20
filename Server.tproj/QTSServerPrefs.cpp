@@ -431,13 +431,13 @@ void QTSServerPrefs::RereadServerPreferences(bool inWriteMissingPrefs) {
   for (UInt32 x = 0; x < theMap->GetNumAttrs(); x++) {
     //
     // Look for a pref in the file that matches each pref in the dictionary
-    char *thePrefTypeStr = nullptr;
-    char *thePrefName = nullptr;
+    char const *thePrefTypeStr = nullptr;
+    char const *thePrefName = nullptr;
 
     ContainerRef pref = fPrefsSource->GetPrefRefByName(server, theMap->GetAttrName(x));
     char *thePrefValue = nullptr;
     if (pref != nullptr)
-      thePrefValue = fPrefsSource->GetPrefValueByRef(pref, 0, &thePrefName, (char **) &thePrefTypeStr);
+      thePrefValue = fPrefsSource->GetPrefValueByRef(pref, 0, &thePrefName, &thePrefTypeStr);
 
     if ((thePrefValue == nullptr) && (x < qtssPrefsNumParams)) { // Only generate errors for server prefs
       //

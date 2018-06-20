@@ -38,8 +38,8 @@
 #endif
 
 struct frozen {
-  const char *end;
-  const char *cur;
+  char const *end;
+  char const *cur;
   struct json_token *tokens;
   int max_tokens;
   int num_tokens;
@@ -97,7 +97,7 @@ static int is_hex_digit(int ch) {
   return is_digit(ch) || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
 }
 
-static int get_escape_len(const char *s, int len) {
+static int get_escape_len(char const *s, int len) {
   switch (*s) {
     case 'u':
       return len < 6 ? JSON_STRING_INCOMPLETE :
@@ -116,7 +116,7 @@ static int get_escape_len(const char *s, int len) {
   }
 }
 
-static int capture_ptr(struct frozen *f, const char *ptr, enum json_type type) {
+static int capture_ptr(struct frozen *f, char const *ptr, enum json_type type) {
   if (f->do_realloc && f->num_tokens >= f->max_tokens) {
     int new_size = f->max_tokens == 0 ? 100 : f->max_tokens * 2;
     void *p = FROZEN_REALLOC(f->tokens, new_size * sizeof(f->tokens[0]));
@@ -132,7 +132,7 @@ static int capture_ptr(struct frozen *f, const char *ptr, enum json_type type) {
   return 0;
 }
 
-static int capture_len(struct frozen *f, int token_index, const char *ptr) {
+static int capture_len(struct frozen *f, int token_index, char const *ptr) {
   if (f->tokens == 0 || f->max_tokens == 0) return 0;
   EXPECT(token_index >= 0 && token_index < f->max_tokens, JSON_STRING_INVALID);
   f->tokens[token_index].len = ptr - f->tokens[token_index].ptr;
@@ -224,13 +224,13 @@ static int parse_array(struct frozen *f) {
   return 0;
 }
 
-static int compare(const char *s, const char *str, int len) {
+static int compare(char const *s, char const *str, int len) {
   int i = 0;
   while (i < len && s[i] == str[i]) i++;
   return i == len ? 1 : 0;
 }
 
-static int expect(struct frozen *f, const char *s, int len, enum json_type t) {
+static int expect(struct frozen *f, char const *s, int len, enum json_type t) {
   int i, n = left(f);
 
   TRY(capture_ptr(f, f->cur, t));
@@ -339,7 +339,7 @@ static int doit(struct frozen *f) {
 }
 
 /* json = object */
-int parse_json(const char *s, int s_len, struct json_token *arr, int arr_len) {
+int parse_json(char const *s, int s_len, struct json_token *arr, int arr_len) {
   struct frozen frozen;
 
   memset(&frozen, 0, sizeof(frozen));
@@ -353,7 +353,7 @@ int parse_json(const char *s, int s_len, struct json_token *arr, int arr_len) {
   return frozen.cur - s;
 }
 
-struct json_token *parse_json2(const char *s, int s_len) {
+struct json_token *parse_json2(char const *s, int s_len) {
   struct frozen frozen;
 
   memset(&frozen, 0, sizeof(frozen));
@@ -368,13 +368,13 @@ struct json_token *parse_json2(const char *s, int s_len) {
   return frozen.tokens;
 }
 
-static int path_part_len(const char *p) {
+static int path_part_len(char const *p) {
   int i = 0;
   while (p[i] != '\0' && p[i] != '[' && p[i] != '.') i++;
   return i;
 }
 
-struct json_token *find_json_token(struct json_token *toks, const char *path) {
+struct json_token *find_json_token(struct json_token *toks, char const *path) {
   while (path != 0 && path[0] != '\0') {
     int i, ind2 = 0, ind = -1, skip = 2, n = path_part_len(path);
     if (path[0] == '[') {
@@ -424,8 +424,8 @@ int json_emit_double(char *buf, int buf_len, double value) {
   return n;
 }
 
-int json_emit_quoted_str(char *s, int s_len, const char *str, int len) {
-  const char *begin = s, *end = s + s_len, *str_end = str + len;
+int json_emit_quoted_str(char *s, int s_len, char const *str, int len) {
+  char const *begin = s, *end = s + s_len, *str_end = str + len;
   char ch;
 
 #define EMIT(x) do { if (s < end) *s = x; s++; } while (0)
@@ -466,7 +466,7 @@ int json_emit_quoted_str(char *s, int s_len, const char *str, int len) {
   return s - begin;
 }
 
-int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int len) {
+int json_emit_unquoted_str(char *buf, int buf_len, char const *str, int len) {
   if (buf_len > 0 && len > 0) {
     int n = len < buf_len ? len : buf_len;
     memcpy(buf, str, n);
@@ -477,8 +477,8 @@ int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int len) {
   return len;
 }
 
-int json_emit_va(char *s, int s_len, const char *fmt, va_list ap) {
-  const char *end = s + s_len, *str, *orig = s;
+int json_emit_va(char *s, int s_len, char const *fmt, va_list ap) {
+  char const *end = s + s_len, *str, *orig = s;
   size_t len;
 
   while (*fmt != '\0') {
@@ -535,7 +535,7 @@ int json_emit_va(char *s, int s_len, const char *fmt, va_list ap) {
   return s - orig;
 }
 
-int json_emit(char *buf, int buf_len, const char *fmt, ...) {
+int json_emit(char *buf, int buf_len, char const *fmt, ...) {
   int len;
   va_list ap;
 

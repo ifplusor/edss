@@ -271,7 +271,7 @@ bool QTSSRollingLog::CheckRollLog() {
   return true;
 }
 
-bool QTSSRollingLog::RenameLogFile(const char *inFileName) {
+bool QTSSRollingLog::RenameLogFile(char const *inFileName) {
   //returns false if an error occurred, true otherwise
 
   //this function takes care of renaming a log file from "myLogFile.log" to
@@ -352,7 +352,7 @@ bool QTSSRollingLog::RenameLogFile(const char *inFileName) {
     return true;
 }
 
-bool QTSSRollingLog::DoesFileExist(const char *inPath) {
+bool QTSSRollingLog::DoesFileExist(char const *inPath) {
   struct stat theStat;
   int theErr = ::stat(inPath, &theStat);
   if (theErr != 0)

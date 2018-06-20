@@ -42,8 +42,8 @@ typedef XMLTag *ContainerRef;
 class XMLPrefsParser : public XMLParser {
  public:
 
-  XMLPrefsParser(char *inPath);
-  ~XMLPrefsParser();
+  explicit XMLPrefsParser(char *inPath) : XMLParser(inPath) {}
+  ~XMLPrefsParser() override = default;
 
   //
   // Check for existence, man.
@@ -72,22 +72,16 @@ class XMLPrefsParser : public XMLParser {
 
   //
   // Returns the pref value at the specfied location
-  char *GetPrefValueByIndex(ContainerRef container,
-                            const UInt32 inPrefsIndex,
-                            const UInt32 inValueIndex,
-                            char **outPrefName,
-                            char **outDataType);
+  char *GetPrefValueByIndex(ContainerRef container, UInt32 inPrefsIndex, UInt32 inValueIndex,
+                            char const **outPrefName, char const **outDataType);
 
-  char *GetPrefValueByRef(ContainerRef pref, const UInt32 inValueIndex,
-                          char **outPrefName, char **outDataType);
+  char *GetPrefValueByRef(ContainerRef pref, UInt32 inValueIndex, char const **outPrefName, char const **outDataType);
 
-  ContainerRef GetObjectValue(ContainerRef pref, const UInt32 inValueIndex);
+  ContainerRef GetObjectValue(ContainerRef pref, UInt32 inValueIndex);
 
-  ContainerRef GetPrefRefByName(ContainerRef container,
-                                const char *inPrefName);
+  ContainerRef GetPrefRefByName(ContainerRef container, char const *inPrefName);
 
-  ContainerRef GetPrefRefByIndex(ContainerRef container,
-                                 const UInt32 inPrefsIndex);
+  ContainerRef GetPrefRefByIndex(ContainerRef container, UInt32 inPrefsIndex);
 
   //
   // MODIFIERS
@@ -95,9 +89,7 @@ class XMLPrefsParser : public XMLParser {
   //
   // Creates a new pref. Returns the index of that pref. If pref already
   // exists, returns existing index.
-  ContainerRef AddPref(ContainerRef container,
-                       char *inPrefName,
-                       char *inPrefDataType);
+  ContainerRef AddPref(ContainerRef container, char *inPrefName, char *inPrefDataType);
 
   void ChangePrefType(ContainerRef pref, char *inNewPrefDataType);
 
@@ -108,12 +100,11 @@ class XMLPrefsParser : public XMLParser {
   //
   // If this value index does not exist yet, and it is one higher than
   // the highest one, this function implictly adds the new value.
-  void SetPrefValue(ContainerRef pref, const UInt32 inValueIndex,
-                    char *inNewValue);
+  void SetPrefValue(ContainerRef pref, UInt32 inValueIndex, char *inNewValue);
 
   //
   // Removes the pref entirely if # of values drops to 0
-  void RemovePrefValue(ContainerRef pref, const UInt32 inValueIndex);
+  void RemovePrefValue(ContainerRef pref, UInt32 inValueIndex);
 
   void RemovePref(ContainerRef pref);
 

@@ -74,11 +74,11 @@ class QTAtom {
   bool ReadInt32To64(UInt64 Offset, UInt64 *Datum);
   bool ReadInt32To64Signed(UInt64 Offset, SInt64 *Datum);
 
-  bool ReadSubAtomBytes(const char *AtomPath, char *Buffer, UInt32 Length);
-  bool ReadSubAtomInt8(const char *AtomPath, UInt8 *Datum);
-  bool ReadSubAtomInt16(const char *AtomPath, UInt16 *Datum);
-  bool ReadSubAtomInt32(const char *AtomPath, UInt32 *Datum);
-  bool ReadSubAtomInt64(const char *AtomPath, UInt64 *Datum);
+  bool ReadSubAtomBytes(char const *AtomPath, char *Buffer, UInt32 Length);
+  bool ReadSubAtomInt8(char const *AtomPath, UInt8 *Datum);
+  bool ReadSubAtomInt16(char const *AtomPath, UInt16 *Datum);
+  bool ReadSubAtomInt32(char const *AtomPath, UInt32 *Datum);
+  bool ReadSubAtomInt64(char const *AtomPath, UInt64 *Datum);
 
   char *MemMap(UInt64 Offset, UInt32 Length);
   bool UnMap(char *memPtr, UInt32 Length);

@@ -47,8 +47,8 @@ class QTAccessFile {
   //GetGroupsArrayCopy
   //
   // GetGroupsArrayCopy allocates outGroupCharPtrArray. Caller must "delete [] outGroupCharPtrArray" when done.
-  static char *GetAccessFile_Copy(const char *movieRootDir,
-                                  const char *dirPath);
+  static char *GetAccessFile_Copy(char const *movieRootDir,
+                                  char const *dirPath);
 
   //over ride these in a sub class
   virtual bool HaveUser(char *userName, void *extraDataPtr);
@@ -94,7 +94,7 @@ class QTAccessFile {
                      void *extraDataPtr = NULL
   );
 
-  static void SetAccessFileName(const char *inQTAccessFileName); //makes a copy and stores it
+  static void SetAccessFileName(char const *inQTAccessFileName); //makes a copy and stores it
   static char *GetAccessFileName() { return sQTAccessFileName; }; // a reference. Don't delete!
 
   // allocates memory for outUsersFilePath and outGroupsFilePath - remember to delete
@@ -136,7 +136,7 @@ class DSAccessFile : public QTAccessFile {
     return this->CheckGroupMembership(userName, deleter.Ptr);
   }
   virtual bool ValidUser(char *userName, void *extraDataPtr);
-  bool CheckGroupMembership(const char *inUsername, const char *inGroupName);
+  bool CheckGroupMembership(char const *inUsername, char const *inGroupName);
 
 };
 

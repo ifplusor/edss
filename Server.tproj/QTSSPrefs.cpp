@@ -99,8 +99,8 @@ void QTSSPrefs::RereadObjectPreferences(ContainerRef container) {
   // finding preferences in the config file.
 
   for (UInt32 x = 0; x < theNumPrefs; x++) {
-    char *thePrefTypeStr = NULL;
-    char *thePrefName = NULL;
+    char const *thePrefTypeStr = nullptr;
+    char const *thePrefName = nullptr;
     (void) fPrefsSource->GetPrefValueByIndex(container, x, 0, &thePrefName, &thePrefTypeStr);
 
     // What type is this data type?
@@ -109,8 +109,8 @@ void QTSSPrefs::RereadObjectPreferences(ContainerRef container) {
     //
     // Check to see if there is an attribute with this name already in the
     // instance map. If one matches, then we don't need to add this attribute.
-    QTSSAttrInfoDict *theAttrInfo = NULL;
-    if (this->GetInstanceDictMap() != NULL)
+    QTSSAttrInfoDict *theAttrInfo = nullptr;
+    if (this->GetInstanceDictMap() != nullptr)
       (void) this->GetInstanceDictMap()->GetAttrInfoByName(thePrefName, &theAttrInfo, false); // false=don't return info on deleted attributes
     UInt32 theLen = sizeof(QTSS_AttrDataType);
     QTSS_AttributeID theAttrID = qtssIllegalAttrID;
@@ -203,8 +203,8 @@ void QTSSPrefs::SetPrefValuesFromFileWithRef(ContainerRef pref, QTSS_AttributeID
   if (inNumValues == 0)
     numPrefValues = fPrefsSource->GetNumPrefValues(pref);
 
-  char *thePrefName = NULL;
-  char *thePrefTypeStr = NULL;
+  char const *thePrefName = nullptr;
+  char const *thePrefTypeStr = nullptr;
   QTSS_AttrDataType thePrefType = qtssAttrDataTypeUnknown;
 
   // find the type.  If this is a QTSSObject, then we need to call a different routine
@@ -245,7 +245,7 @@ void QTSSPrefs::SetPrefValuesFromFileWithRef(ContainerRef pref, QTSS_AttributeID
 }
 
 void QTSSPrefs::
-SetObjectValuesFromFile(ContainerRef pref, QTSS_AttributeID inAttrID, UInt32 inNumValues, char *prefName) {
+SetObjectValuesFromFile(ContainerRef pref, QTSS_AttributeID inAttrID, UInt32 inNumValues, char const *prefName) {
   for (UInt32 z = 0; z < inNumValues; z++) {
     ContainerRef object = fPrefsSource->GetObjectValue(pref, z);
     QTSSPrefs *prefObject;
@@ -257,10 +257,8 @@ SetObjectValuesFromFile(ContainerRef pref, QTSS_AttributeID inAttrID, UInt32 inN
                               QTSSDictionary::kDontObeyReadOnly | QTSSDictionary::kDontCallCompletionRoutine);
       Assert(err == QTSS_NoErr);
       Assert(tempIndex == z);
-      if (err != QTSS_NoErr)  // this shouldn't happen
-        return;
-      StrPtrLen temp(prefName);
-      prefObject->fPrefName = temp.GetAsCString();
+      if (err != QTSS_NoErr) return; // this shouldn't happen
+      prefObject->fPrefName = StrPtrLen::CopyAsCString(prefName);
     }
     prefObject->RereadObjectPreferences(object);
   }
@@ -290,7 +288,7 @@ void QTSSPrefs::SetPrefValue(QTSS_AttributeID inAttrID, UInt32 inAttrIndex, char
 
 }
 
-QTSS_AttributeID QTSSPrefs::addPrefAttribute(const char *inAttrName, QTSS_AttrDataType inDataType) {
+QTSS_AttributeID QTSSPrefs::addPrefAttribute(char const *inAttrName, QTSS_AttrDataType inDataType) {
   QTSS_Error theErr = this->AddInstanceAttribute(inAttrName, NULL, inDataType,
                                                  qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModeDelete);
   Assert(theErr == QTSS_NoErr);

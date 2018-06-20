@@ -47,25 +47,25 @@ class FilePrefsSource : public PrefsSource {
   explicit FilePrefsSource(bool allowDuplicates = false);
   ~FilePrefsSource() override;
 
-  int GetValue(const char *inKey, char *ioValue) override;
-  int GetValueByIndex(const char *inKey, UInt32 inIndex, char *ioValue) override;
+  int GetValue(char const *inKey, char *ioValue) override;
+  int GetValueByIndex(char const *inKey, UInt32 inIndex, char *ioValue) override;
 
   // Allows caller to iterate over all the values in the file.
   char *GetValueAtIndex(UInt32 inIndex);
   char *GetKeyAtIndex(UInt32 inIndex);
   UInt32 GetNumKeys() { return fNumKeys; }
 
-  int InitFromConfigFile(const char *configFilePath);
-  void WriteToConfigFile(const char *configFilePath);
+  int InitFromConfigFile(char const *configFilePath);
+  void WriteToConfigFile(char const *configFilePath);
 
-  void SetValue(const char *inKey, const char *inValue);
-  void DeleteValue(const char *inKey);
+  void SetValue(char const *inKey, char const *inValue);
+  void DeleteValue(char const *inKey);
 
  private:
 
-  static bool FilePrefsConfigSetter(const char *paramName, const char *paramValue[], void *userData);
+  static bool FilePrefsConfigSetter(char const *paramName, char const *paramValue[], void *userData);
 
-  KeyValuePair *FindValue(const char *inKey, char *ioValue, UInt32 index = 0);
+  KeyValuePair *FindValue(char const *inKey, char *ioValue, UInt32 index = 0);
   KeyValuePair *fKeyValueList;
   UInt32 fNumKeys;
   bool fAllowDuplicates;

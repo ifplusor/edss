@@ -80,7 +80,7 @@ class QTTrack {
   // Accessors.
   inline bool IsInitialized() { return fIsInitialized; }
 
-  inline const char *GetTrackName() { return (fTrackName ? fTrackName : ""); }
+  inline char const *GetTrackName() { return (fTrackName ? fTrackName : ""); }
   inline UInt32 GetTrackID() { return fTrackHeaderAtom->GetTrackID(); }
   inline UInt64 GetCreationTime() { return fTrackHeaderAtom->GetCreationTime(); }
   inline UInt64 GetModificationTime() { return fTrackHeaderAtom->GetModificationTime(); }

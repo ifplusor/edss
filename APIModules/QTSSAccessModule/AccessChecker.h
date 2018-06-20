@@ -75,12 +75,12 @@ class AccessChecker {
   AccessChecker();
   virtual ~AccessChecker();
 
-  void UpdateFilePaths(const char *inUsersFilePath,
-                       const char *inGroupsFilePath);
+  void UpdateFilePaths(char const *inUsersFilePath,
+                       char const *inGroupsFilePath);
   UInt32 UpdateUserProfiles();
 
-  bool HaveFilePathsChanged(const char *inUsersFilePath,
-                            const char *inGroupsFilePath);
+  bool HaveFilePathsChanged(char const *inUsersFilePath,
+                            char const *inGroupsFilePath);
   UserProfile *RetrieveUserProfile(const StrPtrLen *inUserName);
   inline StrPtrLen *GetAuthRealm() { return &fAuthRealm; }
   inline char *GetUsersFilePathPtr() { return fUsersFilePath; }
@@ -108,8 +108,8 @@ class AccessChecker {
   UInt32 fNumUsers;
   UInt32 fCurrentSize;
 
-  static const char *kDefaultUsersFilePath;
-  static const char *kDefaultGroupsFilePath;
+  static char const *kDefaultUsersFilePath;
+  static char const *kDefaultGroupsFilePath;
 
  private:
   void deleteProfilesAndRealm();

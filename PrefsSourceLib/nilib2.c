@@ -90,7 +90,7 @@ ni_parse_server_tag(char *str, struct sockaddr_in *server, char **t) {
   return NI_PARSE_OK;
 }
 
-const char *
+char const *
 ni_parse_error_string(enum ni_parse_status status) {
   switch (status) {
     case NI_PARSE_OK: return ("Operation succeeded");

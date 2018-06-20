@@ -92,7 +92,7 @@ RTCPSRPacket::RTCPSRPacket() {
  *
  */
 UInt32 RTCPSRPacket::GetACName(char *ioCNameBuffer) {
-  static const char *sCNameBase = "edss";
+  static char const *sCNameBase = "edss";
 
   // clear out the whole buffer
   ::memset(ioCNameBuffer, 0, kMaxCNameLen);

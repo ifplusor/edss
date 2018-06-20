@@ -22,12 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       main.cpp
-
-    Contains:   main function to drive streaming server.
-
-*/
+/**
+ * @file main.cpp
+ *
+ * main function to drive streaming server.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,10 +52,8 @@
 #include <sys/stat.h>
 #endif
 
-//#include "QTSSExpirationDate.h"
 #include "FilePrefsSource.h"
 #include "GenerateXMLPrefs.h"
-#include "RunServer.h"
 
 #include "EDSS.h"
 
@@ -64,10 +61,9 @@ static int sSigIntCount = 0;
 static int sSigTermCount = 0;
 static pid_t sChildPID = 0;
 
-void usage();
 
 void usage() {
-  const char *usage_name = PLATFORM_SERVER_BIN_NAME;
+  char const *usage_name = "edss2";
 //long ptrsize = sizeof(char *); printf("size of ptr = %ld\n", ptrsize);
 //long longsize = sizeof(long); printf("size of long = %ld\n", longsize);
 
@@ -78,38 +74,35 @@ void usage() {
               QTSServerInterface::GetServerPlatform().Ptr,
               QTSServerInterface::GetServerComment().Ptr,
               QTSServerInterface::GetServerBuildDate().Ptr);
-  s_printf(
-      "usage: %s [ -d | -p port | -v | -c /myconfigpath.xml | -o /myconfigpath.conf | -x | -S numseconds | -I | -h ]\n",
-      usage_name);
+  s_printf("usage: %s [ -d | -p port | -v | -c /myconfigpath.xml | -o /myconfigpath.conf | -x | -S numseconds | -I | -h ]\n", usage_name);
   s_printf("-d: Run in the foreground\n");
   s_printf("-D: Display performance data\n");
   s_printf("-p XXX: Specify the default RTSP listening port of the server\n");
   s_printf("-c /myconfigpath.xml: Specify a config file\n");
-  s_printf(
-      "-o /myconfigpath.conf: Specify a DSS 1.x / 2.x config file to build XML file from\n");
+  s_printf("-o /myconfigpath.conf: Specify a DSS 1.x / 2.x config file to build XML file from\n");
   s_printf("-x: Force create new .xml config file and exit.\n");
   s_printf("-S n: Display server stats in the console every \"n\" seconds\n");
   s_printf("-I: Start the server in the idle state\n");
   s_printf("-h: Prints usage\n");
 }
 
-Bool16 sendtochild(int sig, pid_t myPID);
-Bool16 sendtochild(int sig, pid_t myPID) {
-  if (sChildPID != 0 && sChildPID != myPID) // this is the parent
-  {   // Send signal to child
+// 发送信号量给子进程
+bool sendtochild(int sig, pid_t myPID) {
+  if (sChildPID != 0 && sChildPID != myPID) { // this is the parent
+    // Send signal to child
     ::kill(sChildPID, sig);
     return true;
   }
-
   return false;
 }
 
-void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/);
+// 信号量处理
 void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
 #if DEBUG
   s_printf("Signal %d caught\n", sig);
 #endif
   pid_t myPID = getpid();
+
   //
   // SIGHUP means we should reread our preferences
   if (sig == SIGHUP) {
@@ -118,19 +111,21 @@ void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
     } else {
       // This is the child process.
       // Re-read our preferences.
-      RereadPrefsTask *task = new RereadPrefsTask;
+      auto *task = new RereadPrefsTask;
       task->Signal(CF::Thread::Task::kStartEvent);
-
     }
   }
 
+  /**
+   * 当子进程退出返回 -1 时，父进程也随之退出
+   * 当子进程退出返回 -2 时，父进程重启子进程
+   */
+
   //Try to shut down gracefully the first time, shutdown forcefully the next time
-  if (sig == SIGINT) // kill the child only
-  {
+  if (sig == SIGINT) { // kill the child only
     if (sendtochild(sig, myPID)) {
       return;// ok we're done
     } else {
-      //
       // Tell the server that there has been a SigInt, the main thread will start
       // the shutdown process because of this. The parent and child processes will quit.
       if (sSigIntCount == 0)
@@ -139,15 +134,12 @@ void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
     }
   }
 
-  if (sig == SIGTERM || sig == SIGQUIT) // kill child then quit
-  {
+  if (sig == SIGTERM || sig == SIGQUIT) { // kill child then quit
     if (sendtochild(sig, myPID)) {
       return;// ok we're done
     } else {
       // Tell the server that there has been a SigTerm, the main thread will start
       // the shutdown process because of this only the child will quit
-
-
       if (sSigTermCount == 0)
         QTSServerInterface::GetServer()->SetSigTerm();
       sSigTermCount++;
@@ -155,12 +147,8 @@ void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
   }
 }
 
-extern "C" {
-typedef int (*EntryFunction)(int input);
-}
 
-Bool16 RunInForeground();
-Bool16 RunInForeground() {
+bool RunInForeground() {
 
 #if __linux__ || __MacOSX__
   (void) setvbuf(stdout, NULL, _IOLBF, 0);
@@ -170,19 +158,19 @@ Bool16 RunInForeground() {
   return true;
 }
 
-Bool16 RestartServer(char *theXMLFilePath) {
-  Bool16 autoRestart = true;
+bool RestartServer(char *theXMLFilePath) {
+  bool autoRestart = true;
   XMLPrefsParser theXMLParser(theXMLFilePath);
   theXMLParser.Parse();
 
   ContainerRef server = theXMLParser.GetRefForServer();
   ContainerRef pref = theXMLParser.GetPrefRefByName(server, "auto_restart");
-  char *autoStartSetting = NULL;
+  char *autoStartSetting = nullptr;
 
-  if (pref != NULL)
-    autoStartSetting = theXMLParser.GetPrefValueByRef(pref, 0, NULL, NULL);
+  if (pref != nullptr)
+    autoStartSetting = theXMLParser.GetPrefValueByRef(pref, 0, nullptr, nullptr);
 
-  if ((autoStartSetting != NULL) && (::strcmp(autoStartSetting, "false") == 0))
+  if ((autoStartSetting != nullptr) && (::strcmp(autoStartSetting, "false") == 0))
     autoRestart = false;
 
   return autoRestart;
@@ -190,25 +178,25 @@ Bool16 RestartServer(char *theXMLFilePath) {
 
 
 CF_Error CFInit(int argc, char **argv) {
- extern char *optarg;
 
-  //Get Absolute Path
+  // Get Absolute Path
   char sAbsolutePath[MAX_PATH];
-  int cnt = readlink("/proc/self/exe", sAbsolutePath, MAX_PATH);
+  ssize_t cnt = readlink("/proc/self/exe", sAbsolutePath, MAX_PATH);
   if (cnt < 0 || cnt >= MAX_PATH) {
     printf("***Error***\n");
     exit(-1);
   }
-  for (int i = cnt; i >= 0; --i) {
+  for (ssize_t i = cnt; i >= 0; --i) {
     if (sAbsolutePath[i] == '/') {
       sAbsolutePath[i + 1] = '\0';
       break;
     }
   }
-  // on write, don't send signal for SIGPIPE, just set errno to EPIPE
-  // and return -1
+
+  // on write, don't send signal for SIGPIPE, just set errno to EPIPE and return -1
   //signal is a deprecated and potentially dangerous function
   //(void) ::signal(SIGPIPE, SIG_IGN);
+
   struct sigaction act;
 
 #if defined(sun) || defined(i386) || defined(__x86_64__) || defined (__MacOSX__) || defined(__powerpc__) || defined (__osf__) || defined (__sgi_cc__) || defined (__hpux__) || defined (__linux__)
@@ -285,14 +273,16 @@ CF_Error CFInit(int argc, char **argv) {
   //s_printf("sysctl maxSocketBufferSizeVal=%d err=%d\n",maxSocketBufferSizeVal, sysctlErr);
 #endif
 
-  //First thing to do is to read command-line arguments.
+  //
+  // First thing to do is to read command-line arguments.
+
   int ch;
   int thePort = 0; //port can be set on the command line
   int statsUpdateInterval = 0;
   QTSS_ServerState theInitialState = qtssRunningState;
 
-  Bool16 dontFork = false;
-  Bool16 theXMLPrefsExist = true;
+  bool dontFork = false;
+  bool theXMLPrefsExist = true;
   UInt32 debugLevel = 0;
   UInt32 debugOptions = kRunServerDebug_Off;
   static char *sDefaultConfigFilePath = DEFAULTPATHS_ETC_DIR_OLD "edss.conf";
@@ -311,13 +301,10 @@ CF_Error CFInit(int argc, char **argv) {
       case 'D':
         dontFork = RunInForeground();
         debugOptions |= kRunServerDebugDisplay_On;
-
         if (debugLevel == 0)
           debugLevel = 1;
-
         if (statsUpdateInterval == 0)
           statsUpdateInterval = 3;
-
         break;
       case 'Z':
         Assert(optarg != NULL);// this means we didn't declare getopt options correctly or there is a bug in getopt.
@@ -370,19 +357,19 @@ CF_Error CFInit(int argc, char **argv) {
 //    ::exit(0);
 //  }
 
-  XMLPrefsParser theXMLParser(theXMLFilePath);
+  auto *theXMLParser = new XMLPrefsParser(theXMLFilePath);
 
   //
   // Check to see if the XML file exists as a directory. If it does,
   // just bail because we do not want to overwrite a directory
-  if (theXMLParser.DoesFileExistAsDirectory()) {
+  if (theXMLParser->DoesFileExistAsDirectory()) {
     s_printf("Directory located at location where streaming server prefs file should be.\n");
     exit(-1);
   }
 
   //
   // Check to see if we can write to the file
-  if (!theXMLParser.CanWriteFile()) {
+  if (!theXMLParser->CanWriteFile()) {
     s_printf("Cannot write to the streaming server prefs file.\n");
     exit(-1);
   }
@@ -390,26 +377,23 @@ CF_Error CFInit(int argc, char **argv) {
   // If we aren't forced to create a new XML prefs file, whether
   // we do or not depends solely on whether the XML prefs file exists currently.
   if (theXMLPrefsExist)
-    theXMLPrefsExist = theXMLParser.DoesFileExist();
+    theXMLPrefsExist = theXMLParser->DoesFileExist();
 
   if (!theXMLPrefsExist) {
-
     //
     // The XML prefs file doesn't exist, so let's create an old-style
     // prefs source in order to generate a fresh XML prefs file.
 
-    if (theConfigFilePath != NULL) {
-      FilePrefsSource *filePrefsSource = new FilePrefsSource(true); // Allow dups
+    if (theConfigFilePath != nullptr) {
+      auto *filePrefsSource = new FilePrefsSource(true); // Allow dups
 
       if (filePrefsSource->InitFromConfigFile(theConfigFilePath)) {
         s_printf("Generating a new prefs file at %s\n", theXMLFilePath);
       }
 
-      if (GenerateAllXMLPrefs(filePrefsSource, &theXMLParser)) {
-        s_printf(
-            "Fatal Error: Could not create new prefs file at: %s. (%d)\n",
-            theXMLFilePath,
-            CF::Core::Thread::GetErrno());
+      if (GenerateAllXMLPrefs(filePrefsSource, theXMLParser)) {
+        s_printf("Fatal Error: Could not create new prefs file at: %s. (%d)\n",
+                 theXMLFilePath, CF::Core::Thread::GetErrno());
         ::exit(-1);
       }
     }
@@ -418,15 +402,14 @@ CF_Error CFInit(int argc, char **argv) {
 
   //
   // Parse the configs from the XML file
-  int xmlParseErr = theXMLParser.Parse();
+  int xmlParseErr = theXMLParser->Parse();
   if (xmlParseErr) {
     s_printf("Fatal Error: Could not load configuration file at %s. (%d)\n",
-                theXMLFilePath,
-                CF::Core::Thread::GetErrno());
+             theXMLFilePath, CF::Core::Thread::GetErrno());
     ::exit(-1);
   }
 
-  //Unless the command line option is set, fork & daemonize the process at this point
+  // Unless the command line option is set, fork & daemonize the process at this point
   if (!dontFork) {
 #ifdef __sgi__
     // for some reason, this method doesn't work right on IRIX 6.4 unless the first arg
@@ -446,27 +429,26 @@ CF_Error CFInit(int argc, char **argv) {
   }
 
   // Construct a Prefs Source object to get server text messages
-  FilePrefsSource theMessagesSource;
-  theMessagesSource.InitFromConfigFile("qtssmessages.txt");
+  auto *theMessagesSource = new FilePrefsSource();
+  theMessagesSource->InitFromConfigFile("qtssmessages.txt");
+
 
   int status = 0;
   int pid = 0;
   pid_t processID = 0;
 
   if (!dontFork) { // if (fork)
-    //loop until the server exits normally. If the server doesn't exit
-    //normally, then restart it.
-    // normal exit means the following
-    // the child quit
+    // loop until the server exits normally. If the server doesn't exit normally, then restart it.
+    // normal exit means the following the child quit
     do { // fork at least once but stop on the status conditions returned by wait or if autoStart pref is false
       processID = fork();
       Assert(processID >= 0);
       if (processID > 0) { // this is the parent and we have a child
         sChildPID = processID;
         status = 0;
-        while (status == 0) { //loop on wait until status is != 0;
+        while (status == 0) { // loop on wait until status is != 0;
           pid = ::wait(&status);
-          SInt8 exitStatus = (SInt8) WEXITSTATUS(status);
+          auto exitStatus = (SInt8) WEXITSTATUS(status);
           //s_printf("Child Process %d wait exited with pid=%d status=%d exit status=%d\n", processID, pid, status, exitStatus);
 
           if (WIFEXITED(status) && pid > 0 && status != 0) { // child exited with status -2 restart or -1 don't restart
@@ -497,32 +479,38 @@ CF_Error CFInit(int argc, char **argv) {
           //s_printf("child died for unknown reasons parent is exiting\n");
           exit(EXIT_FAILURE);
         }
-      } else if (processID == 0) // must be the child
+      } else if (processID == 0) { // must be the child
         break;
-      else
+      } else {
         exit(EXIT_FAILURE);
-
+      }
 
       //eek. If you auto-restart too fast, you might start the new one before the OS has
       //cleaned up from the old one, resulting in startup errors when you create the new
       //one. Waiting for a second seems to work
       sleep(1);
     } while (RestartServer(theXMLFilePath)); // fork again based on pref if server dies
-    if (processID != 0) //the parent is quitting
+
+    /* 父进程的生命周期到此为止，不会继续向下执行 */
+    if (processID != 0) // the parent is quitting
       exit(EXIT_SUCCESS);
 
+    /* 子进程被 fork 出来后，继续向下执行，进入 CxxFramework 的框架运行环境 */
+    sChildPID = 0;
+
+    // we have to do this again for the child process, because sigaction states
+    // do not span multiple processes.
+    (void) ::sigaction(SIGPIPE, &act, NULL);
+    (void) ::sigaction(SIGHUP, &act, NULL);
+    (void) ::sigaction(SIGINT, &act, NULL);
+    (void) ::sigaction(SIGTERM, &act, NULL);
+    (void) ::sigaction(SIGQUIT, &act, NULL);
   }
-  sChildPID = 0;
-  //we have to do this again for the child process, because sigaction states
-  //do not span multiple processes.
-  (void) ::sigaction(SIGPIPE, &act, NULL);
-  (void) ::sigaction(SIGHUP, &act, NULL);
-  (void) ::sigaction(SIGINT, &act, NULL);
-  (void) ::sigaction(SIGTERM, &act, NULL);
-  (void) ::sigaction(SIGQUIT, &act, NULL);
+
 
 #ifdef __hpux__
-  // Set Priority Type to Real Time, timeslice = 100 milliseconds. Change the timeslice upwards as needed. This keeps the server priority above the playlist broadcaster which is a time-share scheduling type.
+  // Set Priority Type to Real Time, timeslice = 100 milliseconds. Change the timeslice upwards as needed.
+  // This keeps the server priority above the playlist broadcaster which is a time-share scheduling type.
   char commandStr[64];
   s_sprintf(commandStr, "/usr/bin/rtprio -t -%d", (int) getpid());
 #if DEBUG
@@ -532,7 +520,8 @@ CF_Error CFInit(int argc, char **argv) {
 #endif
 
 #ifdef __solaris__
-  // Set Priority Type to Real Time, timeslice = 100 milliseconds. Change the timeslice upwards as needed. This keeps the server priority above the playlist broadcaster which is a time-share scheduling type.
+  // Set Priority Type to Real Time, timeslice = 100 milliseconds. Change the timeslice upwards as needed.
+  // This keeps the server priority above the playlist broadcaster which is a time-share scheduling type.
   char commandStr[64];
   s_sprintf(commandStr, "priocntl -s -c RT -t 10 -i pid %d", (int) getpid());
   (void) ::system(commandStr);
@@ -542,25 +531,24 @@ CF_Error CFInit(int argc, char **argv) {
   (void) ::umask(S_IWGRP|S_IWOTH); // make sure files are opened with default of owner -rw-r-r-
 #endif
 
-  //This function starts, runs, and shuts down the server
-  if (::StartServer(&theXMLParser,
-                    &theMessagesSource,
-                    thePort,
-                    statsUpdateInterval,
-                    theInitialState,
-                    dontFork,
-                    debugLevel,
-                    debugOptions,
-                    sAbsolutePath) != qtssFatalErrorState) {
-    ::RunServer();
-    CleanPid(false);
-    exit(EXIT_SUCCESS);
-  } else
-    exit(-1); //Cant start server don't try again
+  // 创建配置类并注册到CxxFramework环境中
+  EDSS *config = EDSS::StartServer(theXMLParser, theMessagesSource, thePort, statsUpdateInterval, theInitialState,
+                                   dontFork, debugLevel, debugOptions, sAbsolutePath);
+  if (config != nullptr) {
+    CF::CFEnv::Register(config);
+    return CF_NoErr;
+  }
 
-  return CF_NoErr;
+  return CF_FatalError;
 }
 
 CF_Error CFExit(CF_Error exitCode) {
-  return CF_NoErr;
+  EDSS::CleanPid(false);
+  if (exitCode == CF_NoErr) {
+    return EXIT_SUCCESS;
+  } else if (exitCode == CF_FatalError) {
+    return -1; // 当子进程退出返回 -1 时，父进程也随之退出
+  } else {
+    return -2; // 当子进程退出返回 -2 时，父进程重启子进程
+  }
 }

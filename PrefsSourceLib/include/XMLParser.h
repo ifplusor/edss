@@ -35,18 +35,16 @@ class DTDVerifier {
  public:
   virtual bool IsValidSubtag(char *tagName, char *subTagName) = 0;
   virtual bool IsValidAttributeName(char *tagName, char *attrName) = 0;
-  virtual bool IsValidAttributeValue(char *tagName,
-                                     char *attrName,
-                                     char *attrValue) = 0;
+  virtual bool IsValidAttributeValue(char *tagName, char *attrName, char *attrValue) = 0;
   virtual char *GetRequiredAttribute(char *tagName, int index) = 0;
   virtual bool CanHaveValue(char *tagName) = 0;
-  virtual ~DTDVerifier() {};
+  virtual ~DTDVerifier() = default;;
 };
 
 class XMLTag {
  public:
   XMLTag();
-  XMLTag(char *tagName);
+  XMLTag(char const *tagName);
   ~XMLTag();
 
   bool ParseTag(CF::StringParser *parser,
@@ -54,29 +52,26 @@ class XMLTag {
                 char *errorBuffer = NULL,
                 int errorBufferSize = 0);
 
-  char *GetAttributeValue(const char *attrName);
+  char *GetAttributeValue(char const *attrName);
   char *GetValue() { return fValue; }
   char *GetTagName() { return fTag; }
 
   UInt32 GetNumEmbeddedTags() { return fEmbeddedTags.GetLength(); }
 
-  XMLTag *GetEmbeddedTag(const UInt32 index = 0);
-  XMLTag *GetEmbeddedTagByName(const char *tagName, const UInt32 index = 0);
-  XMLTag *GetEmbeddedTagByAttr(const char *attrName,
-                               const char *attrValue,
-                               const UInt32 index = 0);
-  XMLTag *GetEmbeddedTagByNameAndAttr(const char *tagName,
-                                      const char *attrName,
-                                      const char *attrValue,
-                                      const UInt32 index = 0);
+  XMLTag *GetEmbeddedTag(UInt32 index = 0);
+  XMLTag *GetEmbeddedTagByName(char const *tagName, UInt32 index = 0);
+  XMLTag *GetEmbeddedTagByAttr(char const *attrName, char const *attrValue,
+                               UInt32 index = 0);
+  XMLTag *GetEmbeddedTagByNameAndAttr(char const *tagName, char const *attrName,
+                                      char const *attrValue, UInt32 index = 0);
 
-  void AddAttribute(char *attrName, char *attrValue);
-  void RemoveAttribute(char *attrName);
+  void AddAttribute(char const *attrName, char const *attrValue);
+  void RemoveAttribute(char const *attrName);
   void AddEmbeddedTag(XMLTag *tag);
   void RemoveEmbeddedTag(XMLTag *tag);
 
-  void SetTagName(char *name);
-  void SetValue(char *value);
+  void SetTagName(char const *name);
+  void SetValue(char const *value);
 
   void FormatData(CF::ResizeableStringFormatter *formatter, UInt32 indent);
 
@@ -106,20 +101,20 @@ class XMLAttribute {
 
 class XMLParser {
  public:
-  XMLParser(char *inPath, DTDVerifier *verifier = NULL);
-  ~XMLParser();
+  explicit XMLParser(char *inPath, DTDVerifier *verifier=nullptr);
+  virtual ~XMLParser();
 
   // Check for existence, man.
   bool DoesFileExist();
   bool DoesFileExistAsDirectory();
   bool CanWriteFile();
 
-  bool ParseFile(char *errorBuffer = NULL, int errorBufferSize = 0);
+  bool ParseFile(char *errorBuffer=nullptr, int errorBufferSize=0);
 
   XMLTag *GetRootTag() { return fRootTag; }
   void SetRootTag(XMLTag *tag);
 
-  void WriteToFile(char **fileHeader);
+  void WriteToFile(char const **fileHeader);
 
  private:
   XMLTag *fRootTag;

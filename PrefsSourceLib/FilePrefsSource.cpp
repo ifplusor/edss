@@ -48,17 +48,17 @@ class KeyValuePair {
  private:
   friend class FilePrefsSource;
 
-  KeyValuePair(const char *inKey, const char *inValue, KeyValuePair *inNext);
+  KeyValuePair(char const *inKey, char const *inValue, KeyValuePair *inNext);
   ~KeyValuePair();
 
   char *fKey;
   char *fValue;
   KeyValuePair *fNext;
 
-  void ResetValue(const char *inValue);
+  void ResetValue(char const *inValue);
 };
 
-KeyValuePair::KeyValuePair(const char *inKey, const char *inValue, KeyValuePair *inNext)
+KeyValuePair::KeyValuePair(char const *inKey, char const *inValue, KeyValuePair *inNext)
     : fKey(nullptr), fValue(nullptr), fNext(nullptr) {
   fKey = new char[::strlen(inKey) + 1];
   ::strcpy(fKey, inKey);
@@ -72,31 +72,31 @@ KeyValuePair::~KeyValuePair() {
   delete[] fValue;
 }
 
-void KeyValuePair::ResetValue(const char *inValue) {
+void KeyValuePair::ResetValue(char const *inValue) {
   delete[] fValue;
   fValue = new char[::strlen(inValue) + 1];
   ::strcpy(fValue, inValue);
 }
 
 FilePrefsSource::FilePrefsSource(bool allowDuplicates)
-    : fKeyValueList(NULL),
+    : fKeyValueList(nullptr),
       fNumKeys(0),
       fAllowDuplicates(allowDuplicates) {
 }
 
 FilePrefsSource::~FilePrefsSource() {
-  while (fKeyValueList != NULL) {
+  while (fKeyValueList != nullptr) {
     KeyValuePair *keyValue = fKeyValueList;
     fKeyValueList = fKeyValueList->fNext;
     delete keyValue;
   }
 }
 
-int FilePrefsSource::GetValue(const char *inKey, char *ioValue) {
+int FilePrefsSource::GetValue(char const *inKey, char *ioValue) {
   return (this->FindValue(inKey, ioValue) != nullptr);
 }
 
-int FilePrefsSource::GetValueByIndex(const char *inKey, UInt32 inIndex, char *ioValue) {
+int FilePrefsSource::GetValueByIndex(char const *inKey, UInt32 inIndex, char *ioValue) {
   KeyValuePair *thePair = this->FindValue(inKey, ioValue, inIndex);
   return thePair != nullptr;
 }
@@ -104,26 +104,26 @@ int FilePrefsSource::GetValueByIndex(const char *inKey, UInt32 inIndex, char *io
 char *FilePrefsSource::GetValueAtIndex(UInt32 inIndex) {
   // Iterate through the queue until we have the right entry
   KeyValuePair *thePair = fKeyValueList;
-  while ((thePair != NULL) && (inIndex-- > 0))
+  while ((thePair != nullptr) && (inIndex-- > 0))
     thePair = thePair->fNext;
 
-  if (thePair != NULL)
+  if (thePair != nullptr)
     return thePair->fValue;
-  return NULL;
+  return nullptr;
 }
 
 char *FilePrefsSource::GetKeyAtIndex(UInt32 inIndex) {
   // Iterate through the queue until we have the right entry
   KeyValuePair *thePair = fKeyValueList;
-  while ((thePair != NULL) && (inIndex-- > 0))
+  while ((thePair != nullptr) && (inIndex-- > 0))
     thePair = thePair->fNext;
 
-  if (thePair != NULL)
+  if (thePair != nullptr)
     return thePair->fKey;
-  return NULL;
+  return nullptr;
 }
 
-void FilePrefsSource::SetValue(const char *inKey, const char *inValue) {
+void FilePrefsSource::SetValue(char const *inKey, char const *inValue) {
   KeyValuePair *keyValue = nullptr;
 
   // If the key/value already exists update the value.
@@ -136,13 +136,13 @@ void FilePrefsSource::SetValue(const char *inKey, const char *inValue) {
   }
 }
 
-bool FilePrefsSource::FilePrefsConfigSetter(const char *paramName, const char *paramValue[], void *userData) {
+bool FilePrefsSource::FilePrefsConfigSetter(char const *paramName, char const *paramValue[], void *userData) {
   /*
      static callback routine for ParseConfigFile
    */
   int valueIndex = 0;
 
-  FilePrefsSource *theFilePrefs = (FilePrefsSource *) userData;
+  auto *theFilePrefs = (FilePrefsSource *) userData;
 
   Assert(theFilePrefs);
   Assert(paramName);
@@ -150,7 +150,7 @@ bool FilePrefsSource::FilePrefsConfigSetter(const char *paramName, const char *p
 
 
   // multiple values are passed in the paramValue array as distinct strs
-  while (paramValue[valueIndex] != NULL) {
+  while (paramValue[valueIndex] != nullptr) {
     //s_printf("Adding config setting  <key=\"%s\", value=\"%s\">\n", paramName,  paramValue[valueIndex] );
     theFilePrefs->SetValue(paramName, paramValue[valueIndex]);
     valueIndex++;
@@ -159,7 +159,7 @@ bool FilePrefsSource::FilePrefsConfigSetter(const char *paramName, const char *p
   return false; // always succeeds
 }
 
-int FilePrefsSource::InitFromConfigFile(const char *configFilePath) {
+int FilePrefsSource::InitFromConfigFile(char const *configFilePath) {
   /*
      load config from specified file.
      return non-zero in the event of significant error(s).
@@ -168,13 +168,13 @@ int FilePrefsSource::InitFromConfigFile(const char *configFilePath) {
   return ::ParseConfigFile(true, configFilePath, FilePrefsConfigSetter, this);
 }
 
-void FilePrefsSource::DeleteValue(const char *inKey) {
+void FilePrefsSource::DeleteValue(char const *inKey) {
   KeyValuePair *keyValue = fKeyValueList;
-  KeyValuePair *prevKeyValue = NULL;
+  KeyValuePair *prevKeyValue = nullptr;
 
-  while (keyValue != NULL) {
+  while (keyValue != nullptr) {
     if (::strcmp(inKey, keyValue->fKey) == 0) {
-      if (prevKeyValue != NULL) {
+      if (prevKeyValue != nullptr) {
         prevKeyValue->fNext = keyValue->fNext;
         delete keyValue;
       } else {
@@ -189,17 +189,17 @@ void FilePrefsSource::DeleteValue(const char *inKey) {
   }
 }
 
-void FilePrefsSource::WriteToConfigFile(const char *configFilePath) {
+void FilePrefsSource::WriteToConfigFile(char const *configFilePath) {
   int err = 0;
   FILE *fileDesc = ::fopen(configFilePath, "w");
 
-  if (fileDesc != NULL) {
+  if (fileDesc != nullptr) {
     err = ::fseek(fileDesc, 0, SEEK_END);
     Assert(err == 0);
 
     KeyValuePair *keyValue = fKeyValueList;
 
-    while (keyValue != NULL) {
+    while (keyValue != nullptr) {
       (void) s_fprintf(fileDesc, "%s   %s\n\n", keyValue->fKey, keyValue->fValue);
 
       keyValue = keyValue->fNext;
@@ -210,7 +210,7 @@ void FilePrefsSource::WriteToConfigFile(const char *configFilePath) {
   }
 }
 
-KeyValuePair *FilePrefsSource::FindValue(const char *inKey, char *ioValue, UInt32 index) {
+KeyValuePair *FilePrefsSource::FindValue(char const *inKey, char *ioValue, UInt32 index) {
   KeyValuePair *keyValue = fKeyValueList;
   UInt32 foundIndex = 0;
 

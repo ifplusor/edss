@@ -558,7 +558,7 @@ void QTSSDictionary::SetEmptyVal(QTSS_AttributeID inAttrID, void *inBuf, UInt32 
 #endif
 }
 
-QTSS_Error QTSSDictionary::AddInstanceAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
+QTSS_Error QTSSDictionary::AddInstanceAttribute(char const *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
                                                 QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission) {
   if ((fMap != NULL) && !fMap->InstanceAttrsAllowed())
     return QTSS_InstanceAttrsNotAllowed;
@@ -674,7 +674,7 @@ QTSS_Error QTSSDictionary::GetAttrInfoByID(QTSS_AttributeID inAttrID, QTSSAttrIn
   return QTSS_AttrDoesntExist;
 }
 
-QTSS_Error QTSSDictionary::GetAttrInfoByName(const char *inAttrName, QTSSAttrInfoDict **outAttrInfoDict) {
+QTSS_Error QTSSDictionary::GetAttrInfoByName(char const *inAttrName, QTSSAttrInfoDict **outAttrInfoDict) {
   QTSS_Error theErr = QTSS_AttrDoesntExist;
   if (outAttrInfoDict == NULL)
     return QTSS_BadArgument;
@@ -773,7 +773,7 @@ QTSSDictionaryMap::QTSSDictionaryMap(UInt32 inNumReservedAttrs, UInt32 inFlags)
   ::memset(fAttrArray, 0, sizeof(QTSSAttrInfoDict *) * fAttrArraySize);
 }
 
-QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
+QTSS_Error QTSSDictionaryMap::AddAttribute(char const *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
                                            QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission) {
   if (inAttrName == NULL || ::strlen(inAttrName) > QTSS_MAX_ATTRIBUTE_NAME_SIZE)
     return QTSS_BadArgument;
@@ -836,7 +836,7 @@ QTSS_Error QTSSDictionaryMap::AddAttribute(const char *inAttrName, QTSS_AttrFunc
   return QTSS_NoErr;
 }
 
-void QTSSDictionaryMap::SetAttribute(QTSS_AttributeID inID, const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
+void QTSSDictionaryMap::SetAttribute(QTSS_AttributeID inID, char const *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
                                      QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission) {
 
   UInt32 theIndex = static_cast<UInt32>(QTSSDictionaryMap::ConvertAttrIDToArrayIndex(inID));
@@ -910,7 +910,7 @@ QTSS_Error QTSSDictionaryMap::UnRemoveAttribute(QTSS_AttributeID inAttrID) {
 }
 
 QTSS_Error QTSSDictionaryMap::
-GetAttrInfoByName(const char *inAttrName, QTSSAttrInfoDict **outAttrInfoObject, bool returnRemovedAttr) {
+GetAttrInfoByName(char const *inAttrName, QTSSAttrInfoDict **outAttrInfoObject, bool returnRemovedAttr) {
   if (outAttrInfoObject == NULL)
     return QTSS_BadArgument;
 
@@ -978,7 +978,7 @@ QTSS_Error QTSSDictionaryMap::GetAttrInfoByIndex(UInt32 inIndex,
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSDictionaryMap::GetAttrID(const char *inAttrName, QTSS_AttributeID *outID) {
+QTSS_Error QTSSDictionaryMap::GetAttrID(char const *inAttrName, QTSS_AttributeID *outID) {
   if (outID == NULL)
     return QTSS_BadArgument;
 

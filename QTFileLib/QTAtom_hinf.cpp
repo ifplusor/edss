@@ -48,21 +48,21 @@
 // -------------------------------------
 // Constants
 //
-const char *hinfAtom_TotalRTPBytes64 = ":trpy";
-const char *hinfAtom_TotalRTPBytes32 = ":totl";
-const char *hinfAtom_TotalRTPPackets64 = ":nump";
-const char *hinfAtom_TotalRTPPackets32 = ":npck";
-const char *hinfAtom_TotalPayloadBytes64 = ":tpyl";
-const char *hinfAtom_TotalPayloadBytes32 = ":tpay";
-const char *hinfAtom_MaxDataRate64 = ":maxr";
-const char *hinfAtom_TotalMediaBytes64 = ":dmed";
-const char *hinfAtom_TotalImmedBytes64 = ":dimm";
-const char *hinfAtom_TotalRepeatBytes64 = ":drep";
-const char *hinfAtom_MinTransTime32 = ":tmin";
-const char *hinfAtom_MaxTransTime32 = ":tmax";
-const char *hinfAtom_MaxPacketSize32 = ":pmax";
-const char *hinfAtom_MaxPacketDuration32 = ":dmax";
-const char *hinfAtom_PayloadType = ":payt";
+char const *hinfAtom_TotalRTPBytes64 = ":trpy";
+char const *hinfAtom_TotalRTPBytes32 = ":totl";
+char const *hinfAtom_TotalRTPPackets64 = ":nump";
+char const *hinfAtom_TotalRTPPackets32 = ":npck";
+char const *hinfAtom_TotalPayloadBytes64 = ":tpyl";
+char const *hinfAtom_TotalPayloadBytes32 = ":tpay";
+char const *hinfAtom_MaxDataRate64 = ":maxr";
+char const *hinfAtom_TotalMediaBytes64 = ":dmed";
+char const *hinfAtom_TotalImmedBytes64 = ":dimm";
+char const *hinfAtom_TotalRepeatBytes64 = ":drep";
+char const *hinfAtom_MinTransTime32 = ":tmin";
+char const *hinfAtom_MaxTransTime32 = ":tmax";
+char const *hinfAtom_MaxPacketSize32 = ":pmax";
+char const *hinfAtom_MaxPacketDuration32 = ":dmax";
+char const *hinfAtom_PayloadType = ":payt";
 /*
 'trpy' 8 bytes The total number of bytes that will be sent,
 including 12-byte RTP headers, but not including

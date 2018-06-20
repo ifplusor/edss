@@ -22,48 +22,59 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-
-/*
- * defaultPaths.h - define the default paths to hardcode into the executables
- * 
- * IMPORTANT NOTE : The trailering directory separators are required on all 
- *                  DEFAULTPATHS_*_DIR* defines
+/**
+ * @file defaultPaths.h
  *
- * Contributed by: Peter Bray
+ * define the default paths to hardcode into the executables
+ *
+ * @note The trailering directory separators are required on all
+ *       DEFAULTPATHS_*_DIR* defines
+ *
+ * @author Peter Bray
  */
+
+#ifndef _QTSS_DEFAULT_PATHS_
+#define _QTSS_DEFAULT_PATHS_
+
+
+#include <CF/Platform.h>
+
 
 #ifdef __Win32__
 
-# define DEFAULTPATHS_DIRECTORY_SEPARATOR	"\\"
+#define DEFAULTPATHS_DIRECTORY_SEPARATOR    "\\"
 
-# define DEFAULTPATHS_ETC_DIR			"c:\\Program Files\\EasyDarwin\\"
-# define DEFAULTPATHS_ETC_DIR_OLD		"c:\\Program Files\\EasyDarwin\\"
-# define DEFAULTPATHS_SSM_DIR			"c:\\Program Files\\EasyDarwin\\QTSSModules\\"
-# define DEFAULTPATHS_LOG_DIR			"c:\\Program Files\\EasyDarwin\\Logs\\"
-# define DEFAULTPATHS_MOVIES_DIR        "c:\\Program Files\\EasyDarwin\\Movies\\"
-# define DEFAULTPATHS_PID_FILE          ""
-# define DEFAULTPATHS_PID_DIR			""
+#define DEFAULTPATHS_ETC_DIR            "c:\\Program Files\\EDSS\\"
+#define DEFAULTPATHS_ETC_DIR_OLD        "c:\\Program Files\\EDSS\\"
+#define DEFAULTPATHS_SSM_DIR            "c:\\Program Files\\EDSS\\QTSSModules\\"
+#define DEFAULTPATHS_LOG_DIR            "c:\\Program Files\\EDSS\\Logs\\"
+#define DEFAULTPATHS_MOVIES_DIR         "c:\\Program Files\\EDSS\\Movies\\"
+#define DEFAULTPATHS_PID_FILE           ""
+#define DEFAULTPATHS_PID_DIR            ""
 
 #elif __MacOSX__
 
-# define DEFAULTPATHS_DIRECTORY_SEPARATOR	"/"
+#define DEFAULTPATHS_DIRECTORY_SEPARATOR    "/"
 
-# define DEFAULTPATHS_ETC_DIR			"/Library/EasyDarwin/Config/"
-# define DEFAULTPATHS_ETC_DIR_OLD		"/etc/"
-# define DEFAULTPATHS_SSM_DIR			"/Library/EasyDarwin/Modules/"
-# define DEFAULTPATHS_LOG_DIR			"/Library/EasyDarwin/Logs/"
-# define DEFAULTPATHS_MOVIES_DIR        "/Library/EasyDarwin/Movies/"
-# define DEFAULTPATHS_PID_DIR           "/var/run/"
+#define DEFAULTPATHS_ETC_DIR            "/Library/EDSS/Config/"
+#define DEFAULTPATHS_ETC_DIR_OLD        "/etc/"
+#define DEFAULTPATHS_SSM_DIR            "/Library/EDSS/Modules/"
+#define DEFAULTPATHS_LOG_DIR            "/Library/EDSS/Logs/"
+#define DEFAULTPATHS_MOVIES_DIR         "/Library/EDSS/Movies/"
+#define DEFAULTPATHS_PID_DIR            "/var/run/"
 
 #else
 
-# define DEFAULTPATHS_DIRECTORY_SEPARATOR    "/"
+#define DEFAULTPATHS_DIRECTORY_SEPARATOR    "/"
 
-# define DEFAULTPATHS_ETC_DIR            "/etc/streaming/"
-# define DEFAULTPATHS_ETC_DIR_OLD        "/etc/"
-# define DEFAULTPATHS_SSM_DIR            "/usr/local/sbin/EasyDarwinModules/"
-# define DEFAULTPATHS_LOG_DIR            "/var/streaming/logs/"
-# define DEFAULTPATHS_MOVIES_DIR        "/usr/local/movies/"
-# define DEFAULTPATHS_PID_DIR           "/var/run/"
+#define DEFAULTPATHS_ETC_DIR            "/etc/edss/"
+#define DEFAULTPATHS_ETC_DIR_OLD        "/etc/"
+#define DEFAULTPATHS_SSM_DIR            "/usr/local/sbin/EDSSModules/"
+#define DEFAULTPATHS_LOG_DIR            "/var/edss/logs/"
+#define DEFAULTPATHS_MOVIES_DIR         "/usr/local/movies/"
+#define DEFAULTPATHS_PID_DIR            "/var/run/"
 
 #endif
+
+
+#endif // _QTSS_DEFAULT_PATHS_

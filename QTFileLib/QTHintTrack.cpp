@@ -878,8 +878,7 @@ QTTrack::ErrorCode QTHintTrack::GetSampleData(QTHintTrack_HintTrackControlBlock 
   else {   //  trackRefIndex != -1
 
     // We're getting data out of a media track..
-    if (kUnknown == fHintType || kOptimized
-        == fHintType) // if uninitialized or self-referencing then reset
+    if (kUnknown == fHintType || kOptimized == fHintType) // if uninitialized or self-referencing then reset
       fHintType = kUnoptimized;
 
     //      s_printf("media track sample = %" _S32BITARG_ " \n", mediaSampleNumber);
@@ -906,8 +905,7 @@ QTTrack::ErrorCode QTHintTrack::GetSampleData(QTHintTrack_HintTrackControlBlock 
         return errInvalidQuickTimeFile;
     }
 
-    if (htcb->fMediaTrackRefIndex
-        == -2) // initial value : -1 is hint track and 0 is first index so use -2 as uninitialized
+    if (htcb->fMediaTrackRefIndex == -2) // initial value : -1 is hint track and 0 is first index so use -2 as uninitialized
     {
       htcb->fMediaTrackSTSC_STCB = new QTAtom_stsc_SampleTableControlBlock();
       htcb->fMediaTrackRefIndex = trackRefIndex;

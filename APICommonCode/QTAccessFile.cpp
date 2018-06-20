@@ -95,7 +95,7 @@ void QTAccessFile::Initialize() { // called by server at initialize never call a
   }
 }
 
-void QTAccessFile::SetAccessFileName(const char *inQTAccessFileName) {
+void QTAccessFile::SetAccessFileName(char const *inQTAccessFileName) {
   Core::MutexLocker locker(sAccessFileMutex);
   if (NULL == inQTAccessFileName) {
     Assert(NULL != inQTAccessFileName);
@@ -332,8 +332,8 @@ bool QTAccessFile::AccessAllowed(char *userName,
   return false; // user or group not found
 }
 
-char *QTAccessFile::GetAccessFile_Copy(const char *movieRootDir,
-                                       const char *dirPath) {
+char *QTAccessFile::GetAccessFile_Copy(char const *movieRootDir,
+                                       char const *dirPath) {
   Core::MutexLocker locker(sAccessFileMutex);
 
   char *currentDir = NULL;
@@ -675,8 +675,8 @@ QTSS_Error QTAccessFile::AuthorizeRequest(QTSS_StandardRTSP_Params *inParams,
   return theErr;
 }
 
-bool DSAccessFile::CheckGroupMembership(const char *inUsername,
-                                        const char *inGroupName) {
+bool DSAccessFile::CheckGroupMembership(char const *inUsername,
+                                        char const *inGroupName) {
 #ifdef __MacOSX__
   // In Tiger, group membership is painfully simple: we ask memberd for it!
   struct passwd	*user		= NULL;

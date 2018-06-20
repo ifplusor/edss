@@ -73,17 +73,9 @@ class QTSSPrefs : public QTSSDictionary {
   //
   // Specify inNumValues if you wish to restrict the number of values retrieved
   // from the text file to a certain number, otherwise specify 0.
-  void SetPrefValuesFromFile(ContainerRef container,
-                             UInt32 inPrefIndex,
-                             QTSS_AttributeID inAttrID,
-                             UInt32 inNumValues = 0);
-  void SetPrefValuesFromFileWithRef(ContainerRef pref,
-                                    QTSS_AttributeID inAttrID,
-                                    UInt32 inNumValues = 0);
-  void SetObjectValuesFromFile(ContainerRef pref,
-                               QTSS_AttributeID inAttrID,
-                               UInt32 inNumValues,
-                               char *prefName);
+  void SetPrefValuesFromFile(ContainerRef container, UInt32 inPrefIndex, QTSS_AttributeID inAttrID, UInt32 inNumValues = 0);
+  void SetPrefValuesFromFileWithRef(ContainerRef pref, QTSS_AttributeID inAttrID, UInt32 inNumValues = 0);
+  void SetObjectValuesFromFile(ContainerRef pref, QTSS_AttributeID inAttrID, UInt32 inNumValues, char const *prefName);
 
   //
   // SET PREF VALUE
@@ -118,7 +110,7 @@ class QTSSPrefs : public QTSSDictionary {
 
  private:
 
-  QTSS_AttributeID addPrefAttribute(const char *inAttrName,
+  QTSS_AttributeID addPrefAttribute(char const *inAttrName,
                                     QTSS_AttrDataType inDataType);
 
 };

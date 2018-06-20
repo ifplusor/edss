@@ -37,7 +37,7 @@
 
 #include "RCFSourceInfo.h"
 
-void RCFSourceInfo::SetName(const char *inName) {
+void RCFSourceInfo::SetName(char const *inName) {
   if (inName != NULL) {
     fName = new char[::strlen(inName) + 1];
     ::strcpy(fName, inName);

@@ -75,8 +75,8 @@ AccessChecker::~AccessChecker() {
 // Allocates memory for the fUsersFilePath and fGroupsFilePath
 // Before this call is made, make sure that the previous memory allocated is deleted
 // or that memory will be orphaned!
-void AccessChecker::UpdateFilePaths(const char *inUsersFilePath,
-                                    const char *inGroupsFilePath) {
+void AccessChecker::UpdateFilePaths(char const *inUsersFilePath,
+                                    char const *inGroupsFilePath) {
   // Assert input arguments are not null
   Assert(inUsersFilePath != NULL);
   Assert(inGroupsFilePath != NULL);
@@ -396,8 +396,8 @@ UInt32 AccessChecker::UpdateUserProfiles() {
 }
 
 // No memory is allocated
-bool AccessChecker::HaveFilePathsChanged(const char *inUsersFilePath,
-                                         const char *inGroupsFilePath) {
+bool AccessChecker::HaveFilePathsChanged(char const *inUsersFilePath,
+                                         char const *inGroupsFilePath) {
   bool changed = true;
   if ((inUsersFilePath != NULL) && (inGroupsFilePath != NULL)
       && (fUsersFilePath != NULL) && (fGroupsFilePath != NULL)) {

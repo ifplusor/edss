@@ -99,13 +99,13 @@ class QTFile {
 
   //
   // Open a movie file and generate the atom table of contents.
-  ErrorCode Open(const char *MoviePath);
+  ErrorCode Open(char const *MoviePath);
 
   CF::Core::Mutex *GetMutex() { return fReadMutex; }
 
   //
   // Table of Contents functions.
-  bool FindTOCEntry(const char *AtomPath,
+  bool FindTOCEntry(char const *AtomPath,
                     AtomTOCEntry **TOCEntry,
                     AtomTOCEntry *LastFoundTOCEntry = NULL);
 

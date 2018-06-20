@@ -29,8 +29,7 @@ set(HEADER_FILES
         include/QTSServerInterface.h
         include/QTSServer.h
         GenerateXMLPrefs.h
-        RunServer.h)
-#        EDSS.h)
+        EDSS.h)
 
 set(SOURCE_FILES
         RTSPRequestStream.cpp
@@ -60,15 +59,13 @@ set(SOURCE_FILES
         QTSSCallbacks.cpp
         QTSServer.cpp
         GenerateXMLPrefs.cpp
-        RunServer.cpp
         EDSS.cpp)
 
-if ((${CONF_PLATFORM} STREQUAL "Win32")
-        OR (${CONF_PLATFORM} STREQUAL "MinGW"))
+if ((${CONF_PLATFORM} STREQUAL "Win32") OR (${CONF_PLATFORM} STREQUAL "MinGW"))
     set(SOURCE_FILES ${SOURCE_FILES} win32main.cpp)
-else()
+else ()
     set(SOURCE_FILES ${SOURCE_FILES} main.cpp)
-endif()
+endif ()
 
 
 add_executable(edss2

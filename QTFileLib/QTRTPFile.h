@@ -146,7 +146,7 @@ class QTRTPFile {
 
   //
   // Initialization functions.
-  virtual ErrorCode Initialize(const char *FilePath);
+  virtual ErrorCode Initialize(char const *FilePath);
 
   void AllocateSharedBuffers(UInt32 inUnitSizeInK,
                              UInt32 inBufferInc,
@@ -248,15 +248,15 @@ class QTRTPFile {
   static CF::Core::Mutex *gFileCacheMutex, *gFileCacheAddMutex;
   static RTPFileCacheEntry *gFirstFileCacheEntry;
 
-  static ErrorCode new_QTFile(const char *FilePath,
+  static ErrorCode new_QTFile(char const *FilePath,
                               QTFile **File,
                               bool Debug = false,
                               bool DeepDebug = false);
   static void delete_QTFile(QTFile *File);
 
-  static void AddFileToCache(const char *inFilename,
+  static void AddFileToCache(char const *inFilename,
                              QTRTPFile::RTPFileCacheEntry **NewListEntry);
-  static bool FindAndRefcountFileCacheEntry(const char *inFilename,
+  static bool FindAndRefcountFileCacheEntry(char const *inFilename,
                                             QTRTPFile::RTPFileCacheEntry **CacheEntry);
 
   //

@@ -116,7 +116,7 @@ class RTPPacketResender {
   void                SetLog(StrPtrLen *logname);
   UInt32              SpillGuts(UInt32 inBytesSentThisInterval);
   void                LogClose(SInt64 inTimeSpentInFlowControl);
-  void                logprintf(const char * format, ...);
+  void                logprintf(char const * format, ...);
 
 #else
 

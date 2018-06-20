@@ -47,8 +47,8 @@ class NetInfoPrefsSource : public PrefsSource {
   NetInfoPrefsSource();
   virtual ~NetInfoPrefsSource() {}
 
-  virtual int GetValue(const char *inKey, char *ioValue);
-  virtual int GetValueByIndex(const char *inKey, UInt32 inIndex, char *ioValue);
+  virtual int GetValue(char const *inKey, char *ioValue);
+  virtual int GetValueByIndex(char const *inKey, UInt32 inIndex, char *ioValue);
 
   void SetValue(char *inKey, char *inValue);
   void SetValueByIndex(char *inKey, char *inValue, UInt32 inIndex);

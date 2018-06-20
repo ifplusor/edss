@@ -63,7 +63,7 @@ class QTSServer : public QTSServerInterface {
   // because one of its actions is to change the server to the right UID / GID.
   // Threads will only inherit these if they are created afterwards.
   bool Initialize(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
-                  bool createListeners, const char *inAbsolutePath);
+                  bool createListeners, char const *inAbsolutePath);
 
   //
   // InitModules
@@ -118,7 +118,7 @@ class QTSServer : public QTSServerInterface {
   // GLOBAL TASKS
   RTCPTask *fRTCPTask{};
   RTPStatsUpdaterTask *fStatsTask{};
-  static const char *sPortPrefString;
+  static char const *sPortPrefString;
   static XMLPrefsParser *sPrefsSource;
   static PrefsSource *sMessagesSource;
 

@@ -3262,7 +3262,7 @@ QTSS_Error QTSS_RemoveInstanceAttribute(QTSS_Object inObject, QTSS_AttributeID i
 //
 //  Returns:    QTSS_NoErr
 //              QTSS_BadArgument: Bad argument
-QTSS_Error QTSS_IDForAttr(QTSS_ObjectType inObjectType, const char *inAttributeName, QTSS_AttributeID *outID);
+QTSS_Error QTSS_IDForAttr(QTSS_ObjectType inObjectType, char const *inAttributeName, QTSS_AttributeID *outID);
 
 /********************************************************************/
 //  QTSS_GetAttrInfoByID
@@ -3347,7 +3347,7 @@ QTSS_Error QTSS_GetValueAsString(QTSS_Object inObject, QTSS_AttributeID inID, UI
 //
 //  Returns:    QTSS_NoErr
 //              QTSS_BadArgument
-QTSS_Error QTSS_TypeStringToType(const char *inTypeString, QTSS_AttrDataType *outType);
+QTSS_Error QTSS_TypeStringToType(char const *inTypeString, QTSS_AttrDataType *outType);
 QTSS_Error QTSS_TypeToTypeString(const QTSS_AttrDataType inType, char **outTypeString);
 
 
@@ -3370,7 +3370,7 @@ QTSS_Error QTSS_TypeToTypeString(const QTSS_AttrDataType inType, char **outTypeS
 //
 //  Returns:    QTSS_NoErr
 //              QTSS_BadArgument: Bad argument
-QTSS_Error QTSS_StringToValue(const char *inValueAsString, const QTSS_AttrDataType inType, void *ioBuffer, UInt32 *ioBufSize);
+QTSS_Error QTSS_StringToValue(char const *inValueAsString, const QTSS_AttrDataType inType, void *ioBuffer, UInt32 *ioBufSize);
 QTSS_Error QTSS_ValueToString(const void *inValue, const UInt32 inValueLen, const QTSS_AttrDataType inType, char **outString);
 
 /**
@@ -3544,7 +3544,7 @@ typedef QTSS_Error (*QTSS_ServiceFunctionPtr)(QTSS_ServiceFunctionArgsPtr);
 //  Returns:    QTSS_NoErr
 //              QTSS_OutOfState: If this function isn't being called from the Register role
 //              QTSS_BadArgument:   Service name too long, or NULL arguments.
-QTSS_Error QTSS_AddService(const char *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr);
+QTSS_Error QTSS_AddService(char const *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr);
 
 
 /********************************************************************/
@@ -3556,7 +3556,7 @@ QTSS_Error QTSS_AddService(const char *inServiceName, QTSS_ServiceFunctionPtr in
 //
 //  Returns:    QTSS_NoErr
 //              QTSS_BadArgument: Bad argument
-QTSS_Error QTSS_IDForService(const char *inTag, QTSS_ServiceID *outID);
+QTSS_Error QTSS_IDForService(char const *inTag, QTSS_ServiceID *outID);
 
 /********************************************************************/
 //  QTSS_DoService
@@ -3595,7 +3595,7 @@ QTSS_Error QTSS_SendRTSPHeaders(QTSS_RTSPRequestObject inRef);
 //
 //  Returns:    QTSS_NoErr
 //              QTSS_BadArgument: Bad argument
-QTSS_Error QTSS_AppendRTSPHeader(QTSS_RTSPRequestObject inRef, QTSS_RTSPHeader inHeader, const char *inValue, UInt32 inValueLen);
+QTSS_Error QTSS_AppendRTSPHeader(QTSS_RTSPRequestObject inRef, QTSS_RTSPHeader inHeader, char const *inValue, UInt32 inValueLen);
 
 
 /*****************************************/
@@ -3836,7 +3836,7 @@ QTSS_Error QTSS_GlobalUnLock();
  * @return QTSS_NoErr
  * @return QTSS_BadArgument  if any of the input arguments are null
  */
-QTSS_Error QTSS_Authenticate(const char *inAuthUserName, const char *inAuthResourceLocalPath, const char *inAuthMoviesDir,
+QTSS_Error QTSS_Authenticate(char const *inAuthUserName, char const *inAuthResourceLocalPath, char const *inAuthMoviesDir,
                              QTSS_ActionFlags inAuthRequestAction, QTSS_AuthScheme inAuthScheme, QTSS_RTSPRequestObject ioAuthRequestObject);
 
 /**
@@ -3860,7 +3860,7 @@ void *Easy_GetRTSPPushSessions();
 
 // Legacy routines
 // QTSS_AddAttribute has been replaced by QTSS_AddStaticAttribute
-QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inObjectType, const char* inAttributeName, void* inUnused);
+QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inObjectType, char const* inAttributeName, void* inUnused);
 
 #endif
 

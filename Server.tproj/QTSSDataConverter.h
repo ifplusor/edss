@@ -41,7 +41,7 @@ class QTSSDataConverter {
 
   //
   // This function converts a type string, eg, "UInt32" to the enum, qtssAttrDataTypeUInt32
-  static QTSS_AttrDataType TypeStringToType(char *inTypeString);
+  static QTSS_AttrDataType TypeStringToType(char const *inTypeString);
 
   //
   // This function does the opposite conversion

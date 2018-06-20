@@ -57,7 +57,7 @@ enum ni_parse_status
 ni_parse_server_tag(char *, struct sockaddr_in *, char **);
 
 /* returns an error string for the input status */
-const char *ni_parse_error_string(enum ni_parse_status);
+char const *ni_parse_error_string(enum ni_parse_status);
 
 /* first arg is the name of the calling program (argv[0]) */
 /* second arg is the domain name (input) */

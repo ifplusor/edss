@@ -41,26 +41,25 @@
 static const CF::StrPtrLen kEnabledStr("true");
 static const CF::StrPtrLen kDisabledStr("false");
 
-static char *kDataTypeStrings[] =
-    {
-        "Unknown",
-        "CharArray",
-        "bool",
-        "SInt16",
-        "UInt16",
-        "SInt32",
-        "UInt32",
-        "SInt64",
-        "UInt64",
-        "QTSS_Object",
-        "QTSS_StreamRef",
-        "Float32",
-        "Float64",
-        "VoidPointer",
-        "QTSS_TimeVal"
-    };
+static char *kDataTypeStrings[] = {
+    "Unknown",
+    "CharArray",
+    "bool",
+    "SInt16",
+    "UInt16",
+    "SInt32",
+    "UInt32",
+    "SInt64",
+    "UInt64",
+    "QTSS_Object",
+    "QTSS_StreamRef",
+    "Float32",
+    "Float64",
+    "VoidPointer",
+    "QTSS_TimeVal"
+};
 
-static const char *kHEXChars = {"0123456789ABCDEF"};
+static char const *kHEXChars = {"0123456789ABCDEF"};
 
 static const UInt8 sCharToNums[] =
     {
@@ -98,11 +97,10 @@ char *QTSSDataConverter::TypeToTypeString(QTSS_AttrDataType inType) {
   return kDataTypeStrings[qtssAttrDataTypeUnknown];
 }
 
-QTSS_AttrDataType QTSSDataConverter::TypeStringToType(char *inTypeString) {
+QTSS_AttrDataType QTSSDataConverter::TypeStringToType(char const *inTypeString) {
   for (UInt32 x = 0; x < qtssAttrDataTypeNumTypes; x++) {
-    CF::StrPtrLen theTypeStrPtr(inTypeString);
-    if (theTypeStrPtr.EqualIgnoreCase(kDataTypeStrings[x],
-                                      ::strlen(kDataTypeStrings[x])))
+    CF::StrPtrLen theTypeStrPtr((char*) inTypeString);
+    if (theTypeStrPtr.EqualIgnoreCase(kDataTypeStrings[x]))
       return x;
   }
   return qtssAttrDataTypeUnknown;

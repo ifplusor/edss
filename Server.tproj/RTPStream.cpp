@@ -710,7 +710,7 @@ void RTPStream::UDPMonitorWrite(void *thePacketData, UInt32 inLen, bool isRTCP) 
     sin.sin_port = /*(in_port_t)*/ htons(fMonitorAudioDestPort + RTCPportOffset);
 
   if (sin.sin_port != 0) {
-    int result = ::sendto(fMonitorSocket, (const char *) thePacketData, inLen, 0, (struct sockaddr *) &sin, sizeof(struct sockaddr));
+    int result = ::sendto(fMonitorSocket, (char const *) thePacketData, inLen, 0, (struct sockaddr *) &sin, sizeof(struct sockaddr));
     //if (DEBUG)
     // {   if (result < 0)
     //         s_printf("RTCP Monitor Socket sendto failed\n");

@@ -32,7 +32,7 @@
 
 // see QTSS.h (QTSS_TextMessagesObject) for list of enums to map these strings
 
-const char *QTSSMessages::sMessagesKeyStrings[] = {
+char const *QTSSMessages::sMessagesKeyStrings[] = {
     /* index */
     /* 0 */ "qtssMsgNoMessage",
     /* 1 */ "qtssMsgNoURLInRequest",
@@ -115,7 +115,7 @@ const char *QTSSMessages::sMessagesKeyStrings[] = {
 
 // see QTSS.h (QTSS_TextMessagesObject) for list of enums to map these strings
 
-const char *QTSSMessages::sMessages[] = {
+char const *QTSSMessages::sMessages[] = {
     /* 0 */ "%s%s",
     /* 1 */ "There was no URL contained in the following request: %s",
     /* 2 */ "The following RTSP method: %s, was not understood by the server",

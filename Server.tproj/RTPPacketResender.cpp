@@ -123,7 +123,7 @@ RTPPacketResender::~RTPPacketResender() {
 }
 
 #if RTP_PACKET_RESENDER_DEBUGGING
-void RTPPacketResender::logprintf(const char * format, ...)
+void RTPPacketResender::logprintf(char const * format, ...)
 {
     /*
         WARNING - the logger is not multiple task thread safe.

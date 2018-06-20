@@ -185,7 +185,7 @@ class QTSSDictionary : public QTSSStream {
   // GETTING ATTRIBUTE INFO
   QTSS_Error GetAttrInfoByIndex(UInt32 inIndex, QTSSAttrInfoDict **outAttrInfoDict);
 
-  QTSS_Error GetAttrInfoByName(const char *inAttrName, QTSSAttrInfoDict **outAttrInfoDict);
+  QTSS_Error GetAttrInfoByName(char const *inAttrName, QTSSAttrInfoDict **outAttrInfoDict);
 
   QTSS_Error GetAttrInfoByID(QTSS_AttributeID inAttrID, QTSSAttrInfoDict **outAttrInfoDict);
 
@@ -193,7 +193,7 @@ class QTSSDictionary : public QTSSStream {
   //
   // INSTANCE ATTRIBUTES
 
-  QTSS_Error AddInstanceAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr, QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission);
+  QTSS_Error AddInstanceAttribute(char const *inAttrName, QTSS_AttrFunctionPtr inFuncPtr, QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission);
 
   QTSS_Error RemoveInstanceAttribute(QTSS_AttributeID inAttr);
 
@@ -336,7 +336,7 @@ class QTSSDictionaryMap {
   // QTSS API CALLS
 
   // All functions either return QTSS_BadArgument or QTSS_NoErr
-  QTSS_Error AddAttribute(const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr, QTSS_AttrDataType inDataType,
+  QTSS_Error AddAttribute(char const *inAttrName, QTSS_AttrFunctionPtr inFuncPtr, QTSS_AttrDataType inDataType,
                           QTSS_AttrPermission inPermission);
 
   //
@@ -349,13 +349,13 @@ class QTSSDictionaryMap {
 
   //
   // Searching / Iteration. These never return removed attributes
-  QTSS_Error GetAttrInfoByName(const char *inAttrName, QTSSAttrInfoDict **outAttrInfoDict, bool returnRemovedAttr = false);
+  QTSS_Error GetAttrInfoByName(char const *inAttrName, QTSSAttrInfoDict **outAttrInfoDict, bool returnRemovedAttr = false);
 
   QTSS_Error GetAttrInfoByID(QTSS_AttributeID inID, QTSSAttrInfoDict **outAttrInfoDict);
 
   QTSS_Error GetAttrInfoByIndex(UInt32 inIndex, QTSSAttrInfoDict **outAttrInfoDict);
 
-  QTSS_Error GetAttrID(const char *inAttrName, QTSS_AttributeID *outID);
+  QTSS_Error GetAttrID(char const *inAttrName, QTSS_AttributeID *outID);
 
   //
   // PRIVATE ATTR PERMISSIONS
@@ -440,7 +440,7 @@ class QTSSDictionaryMap {
   /**
    * Sets this attribute ID to have this information
    */
-  void SetAttribute(QTSS_AttributeID inID, const char *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
+  void SetAttribute(QTSS_AttributeID inID, char const *inAttrName, QTSS_AttrFunctionPtr inFuncPtr,
                     QTSS_AttrDataType inDataType, QTSS_AttrPermission inPermission);
 
 

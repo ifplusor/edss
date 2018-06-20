@@ -43,11 +43,11 @@ static char *gQTSSPropertiesPath = "/services/QuickTimeStreamingServer";
 
 NetInfoPrefsSource::NetInfoPrefsSource() {}
 
-int NetInfoPrefsSource::GetValue(const char *inKey, char *ioValue) {
+int NetInfoPrefsSource::GetValue(char const *inKey, char *ioValue) {
   return this->GetValueByIndex(inKey, 0, ioValue);
 }
 
-int NetInfoPrefsSource::GetValueByIndex(const char *inKey,
+int NetInfoPrefsSource::GetValueByIndex(char const *inKey,
                                         UInt32 inIndex,
                                         char *ioValue) {
   ni_status status = NI_OK;

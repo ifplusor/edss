@@ -13,15 +13,23 @@
 #include <QTSServer.h>
 
 
+enum {
+  kRunServerDebug_Off = 0x00,
+  kRunServerDebugDisplay_On = 0x01U << 0U,
+  kRunServerDebugLogging_On = 0x01U << 1U // not implemented
+};
+
+
 class EDSS : public CF::CFConfigure {
  public:
+
+  /**
+   * 配置工厂方法
+   */
   static EDSS *StartServer(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
                            int statsUpdateInterval, QTSS_ServerState inInitialState, bool inDontFork,
-                           UInt32 debugLevel, UInt32 debugOptions, const char *sAbsolutePath);
+                           UInt32 debugLevel, UInt32 debugOptions, char const *sAbsolutePath);
 
-  EDSS(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
-       QTSS_ServerState inInitialState, bool inDontFork, UInt32 debugLevel, UInt32 debugOptions,
-       const char *sAbsolutePath);
   ~EDSS() override;
 
   //
@@ -48,7 +56,18 @@ class EDSS : public CF::CFConfigure {
   //
   // Http Server Settings
 
+  //
+  // Utils
+
+  static void WritePid(bool forked);
+  static void CleanPid(bool force);
+
  private:
+
+  EDSS(XMLPrefsParser *inPrefsSource, PrefsSource *inMessagesSource, UInt16 inPortOverride,
+       QTSS_ServerState inInitialState, bool inDontFork, UInt32 debugLevel, UInt32 debugOptions,
+       char const *sAbsolutePath);
+
   //
   // Member fuctions
 

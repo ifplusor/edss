@@ -55,7 +55,7 @@ class RCFSourceInfo : public SourceInfo {
   // Parses relay_destination lines and builds OutputInfo structs
   void ParseRelayDestinations(XMLTag *relayTag);
 
-  void SetName(const char *inName);
+  void SetName(char const *inName);
   char *Name() { return fName; }
 
  protected:

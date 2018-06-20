@@ -115,14 +115,14 @@ QTSS_Error QTSSCallbacks::QTSS_CreateObjectType(QTSS_ObjectType *outType) {
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_AddAttribute(QTSS_ObjectType inType, const char *inName, void *inUnused) {
+QTSS_Error QTSSCallbacks::QTSS_AddAttribute(QTSS_ObjectType inType, char const *inName, void *inUnused) {
   //
   // This call is deprecated, make the new call with sensible default arguments
   return QTSSCallbacks::QTSS_AddStaticAttribute(inType, inName, inUnused, qtssAttrDataTypeUnknown);
 }
 
 QTSS_Error QTSSCallbacks::
-QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, const char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
+QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
   Assert(inUnused == NULL);
   QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
@@ -140,7 +140,7 @@ QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, const char *inAttrName, vo
   return theMap->AddAttribute(inAttrName, NULL, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_AddInstanceAttribute(QTSS_Object inObject, const char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
+QTSS_Error QTSSCallbacks::QTSS_AddInstanceAttribute(QTSS_Object inObject, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
   Assert(inUnused == NULL);
   if ((inObject == NULL) || (inAttrName == NULL))
     return QTSS_BadArgument;
@@ -156,7 +156,7 @@ QTSS_Error QTSSCallbacks::QTSS_RemoveInstanceAttribute(QTSS_Object inObject, QTS
   return ((QTSSDictionary *) inObject)->RemoveInstanceAttribute(inID);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_IDForAttr(QTSS_ObjectType inType, const char *inName, QTSS_AttributeID *outID) {
+QTSS_Error QTSSCallbacks::QTSS_IDForAttr(QTSS_ObjectType inType, char const *inName, QTSS_AttributeID *outID) {
   if (outID == NULL)
     return QTSS_BadArgument;
 
@@ -181,7 +181,7 @@ QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByID(QTSS_Object inObject, QTSS_Attrib
   return ((QTSSDictionary *) inObject)->GetAttrInfoByID(inAttrID, (QTSSAttrInfoDict **) outAttrInfoObject);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByName(QTSS_Object inObject, const char *inAttrName, QTSS_Object *outAttrInfoObject) {
+QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByName(QTSS_Object inObject, char const *inAttrName, QTSS_Object *outAttrInfoObject) {
   if (inObject == NULL)
     return QTSS_BadArgument;
 
@@ -439,7 +439,7 @@ QTSS_Error QTSSCallbacks::QTSS_DestroySocketStream(QTSS_StreamRef inStream) {
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_AddService(const char *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr) {
+QTSS_Error QTSSCallbacks::QTSS_AddService(char const *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr) {
   QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
@@ -456,7 +456,7 @@ QTSS_Error QTSSCallbacks::QTSS_AddService(const char *inServiceName, QTSS_Servic
       ->AddAttribute(inServiceName, (QTSS_AttrFunctionPtr) inFunctionPtr, qtssAttrDataTypeUnknown, qtssAttrModeRead);
 }
 
-QTSS_Error QTSSCallbacks::QTSS_IDForService(const char *inTag, QTSS_ServiceID *outID) {
+QTSS_Error QTSSCallbacks::QTSS_IDForService(char const *inTag, QTSS_ServiceID *outID) {
   return QTSSDictionaryMap::GetMap(QTSSDictionaryMap::kServiceDictIndex)->
       GetAttrID(inTag, outID);
 }
@@ -695,9 +695,9 @@ QTSS_Error QTSSCallbacks::QTSS_UnlockGlobalLock() {
   return QTSS_NoErr;
 }
 
-QTSS_Error QTSSCallbacks::QTSS_Authenticate(const char *inAuthUserName,
-                                            const char *inAuthResourceLocalPath,
-                                            const char *inAuthMoviesDir,
+QTSS_Error QTSSCallbacks::QTSS_Authenticate(char const *inAuthUserName,
+                                            char const *inAuthResourceLocalPath,
+                                            char const *inAuthMoviesDir,
                                             QTSS_ActionFlags inAuthRequestAction,
                                             QTSS_AuthScheme inAuthScheme,
                                             QTSS_RTSPRequestObject ioAuthRequestObject) {

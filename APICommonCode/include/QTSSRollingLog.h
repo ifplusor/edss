@@ -127,8 +127,8 @@ class QTSSRollingLog : public CF::Thread::Task {
   char *fLogFullPath;
   bool fAppendDotLog;
   bool fLogging;
-  bool RenameLogFile(const char *inFileName);
-  bool DoesFileExist(const char *inPath);
+  bool RenameLogFile(char const *inFileName);
+  bool DoesFileExist(char const *inPath);
   static void ResetToMidnight(time_t *inTimePtr, time_t *outTimePtr);
   char *GetLogPath(char *extension);
 

@@ -67,18 +67,18 @@ class QTSSCallbacks {
 
   // ADD ATTRIBUTE
 
-  static QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inType, const char *inTag, void *inUnused);
-  static QTSS_Error QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, const char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType);
-  static QTSS_Error QTSS_AddInstanceAttribute(QTSS_Object inObject, const char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType);
+  static QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inType, char const *inTag, void *inUnused);
+  static QTSS_Error QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType);
+  static QTSS_Error QTSS_AddInstanceAttribute(QTSS_Object inObject, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType);
 
   // REMOVE ATTRIBUTE
 
   static QTSS_Error QTSS_RemoveInstanceAttribute(QTSS_Object inObject, QTSS_AttributeID inID);
 
   // ATTRIBUTE INFO
-  static QTSS_Error QTSS_IDForAttr(QTSS_ObjectType inType, const char *inTag, QTSS_AttributeID *outID);
+  static QTSS_Error QTSS_IDForAttr(QTSS_ObjectType inType, char const *inTag, QTSS_AttributeID *outID);
 
-  static QTSS_Error QTSS_GetAttrInfoByName(QTSS_Object inObject, const char *inAttrName, QTSS_Object *outAttrInfoObject);
+  static QTSS_Error QTSS_GetAttrInfoByName(QTSS_Object inObject, char const *inAttrName, QTSS_Object *outAttrInfoObject);
   static QTSS_Error QTSS_GetAttrInfoByID(QTSS_Object inObject, QTSS_AttributeID inAttrID, QTSS_Object *outAttrInfoObject);
   static QTSS_Error QTSS_GetAttrInfoByIndex(QTSS_Object inObject, UInt32 inIndex, QTSS_Object *outAttrInfoObject);
 
@@ -122,8 +122,8 @@ class QTSSCallbacks {
 
   // SERVICE ROUTINES
 
-  static QTSS_Error QTSS_AddService(const char *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr);
-  static QTSS_Error QTSS_IDForService(const char *inTag, QTSS_ServiceID *outID);
+  static QTSS_Error QTSS_AddService(char const *inServiceName, QTSS_ServiceFunctionPtr inFunctionPtr);
+  static QTSS_Error QTSS_IDForService(char const *inTag, QTSS_ServiceID *outID);
   static QTSS_Error QTSS_DoService(QTSS_ServiceID inID, QTSS_ServiceFunctionArgsPtr inArgs);
 
   // RTSP ROUTINES
@@ -152,7 +152,7 @@ class QTSSCallbacks {
   static QTSS_Error QTSS_UnlockGlobalLock();
 
   // AUTHENTICATION AND AUTHORIZATION ROUTINE
-  static QTSS_Error QTSS_Authenticate(const char *inAuthUserName, const char *inAuthResourceLocalPath, const char *inAuthMoviesDir, QTSS_ActionFlags inAuthRequestAction, QTSS_AuthScheme inAuthScheme, QTSS_RTSPRequestObject ioAuthRequestObject);
+  static QTSS_Error QTSS_Authenticate(char const *inAuthUserName, char const *inAuthResourceLocalPath, char const *inAuthMoviesDir, QTSS_ActionFlags inAuthRequestAction, QTSS_AuthScheme inAuthScheme, QTSS_RTSPRequestObject ioAuthRequestObject);
   static QTSS_Error QTSS_Authorize(QTSS_RTSPRequestObject inAuthRequestObject, char **outAuthRealm, bool *outAuthUserAllowed);
 
   static void QTSS_LockStdLib();
