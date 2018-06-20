@@ -932,7 +932,7 @@ SInt64 RTSPSession::Run() {
         // will post process regardless of whether the client actually gets our response
         // or not.
 
-        //if this is not a keepalive request, we should kill the session NOW
+        //if this is not a Keep-Alive request, we should kill the session NOW
         fLiveSession = fRequest->GetResponseKeepAlive();
 
         if (fRTPSession != nullptr) {
@@ -1009,19 +1009,17 @@ SInt64 RTSPSession::Run() {
           fSentOptionsRequest = false;
         }
 
-        // 调用fSocket->Send,将在fOutputStream中尚未发出的请求响应通过Socket端
-        // 口完全发送出去,如果还有数据没有发送出去,返回EAGAIN。
+        // 调用 fSocket->Send, 将在 fOutputStream 中尚未发出的请求响应通过Socket端
+        // 口完全发送出去, 如果还有数据没有发送出去, 返回 EAGAIN
         err = fOutputStream.Flush();
 
         if (err == EAGAIN) {
           // If we get this error, we are currently flow-controlled and should
           // wait for the socket to become writeable again
           fSocket.RequestEvent(EV_WR);
-          // 因为前面执行了“fReadMutex.Lock(); fSessionMutex.Lock();”以禁止在
-          // 处理请求的过程中,有另外的数据在同一个session中发送。
-          // 所以这里指定让后续的处理继续由同一个线程完成。
-          this->ForceSameThread();    // We are holding mutexes, so we need to force
-          // the same thread to be used for next Run()
+          // We are holding mutexes[fReadMutex.Lock(); fSessionMutex.Lock();],
+          // so we need to force the same thread to be used for next Run()
+          this->ForceSameThread();
           return 0;
         } else if (err != QTSS_NoErr) {
           // Any other error means that the client has disconnected, right?

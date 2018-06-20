@@ -47,10 +47,10 @@
 class SourceInfo {
  public:
 
-  SourceInfo() : fStreamArray(NULL), fNumStreams(0),
-                 fOutputArray(NULL), fNumOutputs(0),
+  SourceInfo() : fStreamArray(nullptr), fNumStreams(0),
+                 fOutputArray(nullptr), fNumOutputs(0),
                  fTimeSet(false), fStartTimeUnixSecs(0), fEndTimeUnixSecs(0),
-                 fSessionControlType(kRTSPSessionControl) {}
+                 fSessionControlType(kRTSPSessionControl), fHasValidTime(false) {}
   SourceInfo(const SourceInfo &copy);// Does copy dynamically allocated data
   virtual ~SourceInfo(); // Deletes the dynamically allocated data
 
@@ -86,15 +86,15 @@ class SourceInfo {
      */
 
     UInt32 fSrcIPAddr;                // Src IP address of content (this may be 0 if not known for sure)
-    UInt32 fDestIPAddr;               // Dest IP address of content (destination IP addr for source broadcast!)
-    UInt16 fPort;                     // Dest (RTP) port of source content
-    UInt16 fTimeToLive;               // Ttl for this stream
-    QTSS_RTPPayloadType fPayloadType; // Payload type of this stream
-    CF::StrPtrLen fPayloadName;       // Payload name of this stream
-    UInt32 fTrackID;                  // ID of this stream
-    CF::StrPtrLen fTrackName;         // Track Name of this stream
-    Float32 fBufferDelay;             // buffer delay (default is 3 seconds)
-    bool fIsTCP;                      // Is this a TCP broadcast? If this is the case, the port and ttl are not valid
+    UInt32 fDestIPAddr;               // from 'c=' line, Dest IP address of content (destination IP addr for source broadcast!)
+    UInt16 fPort;                     // from 'm=' line, Dest (RTP) port of source content
+    UInt16 fTimeToLive;               // from 'c=' line, Ttl for this stream
+    QTSS_RTPPayloadType fPayloadType; // from 'm=' line, Payload type of this stream
+    CF::StrPtrLen fPayloadName;       // from 'a=rtpmap:' line, Payload name of this stream
+    UInt32 fTrackID;                  // from 'a=control:' line, ID of this stream
+    CF::StrPtrLen fTrackName;         // from 'a=control:' line, Track Name of this stream
+    Float32 fBufferDelay;             // from 'a=x-bufferdelay:' line, buffer delay (default is 3 seconds)
+    bool fIsTCP;                      // from 'm=' line, Is this a TCP broadcast? If this is the case, the port and ttl are not valid
     bool fSetupToReceive;             // If true then a push to the server is setup on this stream.
     UInt32 fTimeScale;
   };
@@ -114,7 +114,7 @@ class SourceInfo {
         : fDestAddr(0),
           fLocalAddr(0),
           fTimeToLive(0),
-          fPortArray(NULL),
+          fPortArray(nullptr),
           fNumPorts(0),
           fBasePort(0),
           fAlreadySetup(false) {}
@@ -131,7 +131,7 @@ class SourceInfo {
     UInt16 *fPortArray;     // 1 destination RTP port for each Stream.
     UInt32 fNumPorts;       // Size of the fPortArray (usually equal to fNumStreams)
     UInt16 fBasePort;       // The base destination RTP port - for i=1 to fNumStreams fPortArray[i] = fPortArray[i-1] + 2
-    bool fAlreadySetup;  // A flag used in QTSSReflectorModule.cpp
+    bool fAlreadySetup;     // A flag used in QTSSReflectorModule.cpp
   };
 
   // Returns the number of OutputInfo objects.
@@ -144,41 +144,32 @@ class SourceInfo {
   // the source is reflectable, this must be supported. It returns a newly
   // allocated buffer (that the caller is responsible for) containing an SDP
   // description of the source, stripped of all network info.
-  virtual char *GetLocalSDP(UInt32 * /*newSDPLen*/) { return NULL; }
+  virtual char *GetLocalSDP(UInt32 * /*newSDPLen*/) { return nullptr; }
 
   // This is only supported by the RTSPSourceInfo sub class
   virtual bool IsRTSPSourceInfo() { return false; }
 
   // This is only supported by the RCFSourceInfo sub class and its derived classes
-  virtual char *Name() { return NULL; }
+  virtual char *Name() { return nullptr; }
 
   virtual bool Equal(SourceInfo *inInfo);
 
   // SDP scheduled times supports earliest start and latest end -- doesn't handle repeat times or multiple active times.
 #define kNTP_Offset_From_1970 2208988800LU
-  time_t NTPSecs_to_UnixSecs(time_t time) {
-    return (time_t) (time - (UInt32) kNTP_Offset_From_1970);
-  }
-  UInt32 UnixSecs_to_NTPSecs(time_t time) {
-    return (UInt32) (time + (UInt32) kNTP_Offset_From_1970);
-  }
+  time_t NTPSecs_to_UnixSecs(time_t time) { return (time_t) (time - (UInt32) kNTP_Offset_From_1970); }
+  UInt32 UnixSecs_to_NTPSecs(time_t time) { return (UInt32) (time + (UInt32) kNTP_Offset_From_1970); }
   bool SetActiveNTPTimes(UInt32 startNTPTime, UInt32 endNTPTime);
-  bool IsValidNTPSecs(UInt32 time) {
-    return time >= (UInt32) kNTP_Offset_From_1970 ? true : false;
-  }
-  bool IsPermanentSource() {
-    return ((fStartTimeUnixSecs == 0) && (fEndTimeUnixSecs == 0)) ? true : false;
-  }
+  bool IsValidNTPSecs(UInt32 time) { return time >= (UInt32) kNTP_Offset_From_1970; }
+  bool IsPermanentSource() { return (fStartTimeUnixSecs == 0) && (fEndTimeUnixSecs == 0); }
   bool IsActiveTime(time_t unixTimeSecs);
   bool IsActiveNow() { return IsActiveTime(CF::Core::Time::UnixTime_Secs()); }
-  bool IsRTSPControlled() {
-    return (fSessionControlType == kRTSPSessionControl) ? true : false;
-  }
+  bool IsRTSPControlled() { return fSessionControlType == kRTSPSessionControl; }
   bool HasTCPStreams();
   bool HasIncomingBroacast();
   time_t GetStartTimeUnixSecs() { return fStartTimeUnixSecs; }
   time_t GetEndTimeUnixSecs() { return fEndTimeUnixSecs; }
   UInt32 GetDurationSecs();
+
   enum { kSDPTimeControl, kRTSPSessionControl };
  protected:
 
@@ -186,16 +177,16 @@ class SourceInfo {
   bool IsReflectableIPAddr(UInt32 inIPAddr);
 
   StreamInfo *fStreamArray;
-  UInt32 fNumStreams;
+  UInt32 fNumStreams;        // count 'm=' line
 
   OutputInfo *fOutputArray;
   UInt32 fNumOutputs;
 
-  bool fTimeSet;
-  time_t fStartTimeUnixSecs;
-  time_t fEndTimeUnixSecs;
+  bool fTimeSet;             // 't=' line exist?
+  time_t fStartTimeUnixSecs; // from 't=' line
+  time_t fEndTimeUnixSecs;   // from 't=' line
 
-  UInt32 fSessionControlType;
+  UInt32 fSessionControlType; // from 'a=x-broadcastcontrol:' line
   bool fHasValidTime;
 };
 

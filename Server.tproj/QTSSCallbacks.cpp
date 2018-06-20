@@ -305,10 +305,9 @@ QTSS_Error QTSSCallbacks::QTSS_RemoveValue(QTSS_Object inObject, QTSS_AttributeI
 }
 
 QTSS_Error QTSSCallbacks::QTSS_Write(QTSS_StreamRef inStream, void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, UInt32 inFlags) {
-  if (inStream == NULL)
-    return QTSS_BadArgument;
-  QTSS_Error theErr =
-      ((QTSSStream *) inStream)->Write(inBuffer, inLen, outLenWritten, inFlags);
+  if (inStream == nullptr) return QTSS_BadArgument;
+
+  QTSS_Error theErr = ((QTSSStream *) inStream)->Write(inBuffer, inLen, outLenWritten, inFlags);
 
   // Server internally propogates POSIX errorcodes such as EAGAIN and ENOTCONN up to this
   // level. The API guarentees that no POSIX errors get returned, so we have QTSS_Errors

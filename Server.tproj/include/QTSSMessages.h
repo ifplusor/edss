@@ -22,17 +22,14 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       QTSSMessages.h
-
-    Contains:   This global dictionary provides a central mapping from message
-                names to actual text messages, stored in the provided prefs source.
-
-                This allows the whole server to be easily localizeable.
-
-
-
-*/
+/**
+ * @file QTSSMessages.h
+ *
+ * This global dictionary provides a central mapping from message
+ *
+ * names to actual text messages, stored in the provided prefs source.
+ * This allows the whole server to be easily localizable.
+ */
 
 #ifndef __QTSSMESSAGES_H__
 #define __QTSSMESSAGES_H__
@@ -48,13 +45,13 @@ class QTSSMessages : public QTSSDictionary {
   //
   // This function sets up the dictionary map. Must be called before instantiating
   // the first RTSPMessages object.
-
   static void Initialize();
 
-  QTSSMessages(PrefsSource *inMessages);
-  virtual ~QTSSMessages() {
+  explicit QTSSMessages(PrefsSource *inMessages);
+
+  ~QTSSMessages() override {
     for (UInt32 x = 0; x < numAttrs; x++)
-      if (attrBuffer[x] != NULL)
+      if (attrBuffer[x] != nullptr)
         delete[] attrBuffer[x];
     delete[] attrBuffer;
   }
@@ -67,12 +64,11 @@ class QTSSMessages : public QTSSDictionary {
   UInt32 numAttrs;
 
   enum {
-    kNumMessages =
-    74 // 0 based count so it is one more than last message index number
+    kNumMessages = 74 // 0 based count so it is one more than last message index number
   };
 
-  static char *sMessagesKeyStrings[];
-  static char *sMessages[];
+  static const char *sMessagesKeyStrings[];
+  static const char *sMessages[];
 };
 
 #endif // __QTSSMESSAGES_H__

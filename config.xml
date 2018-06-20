@@ -52,8 +52,7 @@
 		<PREF NAME="min_tcp_buffer_size" TYPE="UInt32" >8192</PREF>
 		<PREF NAME="max_tcp_buffer_size" TYPE="UInt32" >200000</PREF>
 		<PREF NAME="tcp_seconds_to_buffer" TYPE="Float32" >.5</PREF>
-		<PREF NAME="do_report_http_connection_ip_address" TYPE="bool" >false
-        </PREF>
+		<PREF NAME="do_report_http_connection_ip_address" TYPE="bool" >false</PREF>
 		<PREF NAME="default_authorization_realm" >EasyDarwin</PREF>
 		<PREF NAME="run_user_name" >qtss</PREF>
 		<PREF NAME="run_group_name" >qtss</PREF>
@@ -83,8 +82,8 @@
 		<PREF NAME="always_thin_delay" TYPE="SInt32" >750</PREF>
 		<PREF NAME="start_thicking_delay" TYPE="SInt32" >250</PREF>
 		<PREF NAME="quality_check_interval" TYPE="UInt32" >1000</PREF>
-		<PREF NAME="RTSP_error_message" TYPE="bool" >false</PREF>
-		<PREF NAME="RTSP_debug_printfs" TYPE="bool" >false</PREF>
+		<PREF NAME="RTSP_error_message" TYPE="bool" >true</PREF>
+		<PREF NAME="RTSP_debug_printfs" TYPE="bool" >true</PREF>
 		<PREF NAME="enable_monitor_stats_file" TYPE="bool" >false</PREF>
 		<PREF NAME="monitor_stats_file_interval_seconds" TYPE="UInt32" >10</PREF>
 		<PREF NAME="monitor_stats_file_name" >server_status</PREF>
@@ -95,7 +94,7 @@
 		<PREF NAME="window_size_max_threshold" TYPE="UInt32" >1000</PREF>
 		<PREF NAME="RTSP_server_info" TYPE="bool" >true</PREF>
 		<PREF NAME="run_num_threads" TYPE="UInt32" >4</PREF>
-		<PREF NAME="pid_file" >/var/run/EasyDarwin.pid</PREF>
+		<PREF NAME="pid_file" >/var/run/edss.pid</PREF>
 		<PREF NAME="force_logs_close_on_write" TYPE="bool" >false</PREF>
 		<PREF NAME="disable_thinning" TYPE="bool" >false</PREF>
 		<LIST-PREF NAME="player_requires_rtp_header_info" >
@@ -124,6 +123,9 @@
 		<PREF NAME="service_wan_ip" >0.0.0.0</PREF>
 		<PREF NAME="rtsp_wan_port" TYPE="UInt16" >8554</PREF>
 		<PREF NAME="nginx_rtmp_server" >rtmp://127.0.0.1/</PREF>
+		<LIST-PREF NAME="service_open_ip" >
+			<VALUE>218.25.88.117</VALUE>
+		</LIST-PREF>
 	</SERVER>
 	<MODULE NAME="QTSSErrorLogModule" ></MODULE>
 	<MODULE NAME="QTSSReflectorModule" >

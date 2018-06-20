@@ -272,15 +272,14 @@ char *QTSSDataConverter::ConvertBytesToCHexString(void *inValue,
 }
 
 char *QTSSDataConverter::ValueToString(void *inValue, const UInt32 inValueLen, const QTSS_AttrDataType inType) {
-  if (inValue == NULL)
-    return NULL;
+  if (inValue == nullptr) return nullptr;
 
   if (inType == qtssAttrDataTypeCharArray) {
     CF::StrPtrLen theStringPtr((char *) inValue, inValueLen);
     return theStringPtr.GetAsCString();
   }
   if (inType == qtssAttrDataTypeBool16) {
-    bool *theBoolPtr = (bool *) inValue;
+    auto *theBoolPtr = (bool *) inValue;
     if (*theBoolPtr)
       return kEnabledStr.GetAsCString();
     else
@@ -290,7 +289,7 @@ char *QTSSDataConverter::ValueToString(void *inValue, const UInt32 inValueLen, c
   //
   // With these other types, its impossible to tell how big they'll
   // be, so just allocate some buffer and hope we fit.
-  char *theString = new char[128];
+  auto *theString = new char[128];
 
   //
   // If this is another type, format the string into that type

@@ -74,7 +74,7 @@ GetValuePtr(QTSS_AttributeID inAttrID, UInt32 inIndex, void **outValueBuffer, UI
     theAttrs = fInstanceAttrs;
   }
 
-  if (theMap == NULL) return QTSS_AttrDoesntExist;
+  if (theMap == nullptr) return QTSS_AttrDoesntExist;
 
   SInt32 theMapIndex = theMap->ConvertAttrIDToArrayIndex(inAttrID);
 
@@ -83,7 +83,7 @@ GetValuePtr(QTSS_AttributeID inAttrID, UInt32 inIndex, void **outValueBuffer, UI
   if ((!isInternal) && (!theMap->IsPreemptiveSafe(theMapIndex)) && !this->IsLocked()) return QTSS_NotPreemptiveSafe;
 
   // An iterated attribute cannot have a param retrieval function
-  if ((inIndex > 0) && (theMap->GetAttrFunction(theMapIndex) != NULL)) return QTSS_BadIndex;
+  if ((inIndex > 0) && (theMap->GetAttrFunction(theMapIndex) != nullptr)) return QTSS_BadIndex;
 
   // Check to make sure the index parameter is legal
   if ((inIndex > 0) && (inIndex >= theAttrs[theMapIndex].fNumAttributes)) return QTSS_BadIndex;
@@ -93,7 +93,7 @@ GetValuePtr(QTSS_AttributeID inAttrID, UInt32 inIndex, void **outValueBuffer, UI
   *outValueLen = theAttrs[theMapIndex].fAttributeData.Len;
 
   bool cacheable = theMap->IsCacheable(theMapIndex);
-  if ((theMap->GetAttrFunction(theMapIndex) != NULL) && ((cacheable && (*outValueLen == 0)) || !cacheable)) {
+  if ((theMap->GetAttrFunction(theMapIndex) != nullptr) && ((cacheable && (*outValueLen == 0)) || !cacheable)) {
     // If function is cacheable:
     //   If the parameter doesn't have a value assigned yet, and there is an attribute
     //     retrieval function provided, invoke that function now.
@@ -103,7 +103,7 @@ GetValuePtr(QTSS_AttributeID inAttrID, UInt32 inIndex, void **outValueBuffer, UI
 
     // If the param retrieval function didn't return an explicit value for this attribute,
     // refetch the parameter out of the array, in case the function modified it.
-    if (theBuffer == NULL) {
+    if (theBuffer == nullptr) {
       theBuffer = theAttrs[theMapIndex].fAttributeData.Ptr;
       *outValueLen = theAttrs[theMapIndex].fAttributeData.Len;
     }
@@ -137,7 +137,7 @@ GetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, void *ioValueBuffer, UInt32 
   // If there is a mutex, lock it and get a pointer to the proper attribute
   CF::Core::MutexLocker locker(fMutexP);
 
-  void *tempValueBuffer = NULL;
+  void *tempValueBuffer = nullptr;
   UInt32 tempValueLen = 0;
   QTSS_Error theErr = this->GetValuePtr(inAttrID, inIndex, &tempValueBuffer, &tempValueLen, true);
   if (theErr != QTSS_NoErr) return theErr;
@@ -146,7 +146,7 @@ GetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, void *ioValueBuffer, UInt32 
   if (tempValueLen > *ioValueLen) theErr = QTSS_NotEnoughSpace;
 
   // Only copy out the attribute if the buffer is big enough
-  if ((ioValueBuffer != NULL) && (theErr == QTSS_NoErr))
+  if ((ioValueBuffer != nullptr) && (theErr == QTSS_NoErr))
     ::memcpy(ioValueBuffer, tempValueBuffer, tempValueLen);
 
   // Always set the ioValueLen to be the actual length of the attribute.
@@ -170,7 +170,7 @@ QTSS_Error QTSSDictionary::GetValueAsString(QTSS_AttributeID inAttrID, UInt32 in
   if (QTSSDictionaryMap::IsInstanceAttrID(inAttrID))
     theMap = fInstanceMap;
 
-  if (theMap == NULL) return QTSS_AttrDoesntExist;
+  if (theMap == nullptr) return QTSS_AttrDoesntExist;
 
   SInt32 theMapIndex = theMap->ConvertAttrIDToArrayIndex(inAttrID);
   Assert(theMapIndex >= 0);
@@ -317,7 +317,7 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
     } else {
       theLen = 2 * (attrLen * (inIndex + 1)); // Allocate twice as much as we need
     }
-    char *theNewBuffer = new char[theLen];
+    auto *theNewBuffer = new char[theLen];
     if (inIndex > 0) {
       // Copy out the old attribute data
       ::memcpy(theNewBuffer, theAttrs[theMapIndex].fAttributeData.Ptr, theAttrs[theMapIndex].fAllocatedLen);
@@ -345,11 +345,11 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
   } else {
     // allocating one extra so that we can null terminate the string
     attributeBufferPtr = new char[inLen + 1];
-    char *tempBuffer = (char *) attributeBufferPtr;
+    auto *tempBuffer = (char *) attributeBufferPtr;
     tempBuffer[inLen] = '\0';
 
     // The offset should be (attrLen * inIndex) and not (inLen * inIndex)
-    char **valuePtr = (char **) (theAttrs[theMapIndex].fAttributeData.Ptr + (attrLen * inIndex));
+    auto **valuePtr = (char **) (theAttrs[theMapIndex].fAttributeData.Ptr + (attrLen * inIndex));
     if (inIndex < numValues) delete[] *valuePtr; // we're replacing an existing string
     *valuePtr = (char *) attributeBufferPtr;
   }
@@ -367,7 +367,7 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
 
   //
   // Call the completion routine
-  if (((fMap == NULL) || fMap->CompleteFunctionsAllowed()) && !(inFlags & kDontCallCompletionRoutine)) {
+  if (((fMap == nullptr) || fMap->CompleteFunctionsAllowed()) && !(inFlags & kDontCallCompletionRoutine)) {
     // SetValueComplete 是虚函数, 不同的继承类有不同的实现
     this->SetValueComplete(theMapIndex, theMap, inIndex, attributeBufferPtr, inLen);
   }

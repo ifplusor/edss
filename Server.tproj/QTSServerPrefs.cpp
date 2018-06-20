@@ -36,6 +36,7 @@
 #include "defaultPaths.h"
 #include "QTSSRollingLog.h"
 #include <QTSSModuleUtils.h>
+#include <CF/Net/Socket/SocketUtils.h>
 
 #ifndef __Win32__
 #endif
@@ -55,6 +56,8 @@ char *QTSServerPrefs::sRTP_Start_Time_Players[] = { NULL };
 char *QTSServerPrefs::sDisable_Rate_Adapt_Players[] = { NULL };
 
 char *QTSServerPrefs::sFixed_Target_Time_Players[] = { NULL };
+
+char *QTSServerPrefs::sOpen_IP_Addrs[] = { NULL };
 
 QTSServerPrefs::PrefInfo QTSServerPrefs::sPrefInfo[] = {
     {kDontAllowMultipleValues, "0", NULL},  //rtsp_timeout
@@ -153,11 +156,13 @@ QTSServerPrefs::PrefInfo QTSServerPrefs::sPrefInfo[] = {
     {kDontAllowMultipleValues, "10008", NULL}, //service_wan_port
 
     {kDontAllowMultipleValues, "0.0.0.0", NULL}, //service_wan_ip
-    {kDontAllowMultipleValues, "10554", NULL}, //rtsp_wan_port
-    {kDontAllowMultipleValues, "rtmp://127.0.0.1/", NULL}    //nginx_rtmp_server
+    {kDontAllowMultipleValues, "8554", NULL}, //rtsp_wan_port
+    {kDontAllowMultipleValues, "rtmp://127.0.0.1/", NULL},    //nginx_rtmp_server
+
+    {kAllowMultipleValues, "", sOpen_IP_Addrs} //service_open_ip
 };
 
-QTSSAttrInfoDict::AttrInfo  QTSServerPrefs::sAttributes[] = {
+QTSSAttrInfoDict::AttrInfo QTSServerPrefs::sAttributes[] = {
     /*fields:   fAttrName, fFuncPtr, fAttrDataType, fAttrPermission */
     /* 0  */{"rtsp_timeout", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModeWrite},
     /* 1  */{"rtsp_session_timeout", NULL, qtssAttrDataTypeUInt32, qtssAttrModeRead | qtssAttrModeWrite},
@@ -248,7 +253,9 @@ QTSSAttrInfoDict::AttrInfo  QTSServerPrefs::sAttributes[] = {
     /* 84 */{"service_wan_ip", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModeWrite},
     /* 85 */{"rtsp_wan_port", NULL, qtssAttrDataTypeUInt16, qtssAttrModeRead | qtssAttrModeWrite},
 
-    /* 86 */{"nginx_rtmp_server", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModeWrite}
+    /* 86 */{"nginx_rtmp_server", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModeWrite},
+
+    /* 87 */{"service_open_ip", NULL, qtssAttrDataTypeCharArray, qtssAttrModeRead | qtssAttrModeWrite}
 };
 
 QTSServerPrefs::QTSServerPrefs(XMLPrefsParser *inPrefsSource, bool inWriteMissingPrefs)
@@ -424,15 +431,15 @@ void QTSServerPrefs::RereadServerPreferences(bool inWriteMissingPrefs) {
   for (UInt32 x = 0; x < theMap->GetNumAttrs(); x++) {
     //
     // Look for a pref in the file that matches each pref in the dictionary
-    char *thePrefTypeStr = NULL;
-    char *thePrefName = NULL;
+    char *thePrefTypeStr = nullptr;
+    char *thePrefName = nullptr;
 
     ContainerRef pref = fPrefsSource->GetPrefRefByName(server, theMap->GetAttrName(x));
-    char *thePrefValue = NULL;
-    if (pref != NULL)
+    char *thePrefValue = nullptr;
+    if (pref != nullptr)
       thePrefValue = fPrefsSource->GetPrefValueByRef(pref, 0, &thePrefName, (char **) &thePrefTypeStr);
 
-    if ((thePrefValue == NULL) && (x < qtssPrefsNumParams)) { // Only generate errors for server prefs
+    if ((thePrefValue == nullptr) && (x < qtssPrefsNumParams)) { // Only generate errors for server prefs
       //
       // There is no pref, use the default and log an error
       if (::strlen(sPrefInfo[x].fDefaultValue) > 0) {
@@ -482,10 +489,10 @@ void QTSServerPrefs::RereadServerPreferences(bool inWriteMissingPrefs) {
       }
 
       this->SetPrefValue(x, 0, sPrefInfo[x].fDefaultValue, sAttributes[x].fAttrDataType);
-      if (sPrefInfo[x].fAdditionalDefVals != NULL) {
+      if (sPrefInfo[x].fAdditionalDefVals != nullptr) {
         //
         // Add additional default values if they exist
-        for (UInt32 z = 0; sPrefInfo[x].fAdditionalDefVals[z] != NULL; z++)
+        for (UInt32 z = 0; sPrefInfo[x].fAdditionalDefVals[z] != nullptr; z++)
           this->SetPrefValue(x, z + 1, sPrefInfo[x].fAdditionalDefVals[z], sAttributes[x].fAttrDataType);
       }
 
@@ -494,10 +501,10 @@ void QTSServerPrefs::RereadServerPreferences(bool inWriteMissingPrefs) {
         // Remove it out of the file and add in the default.
         fPrefsSource->RemovePref(pref);
         pref = fPrefsSource->AddPref(server, sAttributes[x].fAttrName,
-                                     QTSSDataConverter::TypeToTypeString( sAttributes[x].fAttrDataType));
+                                     QTSSDataConverter::TypeToTypeString(sAttributes[x].fAttrDataType));
         fPrefsSource->AddPrefValue(pref, sPrefInfo[x].fDefaultValue);
-        if (sPrefInfo[x].fAdditionalDefVals != NULL) {
-          for (UInt32 b = 0; sPrefInfo[x].fAdditionalDefVals[b] != NULL; b++)
+        if (sPrefInfo[x].fAdditionalDefVals != nullptr) {
+          for (UInt32 b = 0; sPrefInfo[x].fAdditionalDefVals[b] != nullptr; b++)
             fPrefsSource->AddPrefValue(pref, sPrefInfo[x].fAdditionalDefVals[b]);
         }
       }
@@ -516,8 +523,19 @@ void QTSServerPrefs::RereadServerPreferences(bool inWriteMissingPrefs) {
   this->UpdateAuthScheme();
   this->UpdatePrintfOptions();
   QTSSModuleUtils::SetEnableRTSPErrorMsg(fEnableRTSPErrMsg);
-
   QTSSRollingLog::SetCloseOnWrite(fCloseLogsOnWrite);
+
+  // set open ip
+  UInt32 numIPAddr = this->GetNumValues(edssPrefsServiceOpenIPAddrs);
+  auto **IPAddrs = new char*[numIPAddr];
+  for (UInt32 i = 0; i < numIPAddr; i++) {
+    QTSS_Error theErr = this->GetValueAsString(edssPrefsServiceOpenIPAddrs, i, &IPAddrs[i]);
+    Assert(theErr == QTSS_NoErr);
+  }
+  Net::SocketUtils::SetOpenIPAddrs(IPAddrs, numIPAddr, true);
+  for (UInt32 i = 0; i < numIPAddr; i++)
+    delete IPAddrs[i];
+  delete(IPAddrs);
 
   //
   // In case we made any changes, write out the prefs file

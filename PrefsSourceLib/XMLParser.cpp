@@ -473,14 +473,13 @@ XMLTag *XMLTag::GetEmbeddedTagByName(const char *tagName, const UInt32 index) {
 }
 
 XMLTag *XMLTag::GetEmbeddedTagByAttr(const char *attrName, const char *attrValue, const UInt32 index) {
-  if (fEmbeddedTags.GetLength() <= index)
-    return NULL;
+  if (fEmbeddedTags.GetLength() <= index) return nullptr;
 
-  XMLTag *result = NULL;
+  XMLTag *result = nullptr;
   UInt32 curIndex = 0;
   for (QueueIter iter(&fEmbeddedTags); !iter.IsDone(); iter.Next()) {
-    XMLTag *temp = (XMLTag *) iter.GetCurrent()->GetEnclosingObject();
-    if ((temp->GetAttributeValue(attrName) != NULL) && (!strcmp(temp->GetAttributeValue(attrName), attrValue))) {
+    auto *temp = (XMLTag *) iter.GetCurrent()->GetEnclosingObject();
+    if ((temp->GetAttributeValue(attrName) != nullptr) && (!strcmp(temp->GetAttributeValue(attrName), attrValue))) {
       if (curIndex == index) {
         result = temp;
         break;

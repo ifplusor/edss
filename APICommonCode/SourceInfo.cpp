@@ -71,10 +71,7 @@ SourceInfo::~SourceInfo() {
 }
 
 bool SourceInfo::IsReflectable() {
-  if (fStreamArray == NULL)
-    return false;
-  if (fNumStreams == 0)
-    return false;
+  if (fStreamArray == nullptr || fNumStreams == 0) return false;
 
   // each stream's info must meet certain criteria
   for (UInt32 x = 0; x < fNumStreams; x++) {
@@ -88,9 +85,7 @@ bool SourceInfo::IsReflectable() {
 }
 
 bool SourceInfo::IsReflectableIPAddr(UInt32 inIPAddr) {
-  if (Net::SocketUtils::IsMulticastIPAddr(inIPAddr) || Net::SocketUtils::IsLocalIPAddr(inIPAddr))
-    return true;
-  return false;
+  return Net::SocketUtils::IsMulticastIPAddr(inIPAddr) || Net::SocketUtils::IsLocalIPAddr(inIPAddr);
 }
 
 bool SourceInfo::HasTCPStreams() {
@@ -122,13 +117,13 @@ SourceInfo::StreamInfo *SourceInfo::GetStreamInfo(UInt32 inIndex) {
 }
 
 SourceInfo::StreamInfo *SourceInfo::GetStreamInfoByTrackID(UInt32 inTrackID) {
-  if (fStreamArray == NULL)
-    return NULL;
+  if (fStreamArray == nullptr)
+    return nullptr;
   for (UInt32 x = 0; x < fNumStreams; x++) {
     if (fStreamArray[x].fTrackID == inTrackID)
       return &fStreamArray[x];
   }
-  return NULL;
+  return nullptr;
 }
 
 SourceInfo::OutputInfo *SourceInfo::GetOutputInfo(UInt32 inIndex) {
@@ -261,10 +256,10 @@ void SourceInfo::StreamInfo::Copy(const StreamInfo &copy) {
   fPort = copy.fPort;
   fTimeToLive = copy.fTimeToLive;
   fPayloadType = copy.fPayloadType;
-  if ((copy.fPayloadName).Ptr != NULL)
+  if ((copy.fPayloadName).Ptr != nullptr)
     fPayloadName.Set((copy.fPayloadName).GetAsCString(), (copy.fPayloadName).Len);
   fTrackID = copy.fTrackID;
-  if ((copy.fTrackName).Ptr != NULL)
+  if ((copy.fTrackName).Ptr != nullptr)
     fTrackName.Set((copy.fTrackName).GetAsCString(), (copy.fTrackName).Len);
   fBufferDelay = copy.fBufferDelay;
   fIsTCP = copy.fIsTCP;
@@ -273,12 +268,10 @@ void SourceInfo::StreamInfo::Copy(const StreamInfo &copy) {
 }
 
 SourceInfo::StreamInfo::~StreamInfo() {
-  if (fPayloadName.Ptr != NULL)
-    delete fPayloadName.Ptr;
+  delete fPayloadName.Ptr;
   fPayloadName.Len = 0;
 
-  if (fTrackName.Ptr != NULL)
-    delete fTrackName.Ptr;
+  delete fTrackName.Ptr;
   fTrackName.Len = 0;
 }
 

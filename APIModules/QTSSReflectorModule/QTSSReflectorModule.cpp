@@ -139,7 +139,7 @@ static UInt32 sMaxAnnouncedSDPLengthInKbytes = 4;
 //static UInt32   sDefaultMaxAnnouncedSDPLengthInKbytes = 4;
 
 static QTSS_AttributeID sIPAllowListID = qtssIllegalAttrID;
-static char *sIPAllowList = NULL;
+static char *sIPAllowList = nullptr;
 static char *sLocalLoopBackAddress = "127.0.0.*";
 
 static bool sAuthenticateLocalBroadcast = false;
@@ -1273,7 +1273,7 @@ bool InfoPortsOK(QTSS_StandardRTSP_Params *inParams, SDPSourceInfo *theInfo, Str
         char *thePath = inPath->GetAsCString();
         CharArrayDeleter charArrayPathDeleter(thePath);
 
-        char *thePathPort = new char[inPath->Len + 32];
+        auto *thePathPort = new char[inPath->Len + 32];
         CharArrayDeleter charArrayPathPortDeleter(thePathPort);
 
         s_sprintf(thePathPort, "%s:%s", thePath, thePort);
@@ -1301,7 +1301,7 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
   // In either case, verify whether the broadcast is allowed, and send forbidden response back
   if (!AllowBroadcast(inParams->inRTSPRequest)) {
     (void) QTSSModuleUtils::SendErrorResponseWithMessage(inParams->inRTSPRequest, qtssClientForbidden, &sBroadcastNotAllowed);
-    return NULL;
+    return nullptr;
   }
 
   char theStreamName[QTSS_MAX_NAME_LENGTH] = {0};
@@ -1310,17 +1310,17 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
   StrPtrLen inPath(theStreamName);
 
   Ref *theSessionRef = sSessionMap->Resolve(&inPath);
-  ReflectorSession *theSession = NULL;
+  ReflectorSession *theSession = nullptr;
 
-  if (theSessionRef == NULL) {
+  if (theSessionRef == nullptr) {
     // a) 没有根据inPath路径在哈希表sSessionMap中找到对应的ReflectorSession，如果是推送就new一个.
 
-    if (!isPush) return NULL;
+    if (!isPush) return nullptr;
 
     StrPtrLen theFileData;
     StrPtrLen theFileDeleteData;
 
-    if (inData == NULL) {
+    if (inData == nullptr) {
       (void) QTSSModuleUtils::ReadEntireFile(inPath.Ptr, &theFileDeleteData);
       theFileData = theFileDeleteData;
     } else {
@@ -1328,18 +1328,19 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
     }
     CharArrayDeleter fileDataDeleter(theFileDeleteData.Ptr);
 
-    if (theFileData.Len <= 0) return NULL;
+    if (theFileData.Len <= 0) return nullptr;
 
-    SDPSourceInfo *theInfo = new SDPSourceInfo(theFileData.Ptr, theFileData.Len); // will make a copy
+    auto *theInfo = new SDPSourceInfo(theFileData.Ptr, theFileData.Len); // will make a copy
 
+    // 检查全部的 stream 是否都可以被转发
     if (!theInfo->IsReflectable()) {
       delete theInfo;
-      return NULL;
+      return nullptr;
     }
 
     if (!InfoPortsOK(inParams, theInfo, &inPath)) {
       delete theInfo;
-      return NULL;
+      return nullptr;
     }
 
     //
@@ -1361,7 +1362,7 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
       SDPCache::GetInstance()->eraseSdpMap(theSession->GetSourceID()->Ptr);
       theSession->DelRedisLive();
       theSession->Signal(Thread::Task::kKillEvent);
-      return NULL;
+      return nullptr;
     }
 
     //s_printf("Created reflector session = %"   _U32BITARG_   " theInfo=%"   _U32BITARG_   " \n", (UInt32) theSession,(UInt32)theInfo);
@@ -1391,16 +1392,16 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
         break;
       }
 
-      if (foundSessionPtr != NULL) *foundSessionPtr = true;
+      if (foundSessionPtr != nullptr) *foundSessionPtr = true;
 
       StrPtrLen theFileData;
 
-      if (inData == NULL) (void) QTSSModuleUtils::ReadEntireFile(inPath.Ptr, &theFileData);
+      if (inData == nullptr) (void) QTSSModuleUtils::ReadEntireFile(inPath.Ptr, &theFileData);
       CharArrayDeleter charArrayDeleter(theFileData.Ptr);
 
       if (theFileData.Len <= 0) break;
 
-      SDPSourceInfo *theInfo = new SDPSourceInfo(theFileData.Ptr, theFileData.Len);
+      auto *theInfo = new SDPSourceInfo(theFileData.Ptr, theFileData.Len);
       if (theInfo == NULL) break;
 
       if (!InfoPortsOK(inParams, theInfo, &inPath)) {
@@ -1414,19 +1415,19 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
       if (isPush && theSession && !(theSession->IsSetup())) {
         // NOTE: 因为上一个分支已经设置过 ReflectorSession，此处有些多余
         UInt32 theSetupFlag = ReflectorSession::kMarkSetup | ReflectorSession::kIsPushSession;
-        QTSS_Error theErr = theSession->SetupReflectorSession(NULL, inParams, theSetupFlag);
+        QTSS_Error theErr = theSession->SetupReflectorSession(nullptr, inParams, theSetupFlag);
         if (theErr != QTSS_NoErr) {
-          theSession = NULL;
+          theSession = nullptr;
           break;
         }
       }
     } while (0);
 
-    if (theSession == NULL)
+    if (theSession == nullptr)
       sSessionMap->Release(theSessionRef);
   }
 
-  Assert(theSession != NULL);
+  Assert(theSession != nullptr);
 
   // Turn off overbuffering if the "disable_overbuffering" pref says so
   if (sDisableOverbuffering)
@@ -1551,7 +1552,7 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams) {
   // Get info about this trackID
   SourceInfo::StreamInfo *theStreamInfo = theSession->GetSourceInfo()->GetStreamInfoByTrackID(theTrackID);
   // If theStreamInfo is NULL, we don't have a legit track, so return an error
-  if (theStreamInfo == NULL) {
+  if (theStreamInfo == nullptr) {
     if (isPush) DeleteReflectorPushSession(inParams, theSession, foundSession);
     return QTSSModuleUtils::SendErrorResponse(inParams->inRTSPRequest, qtssClientBadRequest, sReflectorBadTrackIDErr);
   }
@@ -1570,7 +1571,7 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams) {
     theErr = QTSS_SetValue(inParams->inRTSPRequest, qtssRTSPReqSetUpServerPort, 0, &theReceiveBroadcastStreamPort, sizeof(theReceiveBroadcastStreamPort));
     Assert(theErr == QTSS_NoErr);
 
-    QTSS_RTPStreamObject newStream = NULL;
+    QTSS_RTPStreamObject newStream = nullptr;
     theErr = AddRTPStream(theSession, inParams, &newStream); // TODO(james): 为什么需要创建 RTPStream?
     Assert(theErr == QTSS_NoErr);
     if (theErr != QTSS_NoErr) {
@@ -1595,15 +1596,10 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams) {
 
     StrPtrLen *thePayloadName = &theStreamInfo->fPayloadName;
     QTSS_RTPPayloadType thePayloadType = theStreamInfo->fPayloadType;
+    UInt32 theTimeScale = theStreamInfo->fTimeScale;
+    if (theTimeScale == 0) theTimeScale = 90000;
 
-    StringParser parser(thePayloadName);
-
-    parser.GetThru(NULL, '/');
-    theStreamInfo->fTimeScale = parser.ConsumeInteger(NULL);
-    if (theStreamInfo->fTimeScale == 0)
-      theStreamInfo->fTimeScale = 90000;
-
-    QTSS_RTPStreamObject newStream = NULL;
+    QTSS_RTPStreamObject newStream = nullptr;
     theErr = AddRTPStream(theSession, inParams, &newStream, 0);
     if (theErr != QTSS_NoErr)
       return theErr;
@@ -1615,7 +1611,7 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams) {
     Assert(theErr == QTSS_NoErr);
     theErr = QTSS_SetValue(newStream, qtssRTPStrTrackID, 0, &theTrackID, sizeof(theTrackID));
     Assert(theErr == QTSS_NoErr);
-    theErr = QTSS_SetValue(newStream, qtssRTPStrTimescale, 0, &theStreamInfo->fTimeScale, sizeof(theStreamInfo->fTimeScale));
+    theErr = QTSS_SetValue(newStream, qtssRTPStrTimescale, 0, &theTimeScale, sizeof(theTimeScale));
     Assert(theErr == QTSS_NoErr);
 
     // We only want to allow over buffering to dynamic rate clients
@@ -1627,7 +1623,7 @@ QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams) {
 
     // Place the stream cookie in this stream for future reference
     void *theStreamCookie = theSession->GetStreamCookie(theTrackID); // the cookie is the pointer of ReflectorStream
-    Assert(theStreamCookie != NULL);
+    Assert(theStreamCookie != nullptr);
     theErr = QTSS_SetValue(newStream, sStreamCookieAttr, 0, &theStreamCookie, sizeof(theStreamCookie));
     Assert(theErr == QTSS_NoErr);
 
@@ -2036,7 +2032,7 @@ QTSS_Error ReflectorAuthorizeRTSPRequest(QTSS_StandardRTSP_Params *inParams) {
   QTAccessFile accessFile;
   accessFile.AuthorizeRequest(inParams, allowNoAccessFiles, noAction, authorizeAction, &outAuthorized, &outAllowAnyUser);
 
-  if ((outAuthorized == false) && (authorizeAction & qtssActionFlagsWrite)) { //handle it
+  if (!outAuthorized && (authorizeAction & qtssActionFlagsWrite)) { //handle it
     //printf("ReflectorAuthorizeRTSPRequest SET not allowed\n");
     bool allowed = false;
     (void) QTSSModuleUtils::AuthorizeRequest(inParams->inRTSPRequest, &allowed, &allowed, &allowed);

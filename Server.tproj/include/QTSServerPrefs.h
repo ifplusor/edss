@@ -46,7 +46,7 @@ class QTSServerPrefs : public QTSSPrefs {
   static void Initialize();
 
   QTSServerPrefs(XMLPrefsParser *inPrefsSource, bool inWriteMissingPrefs);
-  virtual ~QTSServerPrefs() {}
+  ~QTSServerPrefs() override = default;
 
   //This is callable at any time, and is thread safe write to the accessors.
   //Pass in true if you want this function to update the prefs file if
@@ -370,6 +370,8 @@ class QTSServerPrefs : public QTSSPrefs {
   static char *sDisable_Rate_Adapt_Players[];
   static char *sFixed_Target_Time_Players[];
   static char *sDisable_Thinning_Players[];
+
+  static char *sOpen_IP_Addrs[];
 
 };
 #endif //__QTSSPREFS_H__

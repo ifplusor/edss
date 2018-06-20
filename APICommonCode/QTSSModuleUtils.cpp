@@ -158,20 +158,20 @@ void QTSSModuleUtils::
 LogError(QTSS_ErrorVerbosity inVerbosity, QTSS_AttributeID inTextMessage, UInt32 /*inErrNumber*/, char *inArgument, char *inArg2) {
   static char *sEmptyArg = "";
 
-  if (sMessages == NULL) return;
+  if (sMessages == nullptr) return;
 
   // Retrieve the specified text message from the text messages dictionary.
 
   StrPtrLen theMessage;
   (void) QTSS_GetValuePtr(sMessages, inTextMessage, 0, (void **) &theMessage.Ptr, &theMessage.Len);
-  if ((theMessage.Ptr == NULL) || (theMessage.Len == 0))
+  if ((theMessage.Ptr == nullptr) || (theMessage.Len == 0))
     (void) QTSS_GetValuePtr(sMessages, qtssMsgNoMessage, 0, (void **) &theMessage.Ptr, &theMessage.Len);
 
-  if ((theMessage.Ptr == NULL) || (theMessage.Len == 0)) return;
+  if ((theMessage.Ptr == nullptr) || (theMessage.Len == 0)) return;
 
   // s_sprintf and ::strlen will crash if inArgument is NULL
-  if (inArgument == NULL) inArgument = sEmptyArg;
-  if (inArg2 == NULL) inArg2 = sEmptyArg;
+  if (inArgument == nullptr) inArgument = sEmptyArg;
+  if (inArg2 == nullptr) inArg2 = sEmptyArg;
 
   // Create a new string, and put the argument into the new string.
 
@@ -334,8 +334,8 @@ SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatus
   // set RTSP headers necessary for this error response message
   (void) QTSS_SetValue(inRequest, qtssRTSPReqStatusCode, 0, &inStatusCode, sizeof(inStatusCode));
   (void) QTSS_SetValue(inRequest, qtssRTSPReqRespKeepAlive, 0, &sFalse, sizeof(sFalse));
-  StringFormatter theErrorMsgFormatter(NULL, 0);
-  char *messageBuffPtr = NULL;
+  StringFormatter theErrorMsgFormatter(nullptr, 0);
+  char *messageBuffPtr = nullptr;
 
   if (sEnableRTSPErrorMsg) {
     // 准备要输出的 Error Message
@@ -347,19 +347,19 @@ SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatus
     StrPtrLen theMessage;
     (void) QTSS_GetValuePtr(sMessages, inTextMessage, 0, (void **) &theMessage.Ptr, &theMessage.Len);
 
-    if ((theMessage.Ptr == NULL) || (theMessage.Len == 0)) {
+    if ((theMessage.Ptr == nullptr) || (theMessage.Len == 0)) {
       // If we couldn't find the specified message, get the default
       // "No Message" message, and return that to the client instead.
 
       (void) QTSS_GetValuePtr(sMessages, qtssMsgNoMessage, 0, (void **) &theMessage.Ptr, &theMessage.Len);
     }
-    Assert(theMessage.Ptr != NULL);
+    Assert(theMessage.Ptr != nullptr);
     Assert(theMessage.Len > 0);
 
     // Allocate a temporary buffer for the error message, and format the error message
     // into that buffer
     UInt32 theMsgLen = 256;
-    if (inStringArg != NULL)
+    if (inStringArg != nullptr)
       theMsgLen += inStringArg->Len;
 
     messageBuffPtr = new char[theMsgLen];
@@ -371,11 +371,11 @@ SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatus
 
     //we can safely assume that message is in fact NULL terminated
     char *stringLocation = ::strstr(theMessage.Ptr, "%s");
-    if (stringLocation != NULL) {
+    if (stringLocation != nullptr) {
       //write first chunk
       theErrorMsgFormatter.Put(theMessage.Ptr, stringLocation - theMessage.Ptr);
 
-      if (inStringArg != NULL && inStringArg->Len > 0) {
+      if (inStringArg != nullptr && inStringArg->Len > 0) {
         //write string arg if it exists
         theErrorMsgFormatter.Put(inStringArg->Ptr, inStringArg->Len);
         stringLocation += 2;
@@ -399,7 +399,7 @@ SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatus
   //
   // Now that we've formatted the message into the temporary buffer,
   // write it out to the request stream and the Client Session object
-  (void) QTSS_Write(inRequest, theErrorMsgFormatter.GetBufPtr(), theErrorMsgFormatter.GetBytesWritten(), NULL, 0);
+  (void) QTSS_Write(inRequest, theErrorMsgFormatter.GetBufPtr(), theErrorMsgFormatter.GetBytesWritten(), nullptr, 0);
   (void) QTSS_SetValue(inRequest, qtssRTSPReqRespMsg, 0, theErrorMsgFormatter.GetBufPtr(), theErrorMsgFormatter.GetBytesWritten());
 
   delete[] messageBuffPtr;
@@ -654,7 +654,7 @@ GetAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inTy
 
 char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char *inAttributeName, char *inDefaultValue) {
   UInt32 theDefaultValLen = 0;
-  if (inDefaultValue != NULL)
+  if (inDefaultValue != nullptr)
     theDefaultValLen = ::strlen(inDefaultValue);
 
   //
@@ -662,9 +662,9 @@ char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char *inAttribut
   // it to be the right type
   QTSS_AttributeID theID = QTSSModuleUtils::CheckAttributeDataType(inObject, inAttributeName, qtssAttrDataTypeCharArray, inDefaultValue, theDefaultValLen);
 
-  char *theString = NULL;
+  char *theString = nullptr;
   (void) QTSS_GetValueAsString(inObject, theID, 0, &theString);
-  if (theString != NULL)
+  if (theString != nullptr)
     return theString;
 
   //
@@ -679,7 +679,7 @@ char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char *inAttribut
     QTSSModuleUtils::LogError(sMissingPrefVerbosity, qtssServerPrefMissing, 0, inAttributeName, inDefaultValue);
   }
 
-  if (inDefaultValue != NULL) {
+  if (inDefaultValue != nullptr) {
     //
     // Whether to return the default value or not from this function is dependent
     // solely on whether the caller passed in a non-NULL pointer or not.
@@ -689,7 +689,7 @@ char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char *inAttribut
     ::strcpy(theString, inDefaultValue);
     return theString;
   }
-  return NULL;
+  return nullptr;
 }
 
 void QTSSModuleUtils::
@@ -758,7 +758,7 @@ CreateAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType i
 
   //
   // Caller can pass in NULL for inDefaultValue, in which case we don't add the default
-  if (inDefaultValue != NULL) {
+  if (inDefaultValue != nullptr) {
     theErr = QTSS_SetValue(inObject, theID, 0, inDefaultValue, inBufferLen);
     Assert(theErr == QTSS_NoErr);
   }
@@ -858,7 +858,7 @@ bool QTSSModuleUtils::UserInGroup(QTSS_UserProfileObject inUserProfile, char *in
 
 bool QTSSModuleUtils::AddressInList(QTSS_Object inObject, QTSS_AttributeID listID, StrPtrLen *inAddressPtr) {
   StrPtrLenDel strDeleter;
-  char *theAttributeString = NULL;
+  char *theAttributeString = nullptr;
   IPComponentStr inAddress(inAddressPtr);
   IPComponentStr addressFromList;
 
@@ -883,7 +883,7 @@ bool QTSSModuleUtils::AddressInList(QTSS_Object inObject, QTSS_AttributeID listI
 bool QTSSModuleUtils::FindStringInAttributeList(QTSS_Object inObject, QTSS_AttributeID listID, StrPtrLen *inStrPtr) {
   StrPtrLenDel tempString;
 
-  if (NULL == inStrPtr || NULL == inStrPtr->Ptr || 0 == inStrPtr->Len) return false;
+  if (nullptr == inStrPtr || nullptr == inStrPtr->Ptr || 0 == inStrPtr->Len) return false;
 
   UInt32 numValues = 0;
   (void) QTSS_GetNumValues(inObject, listID, &numValues);

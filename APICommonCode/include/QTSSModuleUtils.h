@@ -213,54 +213,36 @@ class QTSSModuleUtils {
   static char *GetExtendedRights(QTSS_UserProfileObject theUserProfileObject, UInt32 index);
 
   static char *GetUserName_Copy(QTSS_UserProfileObject inUserProfile);
-  static char **GetGroupsArray_Copy(QTSS_UserProfileObject inUserProfile,
-                                    UInt32 *outNumGroupsPtr);
-  static bool UserInGroup(QTSS_UserProfileObject inUserProfile,
-                          char *inGroupName,
-                          UInt32 inGroupNameLen);
+  static char **GetGroupsArray_Copy(QTSS_UserProfileObject inUserProfile, UInt32 *outNumGroupsPtr);
+  static bool UserInGroup(QTSS_UserProfileObject inUserProfile, char *inGroupName, UInt32 inGroupNameLen);
 
   static void SetEnableRTSPErrorMsg(bool enable) {
     QTSSModuleUtils::sEnableRTSPErrorMsg = enable;
   }
 
-  static QTSS_AttributeID CreateAttribute(QTSS_Object inObject,
-                                          char *inAttributeName,
-                                          QTSS_AttrDataType inType,
-                                          void *inDefaultValue,
-                                          UInt32 inBufferLen);
+  static QTSS_AttributeID CreateAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType,
+                                          void *inDefaultValue, UInt32 inBufferLen);
 
-  static bool AddressInList(QTSS_Object inObject,
-                            QTSS_AttributeID listID,
-                            CF::StrPtrLen *theAddressPtr);
+  static bool AddressInList(QTSS_Object inObject, QTSS_AttributeID listID, CF::StrPtrLen *theAddressPtr);
 
   static void SetMisingPrefLogVerbosity(QTSS_ErrorVerbosity verbosityLevel) {
     QTSSModuleUtils::sMissingPrefVerbosity = verbosityLevel;
   }
   static QTSS_ErrorVerbosity GetMisingPrefLogVerbosity() { return QTSSModuleUtils::sMissingPrefVerbosity; }
 
-  static bool FindStringInAttributeList(QTSS_Object inObject,
-                                        QTSS_AttributeID listID,
-                                        CF::StrPtrLen *inStrPtr);
+  static bool FindStringInAttributeList(QTSS_Object inObject, QTSS_AttributeID listID, CF::StrPtrLen *inStrPtr);
 
-  static bool HavePlayerProfile(QTSS_PrefsObject inPrefObjectToCheck,
-                                QTSS_StandardRTSP_Params *inParams,
-                                UInt32 feature);
+  static bool HavePlayerProfile(QTSS_PrefsObject inPrefObjectToCheck, QTSS_StandardRTSP_Params *inParams, UInt32 feature);
 
-  static QTSS_Error AuthorizeRequest(QTSS_RTSPRequestObject theRTSPRequest,
-                                     bool *allowed,
-                                     bool *haveUser,
-                                     bool *authContinue);
+  static QTSS_Error AuthorizeRequest(QTSS_RTSPRequestObject theRTSPRequest, bool *allowed, bool *haveUser, bool *authContinue);
 
  private:
 
   //
   // Used in the implementation of the above functions
 
-  static QTSS_AttributeID CheckAttributeDataType(QTSS_Object inObject,
-                                                 char *inAttributeName,
-                                                 QTSS_AttrDataType inType,
-                                                 void *inDefaultValue,
-                                                 UInt32 inBufferLen);
+  static QTSS_AttributeID CheckAttributeDataType(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType,
+                                                 void *inDefaultValue, UInt32 inBufferLen);
 
   static QTSS_TextMessagesObject sMessages;
   static QTSS_ServerObject sServer;
@@ -278,8 +260,8 @@ class IPComponentStr {
   static IPComponentStr sLocalIPCompStr;
 
   IPComponentStr() : fIsValid(false) {}
-  IPComponentStr(char *theAddress);
-  IPComponentStr(CF::StrPtrLen *sourceStrPtr);
+  explicit IPComponentStr(char *theAddress);
+  explicit IPComponentStr(CF::StrPtrLen *sourceStrPtr);
 
   inline CF::StrPtrLen *GetComponent(UInt16 which);
   bool Equal(IPComponentStr *testAddressPtr);

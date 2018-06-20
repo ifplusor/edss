@@ -107,12 +107,11 @@ using namespace CF;
 class RTSPListenerSocket : public Net::TCPListenerSocket {
  public:
 
-  RTSPListenerSocket() {}
-
-  virtual ~RTSPListenerSocket() {}
+  RTSPListenerSocket() = default;
+  ~RTSPListenerSocket() override = default;
 
   //sole job of this object is to implement this function
-  virtual Thread::Task *GetSessionTask(Net::TCPSocket **outSocket);
+  Thread::Task *GetSessionTask(Net::TCPSocket **outSocket) override;
 
   //check whether the Listener should be idling
   bool OverMaxConnections(UInt32 buffer);
@@ -215,7 +214,7 @@ bool QTSServer::Initialize(XMLPrefsParser *inPrefsSource, PrefsSource *inMessage
   // Depending on the server preference, we will either break when we hit an
   // assert, or log the assert to the error log
   if (!fSrvrPrefs->ShouldServerBreakOnAssert())
-    SetAssertLogger(this->GetErrorLogStream());// the error log stream is our assert logger
+    SetAssertLogger(QTSServerInterface::GetErrorLogStream());// the error log stream is our assert logger
 
   //
   // CREATE GLOBAL OBJECTS
@@ -226,7 +225,7 @@ bool QTSServer::Initialize(XMLPrefsParser *inPrefsSource, PrefsSource *inMessage
   //
   // Load ERROR LOG module only. This is good in case there is a startup error.
 
-  QTSSModule *theLoggingModule = new QTSSModule("QTSSErrorLogModule");
+  auto *theLoggingModule = new QTSSModule("QTSSErrorLogModule");
   (void) theLoggingModule->SetupModule(&sCallbacks, &QTSSErrorLogModule_Main);
   (void) AddModule(theLoggingModule);
   this->BuildModuleRoleArrays();
@@ -1080,7 +1079,7 @@ Thread::Task *RTSPListenerSocket::GetSessionTask(Net::TCPSocket **outSocket) {
   // so that it can direct the "POST" half of the connection to the same machine when tunnelling RTSP thru HTTP
   bool doReportHTTPConnectionAddress = QTSServerInterface::GetServer()->GetPrefs()->GetDoReportHTTPConnectionAddress();
 
-  RTSPSession *theTask = new RTSPSession(doReportHTTPConnectionAddress);
+  auto *theTask = new RTSPSession(doReportHTTPConnectionAddress);
   *outSocket = theTask->GetSocket();  // out socket is not attached to a unix socket yet.
 
   // 根据配置文件中的 maximum_connections(default:1000)、fNumRTSPSessions、

@@ -44,15 +44,15 @@ class SDPSourceInfo : public SourceInfo {
 
   // Uses the SDP Data to build up the StreamInfo structures
   SDPSourceInfo(char *sdpData, UInt32 sdpLen) { Parse(sdpData, sdpLen); }
-  SDPSourceInfo() {}
-  virtual ~SDPSourceInfo();
+  SDPSourceInfo() = default;
+  ~SDPSourceInfo() override;
 
   // Parses out the SDP file provided, sets up the StreamInfo structures
   void Parse(char *sdpData, UInt32 sdpLen);
 
   // This function uses the Parsed SDP file, and strips out all the network information,
   // producing an SDP file that appears to be local.
-  virtual char *GetLocalSDP(UInt32 *newSDPLen);
+  char *GetLocalSDP(UInt32 *newSDPLen) override;
 
   // Returns the SDP data
   CF::StrPtrLen *GetSDPData() { return &fSDPData; }

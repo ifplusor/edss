@@ -465,7 +465,7 @@ BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags, 
       fSockets = sSocketPool.GetUDPSocketPair(fStreamInfo.fDestIPAddr, fStreamInfo.fPort, fStreamInfo.fSrcIPAddr, 0);
     }
 
-    if ((fSockets == NULL) && fStreamInfo.fSetupToReceive) {
+    if ((fSockets == nullptr) && fStreamInfo.fSetupToReceive) {
       fStreamInfo.fPort = 0;
       if (isMulticastDest) {
         fSockets = sSocketPool.GetUDPSocketPair(INADDR_ANY, fStreamInfo.fPort, fStreamInfo.fSrcIPAddr, 0);
@@ -475,7 +475,7 @@ BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags, 
     }
   }
 
-  if (fSockets == NULL)
+  if (fSockets == nullptr)
     return QTSSModuleUtils::SendErrorResponse(inRequest, qtssServerInternal, sCantBindReflectorSocketErr);
 
   // If we know the source IP address of this broadcast, we can demux incoming traffic

@@ -197,8 +197,7 @@ void QTSSPrefs::SetPrefValuesFromFileWithRef(ContainerRef pref, QTSS_AttributeID
   //
   // We have an attribute ID for this pref, it is in the map and everything.
   // Now, let's add all the values that are in the pref file.
-  if (pref == 0)
-    return;
+  if (pref == 0) return;
 
   UInt32 numPrefValues = inNumValues;
   if (inNumValues == 0)
@@ -245,10 +244,8 @@ void QTSSPrefs::SetPrefValuesFromFileWithRef(ContainerRef pref, QTSS_AttributeID
   this->SetNumValues(inAttrID, numPrefValues);
 }
 
-void QTSSPrefs::SetObjectValuesFromFile(ContainerRef pref,
-                                        QTSS_AttributeID inAttrID,
-                                        UInt32 inNumValues,
-                                        char *prefName) {
+void QTSSPrefs::
+SetObjectValuesFromFile(ContainerRef pref, QTSS_AttributeID inAttrID, UInt32 inNumValues, char *prefName) {
   for (UInt32 z = 0; z < inNumValues; z++) {
     ContainerRef object = fPrefsSource->GetObjectValue(pref, z);
     QTSSPrefs *prefObject;
@@ -256,7 +253,7 @@ void QTSSPrefs::SetObjectValuesFromFile(ContainerRef pref,
     QTSS_Error err = this->GetValue(inAttrID, z, &prefObject, &len);
     if (err != QTSS_NoErr) {
       UInt32 tempIndex;
-      err = CreateObjectValue(inAttrID, &tempIndex, (QTSSDictionary **) &prefObject, NULL,
+      err = CreateObjectValue(inAttrID, &tempIndex, (QTSSDictionary **) &prefObject, nullptr,
                               QTSSDictionary::kDontObeyReadOnly | QTSSDictionary::kDontCallCompletionRoutine);
       Assert(err == QTSS_NoErr);
       Assert(tempIndex == z);
@@ -274,11 +271,8 @@ void QTSSPrefs::SetObjectValuesFromFile(ContainerRef pref,
   this->SetNumValues(inAttrID, inNumValues);
 }
 
-void QTSSPrefs::SetPrefValue(QTSS_AttributeID inAttrID,
-                             UInt32 inAttrIndex,
-                             char *inPrefValue,
-                             QTSS_AttrDataType inPrefType,
-                             UInt32 inValueSize) {
+void QTSSPrefs::SetPrefValue(QTSS_AttributeID inAttrID, UInt32 inAttrIndex, char *inPrefValue,
+                             QTSS_AttrDataType inPrefType, UInt32 inValueSize) {
   static const UInt32 kMaxPrefValueSize = 1024;
   char convertedPrefValue[kMaxPrefValueSize];
   ::memset(convertedPrefValue, 0, kMaxPrefValueSize);

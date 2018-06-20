@@ -37,6 +37,9 @@
 #include <CF/ConfParser.h>
 
 
+/**
+ * 以链表的方式存储 K-V 对
+ */
 class KeyValuePair {
  public:
 
@@ -55,9 +58,8 @@ class KeyValuePair {
   void ResetValue(const char *inValue);
 };
 
-KeyValuePair::
-KeyValuePair(const char *inKey, const char *inValue, KeyValuePair *inNext)
-    : fKey(NULL), fValue(NULL), fNext(NULL) {
+KeyValuePair::KeyValuePair(const char *inKey, const char *inValue, KeyValuePair *inNext)
+    : fKey(nullptr), fValue(nullptr), fNext(nullptr) {
   fKey = new char[::strlen(inKey) + 1];
   ::strcpy(fKey, inKey);
   fValue = new char[::strlen(inValue) + 1];
@@ -91,15 +93,12 @@ FilePrefsSource::~FilePrefsSource() {
 }
 
 int FilePrefsSource::GetValue(const char *inKey, char *ioValue) {
-  return (this->FindValue(inKey, ioValue) != NULL);
+  return (this->FindValue(inKey, ioValue) != nullptr);
 }
 
-int FilePrefsSource::GetValueByIndex(const char *inKey,
-                                     UInt32 inIndex,
-                                     char *ioValue) {
+int FilePrefsSource::GetValueByIndex(const char *inKey, UInt32 inIndex, char *ioValue) {
   KeyValuePair *thePair = this->FindValue(inKey, ioValue, inIndex);
-
-  return thePair != NULL;
+  return thePair != nullptr;
 }
 
 char *FilePrefsSource::GetValueAtIndex(UInt32 inIndex) {
@@ -125,12 +124,11 @@ char *FilePrefsSource::GetKeyAtIndex(UInt32 inIndex) {
 }
 
 void FilePrefsSource::SetValue(const char *inKey, const char *inValue) {
-  KeyValuePair *keyValue = NULL;
+  KeyValuePair *keyValue = nullptr;
 
   // If the key/value already exists update the value.
   // If duplicate keys are allowed, however, add a new entry regardless
-  if ((!fAllowDuplicates)
-      && ((keyValue = this->FindValue(inKey, NULL)) != NULL)) {
+  if ((!fAllowDuplicates) && ((keyValue = this->FindValue(inKey, nullptr)) != nullptr)) {
     keyValue->ResetValue(inValue);
   } else {
     fKeyValueList = new KeyValuePair(inKey, inValue, fKeyValueList);
@@ -216,13 +214,12 @@ KeyValuePair *FilePrefsSource::FindValue(const char *inKey, char *ioValue, UInt3
   KeyValuePair *keyValue = fKeyValueList;
   UInt32 foundIndex = 0;
 
-  if (ioValue != NULL)
-    ioValue[0] = '\0';
+  if (ioValue != nullptr) ioValue[0] = '\0';
 
-  while (keyValue != NULL) {
+  while (keyValue != nullptr) {
     if (::strcmp(inKey, keyValue->fKey) == 0) {
       if (foundIndex == index) {
-        if (ioValue != NULL)
+        if (ioValue != nullptr)
           ::strcpy(ioValue, keyValue->fValue);
         return keyValue;
       }
@@ -231,5 +228,5 @@ KeyValuePair *FilePrefsSource::FindValue(const char *inKey, char *ioValue, UInt3
     keyValue = keyValue->fNext;
   }
 
-  return NULL;
+  return nullptr;
 }

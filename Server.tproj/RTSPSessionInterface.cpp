@@ -251,7 +251,7 @@ RTSPSessionInterface::InterleavedWrite(void *inBuffer, UInt32 inLen, UInt32 *out
   }
 
   // DMS - this struct should be packed.
-  //rt todo -- is this struct more portable (byte alignment could be a problem)?
+  // TODO: is this struct more portable (byte alignment could be a problem)?
   struct RTPInterleaveHeader {
     unsigned char header;
     unsigned char channel;
@@ -369,7 +369,7 @@ void RTSPSessionInterface::SnarfInputSocket(RTSPSessionInterface *fromRTSPSessio
 }
 
 void *RTSPSessionInterface::SetupParams(QTSSDictionary *inSession, UInt32 * /*outLen*/) {
-  RTSPSessionInterface *theSession = (RTSPSessionInterface *) inSession;
+  auto *theSession = (RTSPSessionInterface *) inSession;
 
   theSession->fLocalAddr = theSession->fSocket.GetLocalAddr();
   theSession->fRemoteAddr = theSession->fSocket.GetRemoteAddr();
@@ -400,9 +400,7 @@ void RTSPSessionInterface::SaveOutputStream() {
   Assert(fOldOutputStreamBuffer.Ptr == nullptr);
   fOldOutputStreamBuffer.Ptr = new char[fOutputStream.GetBytesWritten()];
   fOldOutputStreamBuffer.Len = fOutputStream.GetBytesWritten();
-  ::memcpy(fOldOutputStreamBuffer.Ptr,
-           fOutputStream.GetBufPtr(),
-           fOldOutputStreamBuffer.Len);
+  ::memcpy(fOldOutputStreamBuffer.Ptr, fOutputStream.GetBufPtr(), fOldOutputStreamBuffer.Len);
 }
 
 void RTSPSessionInterface::RevertOutputStream() {

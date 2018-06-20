@@ -505,7 +505,7 @@ QTSS_Error RTPStream::Setup(RTSPRequestInterface *request, QTSS_AddStreamFlags i
   // a dedicated set of sockets
   if (Net::SocketUtils::IsMulticastIPAddr(fRemoteAddr)) {
     // 重新调用 CreateUDPSocketPair 创建 socket 对,并设置 socket 属性
-    fSockets = QTSServerInterface::GetServer()->GetSocketPool()->CreateUDPSocketPair( sourceAddr, 0);
+    fSockets = QTSServerInterface::GetServer()->GetSocketPool()->CreateUDPSocketPair(sourceAddr, 0);
 
     if (fSockets != NULL) {
       //Set options on both sockets. Not really sure why we need to specify an

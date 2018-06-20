@@ -2277,6 +2277,8 @@ enum {
    * Appends a content body string error message for reported RTSP errors.
    * @alias "RTSP_error_message"
    * @property bool
+   *
+   * @see QTSSModuleUtils::sEnableRTSPErrorMsg
    */
   qtssPrefsEnableRTSPErrorMessage = 55,
 
@@ -2284,6 +2286,9 @@ enum {
    * printfs incoming RTSPRequests and Outgoing RTSP responses.
    * @alias "RTSP_debug_printfs"
    * @property Boo1l6
+   *
+   * @see RTSPRequestStream::fPrintRTSP
+   * @see RTSPResponseStream::fPrintRTSP
    */
   qtssPrefsEnableRTSPDebugPrintfs = 56,
 
@@ -2496,7 +2501,13 @@ enum {
    */
   easyPrefsNginxRTMPServer = 86,
 
-  qtssPrefsNumParams = 87
+  /**
+   * @alias "service_open_ip"
+   * @property Char array
+   */
+  edssPrefsServiceOpenIPAddrs = 87,
+
+  qtssPrefsNumParams = 88
 };
 
 typedef UInt32 QTSS_PrefsAttributes;

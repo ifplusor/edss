@@ -44,11 +44,11 @@ class KeyValuePair; //only used in the implementation
 class FilePrefsSource : public PrefsSource {
  public:
 
-  FilePrefsSource(bool allowDuplicates = false);
-  virtual ~FilePrefsSource();
+  explicit FilePrefsSource(bool allowDuplicates = false);
+  ~FilePrefsSource() override;
 
-  virtual int GetValue(const char *inKey, char *ioValue);
-  virtual int GetValueByIndex(const char *inKey, UInt32 inIndex, char *ioValue);
+  int GetValue(const char *inKey, char *ioValue) override;
+  int GetValueByIndex(const char *inKey, UInt32 inIndex, char *ioValue) override;
 
   // Allows caller to iterate over all the values in the file.
   char *GetValueAtIndex(UInt32 inIndex);
@@ -63,9 +63,7 @@ class FilePrefsSource : public PrefsSource {
 
  private:
 
-  static bool FilePrefsConfigSetter(const char *paramName,
-                                    const char *paramValue[],
-                                    void *userData);
+  static bool FilePrefsConfigSetter(const char *paramName, const char *paramValue[], void *userData);
 
   KeyValuePair *FindValue(const char *inKey, char *ioValue, UInt32 index = 0);
   KeyValuePair *fKeyValueList;
