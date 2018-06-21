@@ -3217,7 +3217,7 @@ QTSS_Error QTSS_CreateObjectType(QTSS_ObjectType *outType);
 //              QTSS_BadArgument:   Adding an attribute to a nonexistent object type, attribute
 //                      name too long, or NULL arguments.
 //              QTSS_AttrNameExists: The name must be unique.
-QTSS_Error QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType);
+QTSS_Error QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType);
 
 /********************************************************************/
 //  QTSS_AddInstanceAttribute
@@ -3233,7 +3233,7 @@ QTSS_Error QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char *inAttrNam
 //              QTSS_BadArgument:   Adding an attribute to a nonexistent object type, attribute
 //                      name too long, or NULL arguments.
 //              QTSS_AttrNameExists: The name must be unique.
-QTSS_Error QTSS_AddInstanceAttribute(QTSS_Object inObject, char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType);
+QTSS_Error QTSS_AddInstanceAttribute(QTSS_Object inObject, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType);
 
 /********************************************************************/
 //  QTSS_RemoveInstanceAttribute

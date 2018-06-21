@@ -765,8 +765,7 @@ void QTSServer::InitCallbacks() {
 
   sCallbacks.addr[kAddStaticAttributeCallback] = (QTSS_CallbackProcPtr) QTSSCallbacks::QTSS_AddStaticAttribute;
   sCallbacks.addr[kAddInstanceAttributeCallback] = (QTSS_CallbackProcPtr) QTSSCallbacks::QTSS_AddInstanceAttribute;
-  sCallbacks.addr[kRemoveInstanceAttributeCallback] =
-      (QTSS_CallbackProcPtr) QTSSCallbacks::QTSS_RemoveInstanceAttribute;
+  sCallbacks.addr[kRemoveInstanceAttributeCallback] = (QTSS_CallbackProcPtr) QTSSCallbacks::QTSS_RemoveInstanceAttribute;
 
   sCallbacks.addr[kGetAttrInfoByIndexCallback] = (QTSS_CallbackProcPtr) QTSSCallbacks::QTSS_GetAttrInfoByIndex;
   sCallbacks.addr[kGetAttrInfoByNameCallback] = (QTSS_CallbackProcPtr) QTSSCallbacks::QTSS_GetAttrInfoByName;

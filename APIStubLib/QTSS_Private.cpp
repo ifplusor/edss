@@ -96,11 +96,11 @@ QTSS_Error QTSS_AddAttribute(QTSS_ObjectType inType, char const *inTag, void *in
   return (sCallbacks->addr[kAddAttributeCallback])(inType, inTag, inUnused);
 }
 
-QTSS_Error QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
+QTSS_Error QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
   return (sCallbacks->addr[kAddStaticAttributeCallback])(inObjectType, inAttrName, inUnused, inAttrDataType);
 }
 
-QTSS_Error QTSS_AddInstanceAttribute(QTSS_Object inObject, char *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
+QTSS_Error QTSS_AddInstanceAttribute(QTSS_Object inObject, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
   return (sCallbacks->addr[kAddInstanceAttributeCallback])(inObject, inAttrName, inUnused, inAttrDataType);
 }
 

@@ -123,13 +123,13 @@ QTSS_Error QTSSCallbacks::QTSS_AddAttribute(QTSS_ObjectType inType, char const *
 
 QTSS_Error QTSSCallbacks::
 QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
-  Assert(inUnused == NULL);
-  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
-  if (Core::Thread::GetCurrent() != NULL)
+  Assert(inUnused == nullptr);
+  auto *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
+  if (Core::Thread::GetCurrent() != nullptr)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 
   // Static attributes can only be added before modules have had their Initialize role invoked.
-  if ((theState == NULL) || (theState->curRole != QTSS_Register_Role))
+  if ((theState == nullptr) || (theState->curRole != QTSS_Register_Role))
     return QTSS_OutOfState;
 
   UInt32 theDictionaryIndex = QTSSDictionaryMap::GetMapIndex(inObjectType);
@@ -137,27 +137,27 @@ QTSS_AddStaticAttribute(QTSS_ObjectType inObjectType, char const *inAttrName, vo
     return QTSS_BadArgument;
 
   QTSSDictionaryMap *theMap = QTSSDictionaryMap::GetMap(theDictionaryIndex);
-  return theMap->AddAttribute(inAttrName, NULL, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe);
+  return theMap->AddAttribute(inAttrName, nullptr, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModePreempSafe);
 }
 
 QTSS_Error QTSSCallbacks::QTSS_AddInstanceAttribute(QTSS_Object inObject, char const *inAttrName, void *inUnused, QTSS_AttrDataType inAttrDataType) {
-  Assert(inUnused == NULL);
-  if ((inObject == NULL) || (inAttrName == NULL))
+  Assert(inUnused == nullptr);
+  if ((inObject == nullptr) || (inAttrName == nullptr))
     return QTSS_BadArgument;
 
   return ((QTSSDictionary *) inObject)->AddInstanceAttribute(
-      inAttrName, NULL, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModeDelete | qtssAttrModePreempSafe);
+      inAttrName, nullptr, inAttrDataType, qtssAttrModeRead | qtssAttrModeWrite | qtssAttrModeDelete | qtssAttrModePreempSafe);
 }
 
 QTSS_Error QTSSCallbacks::QTSS_RemoveInstanceAttribute(QTSS_Object inObject, QTSS_AttributeID inID) {
-  if (inObject == NULL || (inID == qtssIllegalAttrID))
+  if (inObject == nullptr || (inID == qtssIllegalAttrID))
     return QTSS_BadArgument;
 
   return ((QTSSDictionary *) inObject)->RemoveInstanceAttribute(inID);
 }
 
 QTSS_Error QTSSCallbacks::QTSS_IDForAttr(QTSS_ObjectType inType, char const *inName, QTSS_AttributeID *outID) {
-  if (outID == NULL)
+  if (outID == nullptr)
     return QTSS_BadArgument;
 
   UInt32 theDictionaryIndex = QTSSDictionaryMap::GetMapIndex(inType);
@@ -168,7 +168,7 @@ QTSS_Error QTSSCallbacks::QTSS_IDForAttr(QTSS_ObjectType inType, char const *inN
 }
 
 QTSS_Error QTSSCallbacks::QTSS_GetAttrInfoByIndex(QTSS_Object inObject, UInt32 inIndex, QTSS_Object *outAttrInfoObject) {
-  if (inObject == NULL)
+  if (inObject == nullptr)
     return QTSS_BadArgument;
 
   return ((QTSSDictionary *) inObject)->GetAttrInfoByIndex(inIndex, (QTSSAttrInfoDict **) outAttrInfoObject);
