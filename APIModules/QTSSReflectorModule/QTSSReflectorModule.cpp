@@ -677,8 +677,9 @@ QTSS_Error ProcessRTPData(QTSS_IncomingData_Params *inParams) {
 QTSS_Error ProcessRTSPRequest(QTSS_StandardRTSP_Params *inParams) {
   Core::MutexLocker locker(sSessionMap->GetMutex()); //operating on sOutputAttr
 
-  if (REFLECTOR_MODULE_DEBUGGING)
-    s_printf("QTSSReflectorModule:ProcessRTSPRequest inClientSession=%" _UPOINTERSIZEARG_ "\n", inParams->inClientSession);
+  DEBUG_LOG(REFLECTOR_MODULE_DEBUGGING,
+            "QTSSReflectorModule:ProcessRTSPRequest inClientSession=%" _UPOINTERSIZEARG_ "\n",
+            inParams->inClientSession);
 
   QTSS_RTSPMethod *theMethod = nullptr;
   UInt32 theLen = 0;
@@ -866,6 +867,11 @@ void DoAnnounceAddRequiredSDPLines(QTSS_StandardRTSP_Params *inParams, Resizeabl
 }
 
 QTSS_Error DoAnnounce(QTSS_StandardRTSP_Params *inParams) {
+
+  DEBUG_LOG(REFLECTOR_MODULE_DEBUGGING,
+            "QTSSReflectorModule:DoAnnounce inClientSession=%" _UPOINTERSIZEARG_ " rand=%d\n",
+            inParams->inClientSession, ::rand());
+
   // 判断sAnnounceEnabled是否开启，由 enable_broadcast_announce 配置项确定，默认为true
   if (!sAnnounceEnabled)
     return QTSSModuleUtils::SendErrorResponse(inParams->inRTSPRequest, qtssPreconditionFailed, sAnnounceDisabledNameErr);
@@ -878,10 +884,9 @@ QTSS_Error DoAnnounce(QTSS_StandardRTSP_Params *inParams) {
 
   //
   // Eventually, we should really require access control before we do this.
-  //s_printf("QTSSReflectorModule:DoAnnounce\n");
-  //
+
   // Get the full path to this file
-  char *theFullPathStr = NULL;
+  char *theFullPathStr = nullptr;
   (void) QTSS_GetValueAsString(inParams->inRTSPRequest, qtssRTSPReqFilePath, 0, &theFullPathStr);
   QTSSCharArrayDeleter theFullPathStrDeleter(theFullPathStr);
   StrPtrLen theFullPath(theFullPathStr);
@@ -1129,6 +1134,11 @@ void DoDescribeAddRequiredSDPLines(QTSS_StandardRTSP_Params *inParams, Reflector
 }
 
 QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
+
+  DEBUG_LOG(REFLECTOR_MODULE_DEBUGGING,
+            "QTSSReflectorModule:DoDescribe inClientSession=%" _UPOINTERSIZEARG_ "\n",
+            inParams->inClientSession);
+
   // 1. 根据路径获取或者创建ReflectorSession，并获取对应请求的sdp文件绝对路径；
   UInt32 theRefCount = 0;
   char *theFilePath = NULL;
@@ -1518,6 +1528,10 @@ QTSS_Error AddRTPStream(ReflectorSession *theSession, QTSS_StandardRTSP_Params *
 
 QTSS_Error DoSetup(QTSS_StandardRTSP_Params *inParams) {
 
+  DEBUG_LOG(REFLECTOR_MODULE_DEBUGGING,
+            "QTSSReflectorModule:DoSetup inClientSession=%" _UPOINTERSIZEARG_ "\n",
+            inParams->inClientSession);
+
   // 1. 根据关键字qtssRTSPReqTransportMode判断是否为推模式，具体isPush值由Setup请求中的mode值有关，
   //   mode="receive" || mode="record"表示isPush为true。对应的解析函数为: RTSPRequest::ParseModeSubHeader
   UInt32 theLen = 0;
@@ -1736,20 +1750,22 @@ bool HaveStreamBuffers(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inS
   return haveBufferedStreams;
 }
 
+/* 实际上是调用RTPSession::Play函数, 在该函数里会执行 this->Signal(Task::kStartEvent), 从而导致RTPSession::Run函数运行。
+ * 在RTPSession::Run函数里,调用fModule->CallDispatch(QTSS_RTPSendPackets_Role, &theParams)。
+ * 因为fModule在 RTSPSession::Run 函数里被 SetPacketSendingModule 函数设置成为 QTSSReflectorModule, 而该Module并不支持
+ * QTSS_RTPSendPackets_Role, 所以RTPSession::Run返回 0,从而RTPSession::Run函数不会被TaskThread再次调度。 */
 QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSession) {
-  // 实际上是调用RTPSession::Play函数,在该函数里会执行“this->Signal(Task::kStartEvent)”,从而导致RTPSession::Run函数运行。
-  // 在RTPSession::Run函数里,调用fModule->CallDispatch(QTSS_RTPSendPackets_Role, &theParams)。
-  // 在我们分析的播放sdp文件这个情景里,fModule在RTSPSession::Run函数里被
-  // SetPacketSendingModule 函数设置成为QTSSReflectorModule,而该Module并不支持
-  // QTSS_RTPSendPackets_Role,所以RTPSession::Run返回 0,从而RTPSession::Run函数不会被
-  // TaskThread再次调度。
+
+  DEBUG_LOG(REFLECTOR_MODULE_DEBUGGING,
+            "QTSSReflectorModule:DoPlay inClientSession=%" _UPOINTERSIZEARG_ "\n",
+            inParams->inClientSession);
 
   QTSS_Error theErr = QTSS_NoErr;
   UInt32 flags = 0;
   UInt32 theLen = 0;
   bool rtpInfoEnabled = false;
 
-  if (inSession == NULL) {  // 推送端
+  if (inSession == nullptr) {  // 推送端
     if (!sDefaultBroadcastPushEnabled) return QTSS_RequestFailed;
 
     theLen = sizeof(inSession);
@@ -1764,7 +1780,9 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSessio
     theErr = QTSS_SetValue(inParams->inRTSPSession, sRTSPBroadcastSessionAttr, 0, &inSession, sizeof(inSession));
     if (theErr != QTSS_NoErr) return QTSS_RequestFailed;
 
-    //s_printf("QTSSReflectorModule:SET for att err=%" _S32BITARG_ " id=%" _S32BITARG_ "\n",theErr,inParams->inRTSPSession);
+    DEBUG_LOG(REFLECTOR_MODULE_DEBUGGING,
+              "QTSSReflectorModule:SET for sRTSPBroadcastSessionAttr err=%" _S32BITARG_ " id=%" _S32BITARG_ "\n",
+              theErr, inParams->inRTSPSession);
 
     // this code needs to be cleaned up
     // Check and see if the full path to this file matches an existing ReflectorSession
@@ -1775,7 +1793,7 @@ QTSS_Error DoPlay(QTSS_StandardRTSP_Params *inParams, ReflectorSession *inSessio
 
     // remove trackID designation from the path if it is there
     char *trackStr = thePathPtr.FindString("/trackID=");
-    if (trackStr != NULL && *trackStr != 0) {
+    if (trackStr != nullptr && *trackStr != 0) {
       *trackStr = 0; // terminate the string.
       thePathPtr.Len = ::strlen(thePathPtr.Ptr);
     }

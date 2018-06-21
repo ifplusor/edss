@@ -53,7 +53,7 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
 
   RTSPSessionInterface();
 
-  virtual ~RTSPSessionInterface();
+  ~RTSPSessionInterface() override;
 
   //Is this session alive? If this returns false, clean up and begone as
   //fast as possible

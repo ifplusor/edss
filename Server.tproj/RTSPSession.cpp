@@ -222,9 +222,12 @@ RTSPSession::~RTSPSession() {
   }
 }
 
+/**
+ * 当一个RTSP端口有数据时,EventContext::ProcessEvent函数会调用Signal函数,
+ * TaskThread会调用RTSPSession::Run函数。
+ * @see TCPListenerSocket::ProcessEvent
+ */
 SInt64 RTSPSession::Run() {
-  // 当一个RTSP端口有数据时,EventContext::ProcessEvent函数会调用Signal函数,TaskThread会调用
-  // RTSPSession::Run函数。见TCPListenerSocket::ProcessEvent函数的分析。
 
   EventFlags events = this->GetEvents();
   QTSS_Error err = QTSS_NoErr;
@@ -253,7 +256,7 @@ SInt64 RTSPSession::Run() {
           // and still don't have a full request. Wait for more data.
 
           // +rt use the socket that reads the data, may be different now.
-          fInputSocketP->RequestEvent(EV_RE | EV_OS);  // 重新申请监听
+          fInputSocketP->RequestEvent(EV_REOS);  // 重新申请监听
           return 0;
         }
 
@@ -305,7 +308,7 @@ SInt64 RTSPSession::Run() {
         if (err == EAGAIN) {
           // If we get this error, we are currently flow-controlled and should
           // wait for the socket to become writeable again
-          fSocket.RequestEvent(EV_WR | EV_OS);
+          fSocket.RequestEvent(EV_WROS);
         }
         return 0;
         //continue;
@@ -336,7 +339,7 @@ SInt64 RTSPSession::Run() {
           // and still don't have a full request. Wait for more data.
 
           //+rt use the socket that reads the data, may be different now.
-          fInputSocketP->RequestEvent(EV_RE | EV_OS);
+          fInputSocketP->RequestEvent(EV_REOS);
           return 0;
         }
 
@@ -1016,7 +1019,7 @@ SInt64 RTSPSession::Run() {
         if (err == EAGAIN) {
           // If we get this error, we are currently flow-controlled and should
           // wait for the socket to become writeable again
-          fSocket.RequestEvent(EV_WR | EV_OS);
+          fSocket.RequestEvent(EV_WROS);
           // We are holding mutexes[fReadMutex.Lock(); fSessionMutex.Lock();],
           // so we need to force the same thread to be used for next Run()
           this->ForceSameThread();
@@ -1038,7 +1041,7 @@ SInt64 RTSPSession::Run() {
           err = this->DumpRequestData();
 
           if (err == EAGAIN) {
-            fInputSocketP->RequestEvent(EV_RE | EV_OS);
+            fInputSocketP->RequestEvent(EV_REOS);
             this->ForceSameThread();    // We are holding mutexes, so we need to force
             // the same thread to be used for next Run()
             return 0;
@@ -1051,6 +1054,8 @@ SInt64 RTSPSession::Run() {
         this->CleanupRequest();
         fState = kReadingRequest;  // 注意,这里处于一个while循环
       }
+
+      default: break;
     }
   }
 

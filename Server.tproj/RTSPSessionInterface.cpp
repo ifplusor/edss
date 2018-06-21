@@ -188,9 +188,9 @@ QTSS_Error RTSPSessionInterface::Read(void *ioBuffer, UInt32 inLength, UInt32 *o
 
 QTSS_Error RTSPSessionInterface::RequestEvent(QTSS_EventType inEventMask) {
   if (inEventMask & QTSS_ReadableEvent)
-    fInputSocketP->RequestEvent(EV_RE | EV_OS);
+    fInputSocketP->RequestEvent(EV_REOS);
   if (inEventMask & QTSS_WriteableEvent)
-    fOutputSocketP->RequestEvent(EV_WR | EV_OS);
+    fOutputSocketP->RequestEvent(EV_WROS);
   return QTSS_NoErr;
 }
 

@@ -36,9 +36,9 @@ QTSS_Error QTSSSocket::RequestEvent(QTSS_EventType inEventMask) {
   int theMask = 0;
 
   if (inEventMask & QTSS_ReadableEvent)
-    theMask |= EV_RE;
+    theMask |= EV_REOS;
   if (inEventMask & QTSS_WriteableEvent)
-    theMask |= EV_WR;
+    theMask |= EV_WROS;
 
   fEventContext.SetTask(this->GetTask());
   fEventContext.RequestEvent(theMask);

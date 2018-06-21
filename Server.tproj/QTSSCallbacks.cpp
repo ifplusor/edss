@@ -583,7 +583,7 @@ QTSS_Error QTSSCallbacks::QTSS_RequestEvent(QTSS_StreamRef inStream, QTSS_EventT
 
   if (theState->curTask == nullptr) return QTSS_OutOfState;
 
-  theState->eventRequested = true;
+  theState->eventRequested = true; // request event
 
   // Now, tell this stream to be ready for the requested event
   auto *theStream = (QTSSStream *) inStream;
@@ -620,8 +620,7 @@ QTSS_Error QTSSCallbacks::QTSS_SetIdleTimer(SInt64 inMsecToWait) {
 }
 
 QTSS_Error QTSSCallbacks::QTSS_SetIdleRoleTimer(SInt64 inMsecToWait) {
-  QTSS_ModuleState *theState = (QTSS_ModuleState *)
-      Core::Thread::GetMainThreadData();
+  QTSS_ModuleState *theState = (QTSS_ModuleState *) Core::Thread::GetMainThreadData();
   if (Core::Thread::GetCurrent() != NULL)
     theState = (QTSS_ModuleState *) Core::Thread::GetCurrent()->GetThreadData();
 

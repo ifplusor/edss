@@ -136,11 +136,15 @@ typedef struct {
   QTSS_DispatchFuncPtr outDispatchFunction;
 } QTSS_PrivateArgs, *QTSS_PrivateArgsPtr;
 
+/**
+ * this structure is setup in each thread before invoking a module in a role.
+ * Sometimes this info. helps callback implementation
+ */
 typedef struct {
-  QTSSModule *curModule;     // this structure is setup in each thread
-  QTSS_Role curRole;         // before invoking a module in a role. Sometimes
-  CF::Thread::Task *curTask; // this info. helps callback implementation
-  bool eventRequested;
+  QTSSModule *curModule;
+  QTSS_Role curRole;
+  CF::Thread::Task *curTask;
+  bool eventRequested;       // if a module requested events
   bool globalLockRequested;  // request event with global lock.
   bool isGlobalLocked;
   SInt64 idleTime;           // If a module has requested idle time.
