@@ -139,8 +139,7 @@ QTSS_Error RTSPResponseStream::Flush() {
   if (amtInBuffer > 0) {
     if (fPrintRTSP) {
       CF::DateBuffer theDate;
-      CF::DateTranslator::UpdateDateBuffer(&theDate,
-                                       0); // get the current GMT date and time
+      CF::DateTranslator::UpdateDateBuffer(&theDate, 0); // get the current GMT date and time
 
       s_printf("\n#S->C:\n#time: ms=%"   _U32BITARG_   " date=%s\n",
                   (UInt32) CF::Core::Time::StartTimeMilli_Int(),
@@ -150,9 +149,7 @@ QTSS_Error RTSPResponseStream::Flush() {
     }
 
     UInt32 theLengthSent = 0;
-    (void) fSocket->Send(this->GetBufPtr() + fBytesSentInBuffer,
-                         amtInBuffer,
-                         &theLengthSent);
+    (void) fSocket->Send(this->GetBufPtr() + fBytesSentInBuffer, amtInBuffer, &theLengthSent);
 
     // Refresh the timeout if we were able to send any data
     if (theLengthSent > 0)
@@ -164,7 +161,6 @@ QTSS_Error RTSPResponseStream::Flush() {
       fBytesSentInBuffer = 0;
     } else {
       // Not all the data was sent, so report an EAGAIN
-
       fBytesSentInBuffer += theLengthSent;
       Assert(fBytesSentInBuffer < this->GetCurrentOffset());
       return EAGAIN;

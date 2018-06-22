@@ -124,6 +124,7 @@ ReflectorStream::ReflectorStream(SourceInfo::StreamInfo *inInfo)
       fRTPSender(NULL, qtssWriteFlagsIsRTP),
       fRTCPSender(NULL, qtssWriteFlagsIsRTCP),
       fOutputArray(NULL),
+      fStreamFormat(kStreamFormatUnknown),
       fNumBuckets(kMinNumBuckets),
       fNumElements(0),
       fBucketMutex(),
@@ -151,6 +152,7 @@ ReflectorStream::ReflectorStream(SourceInfo::StreamInfo *inInfo)
   fRTCPSender.fStream = this;
 
   fStreamInfo.Copy(*inInfo);
+  DetectStreamFormat();
 
   // ALLOCATE BUCKET ARRAY
   this->AllocateBucketArray(fNumBuckets);
@@ -533,6 +535,21 @@ BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags, 
   }
 
   return QTSS_NoErr;
+}
+
+/**
+ * 检测流的负载格式
+ */
+void ReflectorStream::DetectStreamFormat() {
+  if (fStreamInfo.fPayloadType == qtssVideoPayloadType) {
+    if (fStreamInfo.fPayloadName.Equal("H264/90000")) {  // h.264 payload 固定为 H264/90000
+      fStreamFormat = kStreamFormatVideoH264;
+    } else {
+      fStreamFormat = kStreamFormatVideo;
+    }
+  } else if (fStreamInfo.fPayloadType == qtssAudioPayloadType) {
+    fStreamFormat = kStreamFormatAudio;
+  }
 }
 
 void ReflectorStream::SendReceiverReport() {
@@ -1497,7 +1514,7 @@ SInt64 ReflectorSocket::Run() {
     auto *theSender2 = (ReflectorSender *) iter2.GetCurrent()->GetEnclosingObject();
     // 根据 fNextTimeToRun 和当前时间判断是否马上进行 Reflect.
     if (theSender2 != nullptr && theSender2->ShouldReflectNow(theMilliseconds, &fSleepTime))
-      theSender2->ReflectPackets(&fSleepTime, &fFreeQueue);
+        theSender2->ReflectPackets(&fSleepTime, &fFreeQueue);
   }
 
 #if DEBUG
@@ -1563,9 +1580,7 @@ void ReflectorSocket::BufferKeyFrame(ReflectorSender *theSender, ReflectorPacket
   // 对H264视频RTP包进行关键帧过滤，保存最新关键帧首个RTP包指针
 
   // 1. 判断是否为视频 H.264 RTP
-  SourceInfo::StreamInfo *streamInfo = theSender->fStream->GetStreamInfo();
-  if ((streamInfo->fPayloadType == qtssVideoPayloadType) &&
-      (streamInfo->fPayloadName.Equal("H264/90000"))) { // h.264 payload 固定为 H264/90000
+  if (theSender->fStream->fStreamFormat == ReflectorStream::kStreamFormatVideoH264) {
 
     // 2. 在这里判断上面插入的thePacket是否为关键帧起始RTP包，如果是，则记录thePacket->fQueueElem
     if (theSender->IsKeyFrameFirstPacket(thePacket)) {
@@ -1590,7 +1605,7 @@ void ReflectorSocket::BufferKeyFrame(ReflectorSender *theSender, ReflectorPacket
   // 如果视频关键帧有更新，音频也根据视频的更新立即进行更新
 
   // 1. 判断是否为音频RTP且有视频关键帧更新Notify
-  else if ((streamInfo->fPayloadType == qtssAudioPayloadType) &&
+  else if ((theSender->fStream->fStreamFormat & ReflectorStream::kStreamFormatAudio) &&
       (theSender->fStream->GetMyReflectorSession()->HasVideoKeyFrameUpdate())) {
 
     // 2. 取消原来音频的fKeyFrameStartPacketElementPointer

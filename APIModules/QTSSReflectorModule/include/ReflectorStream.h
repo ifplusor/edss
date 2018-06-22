@@ -574,6 +574,8 @@ class ReflectorStream {
 
  private:
 
+  void DetectStreamFormat();
+
   // Sends an RTCP receiver report to the broadcast source
   void SendReceiverReport();
 
@@ -592,6 +594,15 @@ class ReflectorStream {
 
   // All the necessary info about this stream
   SourceInfo::StreamInfo fStreamInfo;
+
+  enum {
+    kStreamFormatUnknown = 0,
+    kStreamFormatVideo = 16384,
+    kStreamFormatVideoH264,
+    kStreamFormatAudio = 32768,
+  };
+
+  SInt32 fStreamFormat;
 
   enum {
     kReceiverReportSize = 16,            //UInt32, RR(2) + SDES(2)
