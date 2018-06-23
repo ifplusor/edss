@@ -52,10 +52,8 @@ class QTSSModuleUtils {
 
   // Read the complete contents of the file at inPath into the StrPtrLen.
   // This function allocates memory for the file data.
-  static QTSS_Error ReadEntireFile(char *inPath,
-                                   CF::StrPtrLen *outData,
-                                   QTSS_TimeVal inModDate = -1,
-                                   QTSS_TimeVal *outModDate = NULL);
+  static QTSS_Error ReadEntireFile(char *inPath, CF::StrPtrLen *outData, QTSS_TimeVal inModDate = -1,
+                                   QTSS_TimeVal *outModDate = nullptr);
 
   // If your module supports RTSP methods, call this function from your QTSS_Initialize
   // role to tell the server what those methods are.
@@ -65,11 +63,8 @@ class QTSSModuleUtils {
   // way to log errors to the error log. Here is a function to
   // make that process very easy.
 
-  static void LogError(QTSS_ErrorVerbosity inVerbosity,
-                       QTSS_AttributeID inTextMessage,
-                       UInt32 inErrNumber,
-                       char *inArgument = NULL,
-                       char *inArg2 = NULL);
+  static void LogError(QTSS_ErrorVerbosity inVerbosity, QTSS_AttributeID inTextMessage, UInt32 inErrNumber,
+                       char const *inArgument = nullptr, char const *inArg2 = nullptr);
 
   static void LogErrorStr(QTSS_ErrorVerbosity inVerbosity, char *inMessage);
   static void LogPrefErrorStr(QTSS_ErrorVerbosity inVerbosity, char *preference, char *inMessage);
@@ -78,10 +73,8 @@ class QTSSModuleUtils {
   // You may opt to append an optional suffix, or pass in NULL. You are responsible
   // for disposing this memory
 
-  static char *GetFullPath(QTSS_RTSPRequestObject inRequest,
-                           QTSS_AttributeID whichFileType,
-                           UInt32 *outLen,
-                           CF::StrPtrLen *suffix = NULL);
+  static char *GetFullPath(QTSS_RTSPRequestObject inRequest, QTSS_AttributeID whichFileType,
+                           UInt32 *outLen, CF::StrPtrLen *suffix = nullptr);
 
   //
   // This function does 2 things:
@@ -170,12 +163,8 @@ class QTSSModuleUtils {
   // Pass in NULL for the default value or 0 for the default value length if it is not known.
   //
   // This function logs an error if there was a default value provided.
-  static void GetAttribute(QTSS_Object inObject,
-                           char *inAttributeName,
-                           QTSS_AttrDataType inType,
-                           void *ioBuffer,
-                           void *inDefaultValue,
-                           UInt32 inBufferLen);
+  static void GetAttribute(QTSS_Object inObject, char const *inAttributeName, QTSS_AttrDataType inType,
+                           void *ioBuffer, void *inDefaultValue, UInt32 inBufferLen);
 
   static void GetIOAttribute(QTSS_Object inObject,
                              char *inAttributeName,
@@ -189,14 +178,14 @@ class QTSSModuleUtils {
   // allocated buffer with the attribute value inside it.
   //
   // Pass in NULL for the default value or an empty string if the default is not known.
-  static char *GetStringAttribute(QTSS_Object inObject, char *inAttributeName, char *inDefaultValue);
+  static char *GetStringAttribute(QTSS_Object inObject, char const *inAttributeName, char *inDefaultValue);
 
   //
   // GET ATTR ID
   //
   // Given an attribute in an object, returns its attribute ID
   // or qtssIllegalAttrID if it isn't found.
-  static QTSS_AttributeID GetAttrID(QTSS_Object inObject, char *inAttributeName);
+  static QTSS_AttributeID GetAttrID(QTSS_Object inObject, char const *inAttributeName);
 
   //
   //
@@ -220,7 +209,7 @@ class QTSSModuleUtils {
     QTSSModuleUtils::sEnableRTSPErrorMsg = enable;
   }
 
-  static QTSS_AttributeID CreateAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType,
+  static QTSS_AttributeID CreateAttribute(QTSS_Object inObject, char const *inAttributeName, QTSS_AttrDataType inType,
                                           void *inDefaultValue, UInt32 inBufferLen);
 
   static bool AddressInList(QTSS_Object inObject, QTSS_AttributeID listID, CF::StrPtrLen *theAddressPtr);
@@ -241,7 +230,7 @@ class QTSSModuleUtils {
   //
   // Used in the implementation of the above functions
 
-  static QTSS_AttributeID CheckAttributeDataType(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType,
+  static QTSS_AttributeID CheckAttributeDataType(QTSS_Object inObject, char const *inAttributeName, QTSS_AttrDataType inType,
                                                  void *inDefaultValue, UInt32 inBufferLen);
 
   static QTSS_TextMessagesObject sMessages;

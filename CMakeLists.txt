@@ -16,6 +16,11 @@ if ((NOT (DEFINED DetectTarget)) OR DetectTarget)
     set(DetectTarget FALSE)
 endif ()
 
+# 添加额外的宏定义
+add_definitions(
+        -DDEBUG_REFLECTOR_STREAM
+)
+
 add_subdirectory(${CxxFramework_DIR} CxxFramework)
 link_libraries(CxxFramework)
 

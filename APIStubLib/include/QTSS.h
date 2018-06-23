@@ -1105,6 +1105,7 @@ enum {
    * @property char array
    */
   qtssRTSPSesLastDigestChallenge = 14,
+
   qtssRTSPSesNumParams = 15
 };
 typedef UInt32 QTSS_RTSPSessionAttributes;
@@ -3284,7 +3285,7 @@ QTSS_Error QTSS_GetAttrInfoByID(QTSS_Object inObject, QTSS_AttributeID inAttrID,
 //  Returns:    QTSS_NoErr
 //              QTSS_BadArgument
 //              QTSS_AttrDoesntExist
-QTSS_Error QTSS_GetAttrInfoByName(QTSS_Object inObject, char *inAttrName, QTSS_AttrInfoObject *outAttrInfoObject);
+QTSS_Error QTSS_GetAttrInfoByName(QTSS_Object inObject, char const *inAttrName, QTSS_AttrInfoObject *outAttrInfoObject);
 
 /********************************************************************/
 //  QTSS_GetAttrInfoByIndex

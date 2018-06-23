@@ -47,7 +47,7 @@ class ReflectorOutput {
  public:
 
   ReflectorOutput()
-      : fBookmarkedPacketsElemsArray(NULL), fNumBookmarks(0), fAvailPosition(0),
+      : fBookmarkedPacketsElemsArray(nullptr), fNumBookmarks(0), fAvailPosition(0),
         fLastIntervalMilliSec(5), fLastPacketTransmitTime(0) {}
 
   virtual ~ReflectorOutput() {
@@ -99,11 +99,15 @@ class ReflectorOutput {
   inline bool SetBookMarkPacket(CF::QueueElem *thePacketElemPtr);
 
   /**
-   * Pass in the packet contents, the cookie of the stream to which it will be written,
-   * and the QTSS API write flags (this should either be qtssWriteFlagsIsRTP or IsRTCP
-   * packetLateness is how many MSec's late this packet is in being delivered ( will be < 0 if its early )
-   * If this function returns QTSS_WouldBlock, timeToSendThisPacketAgain will
-   * be set to # of msec in which the packet can be sent, or -1 if unknown
+   * 发送实际的 Packet
+   *
+   * @param inPacket  the packet contents
+   * @param inStreamCookie  the cookie of the stream to which it will be written
+   * @param inFlags  the QTSS API write flags (qtssWriteFlagsIsRTP or qtssWriteFlagsIsRTCP)
+   * @param packetLatenessInMSec  how many MSec's late this packet is in being delivered (<0 if its early)
+   *
+   * @return QTSS_WouldBlock  timeToSendThisPacketAgain will be set to # of msec in which the packet can be sent
+   * @return -1  unknown
    */
   virtual QTSS_Error WritePacket(CF::StrPtrLen *inPacket, void *inStreamCookie, UInt32 inFlags,
                                  SInt64 packetLatenessInMSec, SInt64 *timeToSendThisPacketAgain,

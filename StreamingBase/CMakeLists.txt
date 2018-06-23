@@ -7,13 +7,16 @@ set(HEADER_FILES
         include/SDPUtils.h
         include/SDPCache.h
         include/UserAgentParser.h
-        include/KeyFrameCache.h)
+        include/KeyFrameCache.h
+        include/RTPProtocol.h
+        include/H264Packet.h)
 
 set(SOURCE_FILES
         SDPUtils.cpp
         SDPCache.cpp
         UserAgentParser.cpp
-        KeyFrameCache.cpp)
+        KeyFrameCache.cpp
+        H264Packet.cpp)
 
 #if ((${CONF_PLATFORM} STREQUAL "Win32") OR (${CONF_PLATFORM} STREQUAL "MinGW"))
 #    set(HEADER_FILES ${HEADER_FILES} include/CreateDump.h)

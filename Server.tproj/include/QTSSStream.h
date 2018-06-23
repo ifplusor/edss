@@ -44,8 +44,8 @@
 class QTSSStream {
  public:
 
-  QTSSStream() : fTask(NULL) {}
-  virtual ~QTSSStream() {}
+  QTSSStream() : fTask(nullptr) {}
+  virtual ~QTSSStream() = default;
 
   //
   // A stream can have a task associated with it. If this stream supports

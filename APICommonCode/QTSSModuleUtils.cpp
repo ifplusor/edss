@@ -155,8 +155,9 @@ void QTSSModuleUtils::SetupSupportedMethods(QTSS_Object inServer, QTSS_RTSPMetho
 }
 
 void QTSSModuleUtils::
-LogError(QTSS_ErrorVerbosity inVerbosity, QTSS_AttributeID inTextMessage, UInt32 /*inErrNumber*/, char *inArgument, char *inArg2) {
-  static char *sEmptyArg = "";
+LogError(QTSS_ErrorVerbosity inVerbosity, QTSS_AttributeID inTextMessage, UInt32 /*inErrNumber*/,
+         char const *inArgument, char const *inArg2) {
+  static char const *sEmptyArg = "";
 
   if (sMessages == nullptr) return;
 
@@ -175,7 +176,7 @@ LogError(QTSS_ErrorVerbosity inVerbosity, QTSS_AttributeID inTextMessage, UInt32
 
   // Create a new string, and put the argument into the new string.
 
-  UInt32 theMessageLen = theMessage.Len + ::strlen(inArgument) + ::strlen(inArg2);
+  size_t theMessageLen = theMessage.Len + ::strlen(inArgument) + ::strlen(inArg2);
 
   CharArrayDeleter theLogString(new char[theMessageLen + 1]);
   s_sprintf(theLogString.GetObject(), theMessage.Ptr, inArgument, inArg2);
@@ -185,12 +186,12 @@ LogError(QTSS_ErrorVerbosity inVerbosity, QTSS_AttributeID inTextMessage, UInt32
 }
 
 void QTSSModuleUtils::LogErrorStr(QTSS_ErrorVerbosity inVerbosity, char *inMessage) {
-  if (inMessage == NULL) return;
-  (void) QTSS_Write(sErrorLog, inMessage, ::strlen(inMessage), NULL, inVerbosity);
+  if (inMessage == nullptr) return;
+  (void) QTSS_Write(sErrorLog, inMessage, ::strlen(inMessage), nullptr, inVerbosity);
 }
 
 void QTSSModuleUtils::LogPrefErrorStr(QTSS_ErrorVerbosity inVerbosity, char *preference, char *inMessage) {
-  if (inMessage == NULL || preference == NULL) {
+  if (inMessage == nullptr || preference == nullptr) {
     Assert(0);
     return;
   }
@@ -198,12 +199,12 @@ void QTSSModuleUtils::LogPrefErrorStr(QTSS_ErrorVerbosity inVerbosity, char *pre
 
   s_snprintf(buffer, sizeof(buffer), "Server preference %s %s", preference, inMessage);
 
-  (void) QTSS_Write(sErrorLog, buffer, ::strlen(buffer), NULL, inVerbosity);
+  (void) QTSS_Write(sErrorLog, buffer, ::strlen(buffer), nullptr, inVerbosity);
 }
 
 char *QTSSModuleUtils::
 GetFullPath(QTSS_RTSPRequestObject inRequest, QTSS_AttributeID whichFileType, UInt32 *outLen, StrPtrLen *suffix) {
-  Assert(outLen != NULL);
+  Assert(outLen != nullptr);
 
   (void) QTSS_LockObject(inRequest);
   // Get the proper file path attribute. This may return an error if
@@ -611,11 +612,11 @@ QTSS_ModulePrefsObject QTSSModuleUtils::GetModuleObjectByName(const StrPtrLen &i
     theLen = sizeof(theModule);
 #endif
   }
-  return NULL;
+  return nullptr;
 }
 
 void QTSSModuleUtils::
-GetAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *ioBuffer,
+GetAttribute(QTSS_Object inObject, char const *inAttributeName, QTSS_AttrDataType inType, void *ioBuffer,
              void *inDefaultValue, UInt32 inBufferLen) {
   //
   // Check to make sure this attribute is the right type. If it's not, this will coerce
@@ -639,7 +640,7 @@ GetAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inTy
     if (inBufferLen > 0) {
       //
       // Log an error for this pref only if there was a default value provided.
-      char *theValueAsString = NULL;
+      char *theValueAsString = nullptr;
       theErr = QTSS_ValueToString(inDefaultValue, inBufferLen, inType, &theValueAsString);
       Assert(theErr == QTSS_NoErr);
       CharArrayDeleter theValueStr(theValueAsString);
@@ -652,7 +653,7 @@ GetAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inTy
   }
 }
 
-char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char *inAttributeName, char *inDefaultValue) {
+char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char const *inAttributeName, char *inDefaultValue) {
   UInt32 theDefaultValLen = 0;
   if (inDefaultValue != nullptr)
     theDefaultValLen = ::strlen(inDefaultValue);
@@ -660,7 +661,8 @@ char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char *inAttribut
   //
   // Check to make sure this attribute is the right type. If it's not, this will coerce
   // it to be the right type
-  QTSS_AttributeID theID = QTSSModuleUtils::CheckAttributeDataType(inObject, inAttributeName, qtssAttrDataTypeCharArray, inDefaultValue, theDefaultValLen);
+  QTSS_AttributeID theID = QTSSModuleUtils::CheckAttributeDataType(inObject, inAttributeName, qtssAttrDataTypeCharArray,
+                                                                   inDefaultValue, theDefaultValLen);
 
   char *theString = nullptr;
   (void) QTSS_GetValueAsString(inObject, theID, 0, &theString);
@@ -694,17 +696,17 @@ char *QTSSModuleUtils::GetStringAttribute(QTSS_Object inObject, char *inAttribut
 
 void QTSSModuleUtils::
 GetIOAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *ioDefaultResultBuffer, UInt32 inBufferLen) {
-  char *defaultBuffPtr = new char[inBufferLen];
+  auto *defaultBuffPtr = new char[inBufferLen];
   ::memcpy(defaultBuffPtr, ioDefaultResultBuffer, inBufferLen);
   QTSSModuleUtils::GetAttribute(inObject, inAttributeName, inType, ioDefaultResultBuffer, defaultBuffPtr, inBufferLen);
   delete[] defaultBuffPtr;
 
 }
 
-QTSS_AttributeID QTSSModuleUtils::GetAttrID(QTSS_Object inObject, char *inAttributeName) {
+QTSS_AttributeID QTSSModuleUtils::GetAttrID(QTSS_Object inObject, char const *inAttributeName) {
   //
   // Get the attribute ID of this attribute.
-  QTSS_Object theAttrInfo = NULL;
+  QTSS_Object theAttrInfo = nullptr;
   QTSS_Error theErr = QTSS_GetAttrInfoByName(inObject, inAttributeName, &theAttrInfo);
   if (theErr != QTSS_NoErr) return qtssIllegalAttrID;
 
@@ -717,10 +719,10 @@ QTSS_AttributeID QTSSModuleUtils::GetAttrID(QTSS_Object inObject, char *inAttrib
 }
 
 QTSS_AttributeID QTSSModuleUtils::
-CheckAttributeDataType(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *inDefaultValue, UInt32 inBufferLen) {
+CheckAttributeDataType(QTSS_Object inObject, char const *inAttributeName, QTSS_AttrDataType inType, void *inDefaultValue, UInt32 inBufferLen) {
   //
   // Get the attribute type of this attribute.
-  QTSS_Object theAttrInfo = NULL;
+  QTSS_Object theAttrInfo = nullptr;
   QTSS_Error theErr = QTSS_GetAttrInfoByName(inObject, inAttributeName, &theAttrInfo);
   if (theErr != QTSS_NoErr) return qtssIllegalAttrID;
 
@@ -749,7 +751,8 @@ CheckAttributeDataType(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDat
 }
 
 QTSS_AttributeID QTSSModuleUtils::
-CreateAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType, void *inDefaultValue, UInt32 inBufferLen) {
+CreateAttribute(QTSS_Object inObject, char const *inAttributeName, QTSS_AttrDataType inType,
+                void *inDefaultValue, UInt32 inBufferLen) {
   QTSS_Error theErr = QTSS_AddInstanceAttribute(inObject, inAttributeName, NULL, inType);
   Assert((theErr == QTSS_NoErr) || (theErr == QTSS_AttrNameExists));
 

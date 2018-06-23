@@ -47,7 +47,7 @@ class Task;
 }
 class QTSSModule;
 
-typedef QTSS_Error  (*QTSS_CallbackProcPtr)(...);
+typedef QTSS_Error (*QTSS_CallbackProcPtr)(...);
 typedef void *(*QTSS_CallbackPtrProcPtr)(...);
 
 /**

@@ -104,7 +104,7 @@ class RTPStream : public QTSSDictionary, public CF::Net::UDPDemuxerTask {
 
   // Write sends RTP data to the client. Caller must specify
   // either qtssWriteFlagsIsRTP or qtssWriteFlagsIsRTCP
-  virtual QTSS_Error Write(void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, QTSS_WriteFlags inFlags);
+  QTSS_Error Write(void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, QTSS_WriteFlags inFlags) override;
 
 
   //UTILITY FUNCTIONS:

@@ -47,6 +47,8 @@
 #include "RTCPSRPacket.h"
 #include "ReflectorOutput.h"
 
+#include "RTPProtocol.h"
+
 /*fantasy add this*/
 #include "KeyFrameCache.h"
 
@@ -63,95 +65,6 @@ class ReflectorStream;
 class RTPSessionOutput;
 class ReflectorSession;
 
-
-/**
- * 关于字节序和位序:
- *
- * 一般讲大端序和小端序时，指的都是字节序，即：
- *   - 大端序：高位低址，低位高址
- *   - 小端序：低位低址，高位高址
- *
- * 常见的字节序应用场景是网络数据传输，此时区分网络字节序和主机字节序。
- *
- * 而位序则与位域的布局分配有关，一般来说位序和字节序保持一致。
- * 需要记住的一个基本原则是：连续分配。即：跨字节的位域在逻辑上也是连续的。
- *
- * 备注：
- *   需要注意的是：htonl、ntohl等转换函数“只转换字节序，不转换位序”！
- *
- *   尽管在以太网(Ethernet)中，bit的传输遵循：从最低有效比特位到最高有效比特位的发送顺序。
- *   但这一规则是发生在网卡中的，对上层的CPU、OS等都不可见，因此在传输过程中不会出现字节值变化的问题。
- *
- */
-
-/**
- * RTP Fixed Header Fields:
- *
- *     0                   1                   2                   3
- *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *    |V=2|P|X|  CC   |M|     PT      |       sequence number         |
- *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *    |                           timestamp                           |
- *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *    |           synchronization source (SSRC) identifier            |
- *    +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
- *    |            contributing source (CSRC) identifiers             |
- *    |                             ....                              |
- *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *
- * @see  rfc1889(section 5.1)
- *
- */
-typedef struct RTPFixedHeader {
-#if BIGENDIAN
-  unsigned char v:2;                /* protocol version */
-  unsigned char p:1;                /* padding flag */
-  unsigned char x:1;                /* header extension flag */
-  unsigned char cc:4;               /* CSRC count */
-  unsigned char m:1;                /* marker bit */
-  unsigned char pt:7;               /* payload type */
-#else
-  unsigned char cc:4;               /* CSRC count */
-  unsigned char x:1;                /* header extension flag */
-  unsigned char p:1;                /* padding flag */
-  unsigned char v:2;                /* protocol version */
-  unsigned char pt:7;               /* payload type */
-  unsigned char m:1;                /* marker bit */
-#endif
-  UInt16 seq;				       /* sequence number */
-  UInt32 ts;                       /* timestamp */
-  UInt32 ssrc;                     /* synchronization source */
-  UInt32 csrc[0];                  /* optional CSRC list */
-} RTPFixedHeader;
-
-/**
- * RTP Header Extension:
- *
- *     0                   1                   2                   3
- *     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
- *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *    |      defined by profile       |           length              |
- *    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *    |                        header extension                       |
- *    |                             ....                              |
- *
- * @see  rfc1889(section 5.3.1)
- *
- *
- * @note  RTP data packets contain no length field or other delineation,
- *   therefore RTP relies on the underlying protocol(s) to provide a
- *   length indication. The maximum length of RTP packets is limited only
- *   by the underlying protocols.
- *
- * @see  rfc1889(section 10)
- *
- */
-typedef struct RTPExtHeader {
-  UInt16 profile;
-  UInt16 length;
-  char ext[0];
-} RTPExtHeader;
 
 class ReflectorPacket {
  public:
@@ -218,7 +131,7 @@ class ReflectorPacket {
 };
 
 UInt32 ReflectorPacket::GetSSRC() {
-  if (fPacketPtr.Ptr == NULL) return 0;
+  if (fPacketPtr.Ptr == nullptr) return 0;
 
   auto *theSsrcPtr = (UInt32 *) fPacketPtr.Ptr;
 
@@ -227,12 +140,12 @@ UInt32 ReflectorPacket::GetSSRC() {
     return ntohl(theSsrcPtr[1]); // RTCP
   } else {
     if (fPacketPtr.Len < 12) return 0;
-    return ntohl(theSsrcPtr[2]);  // RTP SSRC
+    return ntohl(theSsrcPtr[2]); // RTP SSRC
   }
 }
 
 UInt32 ReflectorPacket::GetPacketRTPTime() {
-  if (fPacketPtr.Ptr == NULL) return 0;
+  if (fPacketPtr.Ptr == nullptr) return 0;
 
   auto *theTimestampPtr = (UInt32 *) fPacketPtr.Ptr;
 
@@ -249,7 +162,7 @@ UInt32 ReflectorPacket::GetPacketRTPTime() {
 UInt16 ReflectorPacket::GetPacketRTPSeqNum() {
   Assert(!fIsRTCP); // not a supported type
 
-  if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 4 || fIsRTCP) return 0;
+  if (fPacketPtr.Ptr == nullptr || fPacketPtr.Len < 4 || fIsRTCP) return 0;
 
   return ntohs(((UInt16 *) fPacketPtr.Ptr)[1]); //The RTP sequenc number is the second short of the packet
 }
@@ -257,7 +170,7 @@ UInt16 ReflectorPacket::GetPacketRTPSeqNum() {
 SInt64 ReflectorPacket::GetPacketNTPTime() {
   Assert(fIsRTCP); // not a supported type
 
-  if (fPacketPtr.Ptr == NULL || fPacketPtr.Len < 16 || !fIsRTCP) return 0;
+  if (fPacketPtr.Ptr == nullptr || fPacketPtr.Len < 16 || !fIsRTCP) return 0;
 
   auto *theReport = (UInt32 *) fPacketPtr.Ptr;
 
@@ -269,6 +182,8 @@ SInt64 ReflectorPacket::GetPacketNTPTime() {
 
 /**
  * Custom UDP socket classes for doing reflector packet retrieval, socket management
+ *
+ * @note  非阻塞，边沿触发，Demuxer
  */
 class ReflectorSocket
     : public CF::Thread::IdleTask,
@@ -286,7 +201,7 @@ class ReflectorSocket
   void RemoveBroadcasterSession(QTSS_ClientSessionObject inSession) {
     CF::Core::MutexLocker locker(this->GetDemuxer()->GetMutex());
     if (inSession == fBroadcasterClientSession)
-      fBroadcasterClientSession = NULL;
+      fBroadcasterClientSession = nullptr;
   }
 
   void AddSender(ReflectorSender *inSender);
@@ -330,7 +245,7 @@ class ReflectorSocket
   SInt64 fSleepTime;
 
   UInt32 fValidSSRC;
-  SInt64 fLastValidSSRCTime;
+  SInt64 fLastValidSSRCTime; // 上一次接收到有效SSRC包的时间
   bool fFilterSSRCs;
   UInt32 fTimeoutSecs;
 
@@ -596,19 +511,19 @@ class ReflectorStream {
   SourceInfo::StreamInfo fStreamInfo;
 
   enum {
-    kStreamFormatUnknown = 0,
-    kStreamFormatVideo = 16384,
+    kStreamFormatUnknown = 0x0000,
+    kStreamFormatVideo   = 0x4000,
     kStreamFormatVideoH264,
-    kStreamFormatAudio = 32768,
+    kStreamFormatAudio   = 0x8000,
   };
 
   SInt32 fStreamFormat;
 
   enum {
-    kReceiverReportSize = 16,            //UInt32, RR(2) + SDES(2)
-    kAppSize = 36,                       //UInt32
-    kMinNumBuckets = 16,                 //UInt32
-    kBitRateAvgIntervalInMilSecs = 30000 // time between bitrate averages
+    kReceiverReportSize = 16,            // RR(8) + SDES(8)
+    kAppSize = 36,
+    kMinNumBuckets = 16,
+    kBitRateAvgIntervalInMilSecs = 30000 // time between bit-rate averages
   };
 
   // BUCKET ARRAY
@@ -684,6 +599,10 @@ void ReflectorStream::UpdateBitRate(SInt64 currentTime) {
 
     // Don't check again for awhile!
     fLastBitRateSample = currentTime;
+
+    DEBUG_LOG(1,
+              "--- stream@%p  sample time:%" _S64BITARG_ "  bit rate:%" _U32BITARG_ "\n",
+              this, fLastBitRateSample, fCurrentBitRate);
   }
 }
 

@@ -65,8 +65,8 @@ class RTCPPacket {
     kAPPPacketType = 204   //UInt32
   };
 
-  RTCPPacket() : fReceiverPacketBuffer(NULL) {}
-  virtual ~RTCPPacket() {}
+  RTCPPacket() : fReceiverPacketBuffer(nullptr) {}
+  virtual ~RTCPPacket() = default;
 
   //Call this before any accessor method. Returns true if successful, false otherwise
   bool ParsePacket(UInt8 *inPacketBuffer, UInt32 inPacketLen);

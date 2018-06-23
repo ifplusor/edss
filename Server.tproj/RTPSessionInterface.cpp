@@ -249,8 +249,7 @@ void RTPSessionInterface::UpdateBitRateInternal(const SInt64 &curTime) {
   } else {
     UInt32 bitsInInterval = (fBytesSent - fLastBitRateBytes) * 8;
     SInt64 updateTime = (curTime - fLastBitRateUpdateTime) / 1000;
-    if (updateTime
-        > 0) // leave Bit Rate the same if updateTime is 0 also don't divide by 0.
+    if (updateTime > 0) // leave Bit Rate the same if updateTime is 0 also don't divide by 0.
       fMovieCurrentBitRate = (UInt32) (bitsInInterval / updateTime);
     fTracker.UpdateAckTimeout(bitsInInterval, curTime - fLastBitRateUpdateTime);
     fLastBitRateBytes = fBytesSent;

@@ -84,16 +84,12 @@ SInt64 RTCPTask::Run() {
             break; // no more packets on this socket!
           }
 
-          //if this socket has a demuxer, find the target RTPStream
-          if (theDemuxer != NULL) {
-            // 在RTPStream的Setup函数里,曾经调用进行注册:
-            // fSockets->GetSocketB()->GetDemuxer()->RegisterTask(fRemoteAddr, fRemoteRTCPPort, this);
-            RTPStream *theStream = (RTPStream *) theDemuxer->GetTask(
-                theRemoteAddr,
-                theRemotePort);
-            if (theStream != NULL)
-              theStream->ProcessIncomingRTCPPacket(&thePacket);
-          }
+          // if this socket has a demuxer, find the target RTPStream
+          // 在RTPStream的Setup函数里,曾经调用进行注册:
+          // fSockets->GetSocketB()->GetDemuxer()->RegisterTask(fRemoteAddr, fRemoteRTCPPort, this);
+          auto *theStream = (RTPStream *) theDemuxer->GetTask(theRemoteAddr, theRemotePort);
+          if (theStream != nullptr)
+            theStream->ProcessIncomingRTCPPacket(&thePacket);
         }
         theDemuxer->GetMutex()->Unlock();
       }

@@ -41,18 +41,15 @@
 class RTPOverbufferWindow {
  public:
 
-  RTPOverbufferWindow(UInt32 inSendInterval,
-                      UInt32 inInitialWindowSize,
-                      UInt32 inMaxSendAheadTimeInSec,
-                      Float32 inOverbufferRate);
-  ~RTPOverbufferWindow() {}
+  RTPOverbufferWindow(UInt32 inSendInterval, UInt32 inInitialWindowSize, UInt32 inMaxSendAheadTimeInSec, Float32 inOverbufferRate);
+  ~RTPOverbufferWindow() = default;
 
   void ResetOverBufferWindow();
 
   //
   // ACCESSORS
 
-  UInt32 GetSendInterval() { return fSendInterval; }
+  UInt32 GetSendInterval() { return static_cast<UInt32>(fSendInterval); }
 
   // This may be negative!
   SInt32 AvailableSpaceInWindow() {
@@ -76,9 +73,7 @@ class RTPOverbufferWindow {
   //
   // The overbuffer window is full if the byte count is filled up, or if the
   // bitrate is above the max play rate.
-  SInt64 CheckTransmitTime(const SInt64 &inTransmitTime,
-                           const SInt64 &inCurrentTime,
-                           SInt32 inPacketSize);
+  SInt64 CheckTransmitTime(const SInt64 &inTransmitTime, const SInt64 &inCurrentTime, SInt32 inPacketSize);
 
   //
   // Remembers that this packet has been sent
@@ -90,11 +85,11 @@ class RTPOverbufferWindow {
   // those old packets out of the window, freeing up space in the window.
   void EmptyOutWindow(const SInt64 &inCurrentTime);
 
-  //
-  // MarkBeginningOfWriteBurst
-  // Call this on the first write of a write burst for a client. This
-  // allows the overbuffer window to track whether the bitrate of the movie
-  // is above the play rate.
+  /**
+   * Call this on the first write of a write burst for a client. This
+   * allows the overbuffer window to track whether the bitrate of the movie
+   * is above the play rate.
+   */
   void MarkBeginningOfWriteBurst() { fWriteBurstBeginning = true; }
 
  private:

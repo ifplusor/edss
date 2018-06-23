@@ -55,15 +55,15 @@ class RTPSessionOutput : public ReflectorOutput {
   // This writes the packet out to the proper QTSS_RTPStreamObject.
   // If this function returns QTSS_WouldBlock, timeToSendThisPacketAgain will
   // be set to # of msec in which the packet can be sent, or -1 if unknown
-  virtual QTSS_Error WritePacket(CF::StrPtrLen *inPacketData, void *inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec,
-                                 SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSec, bool firstPacket);
-  virtual void TearDown();
+  QTSS_Error WritePacket(CF::StrPtrLen *inPacketData, void *inStreamCookie, UInt32 inFlags, SInt64 packetLatenessInMSec,
+                         SInt64 *timeToSendThisPacketAgain, UInt64 *packetIDPtr, SInt64 *arrivalTimeMSec, bool firstPacket) override;
+  void TearDown() override;
 
   SInt64 GetReflectorSessionInitTime() { return fReflectorSession->GetInitTimeMS(); }
 
-  virtual bool IsUDP();
+  bool IsUDP() override;
 
-  virtual bool IsPlaying();
+  bool IsPlaying() override;
 
   void SetBufferDelay(UInt32 delay) { fBufferDelayMSecs = delay; }
 
@@ -96,14 +96,12 @@ class RTPSessionOutput : public ReflectorOutput {
 };
 
 bool RTPSessionOutput::PacketMatchesStream(void *inStreamCookie, QTSS_RTPStreamObject *theStreamPtr) {
-  void **theStreamCookie = NULL;
+  void **theStreamCookie = nullptr;
   UInt32 theLen = 0;
   (void) QTSS_GetValuePtr(*theStreamPtr, fCookieAttrID, 0, (void **) &theStreamCookie, &theLen);
 
-  if ((theStreamCookie != NULL) && (*theStreamCookie == inStreamCookie))
-    return true;
-
-  return false;
+  // in fact, the cookie is the pointer of ReflectorStream
+  return (theStreamCookie != nullptr) && (*theStreamCookie == inStreamCookie);
 }
 
 #endif //__RTSP_REFLECTOR_OUTPUT_H__

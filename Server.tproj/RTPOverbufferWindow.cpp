@@ -65,9 +65,7 @@ RTPOverbufferWindow::RTPOverbufferWindow(UInt32 inSendInterval,
 
 }
 
-SInt64 RTPOverbufferWindow::CheckTransmitTime(const SInt64 &inTransmitTime,
-                                              const SInt64 &inCurrentTime,
-                                              SInt32 inPacketSize) {
+SInt64 RTPOverbufferWindow::CheckTransmitTime(const SInt64 &inTransmitTime, const SInt64 &inCurrentTime, SInt32 inPacketSize) {
   // if this is the beginning of a bucket interval, roll over figures from last time.
   // accumulate statistics over the period of a second
   if (inCurrentTime - fBucketBegin > fSendInterval) {
@@ -90,8 +88,7 @@ SInt64 RTPOverbufferWindow::CheckTransmitTime(const SInt64 &inTransmitTime,
     fOverbufferWindowBegin = inCurrentTime;
 
   if ((inTransmitTime <= inCurrentTime + fSendInterval) ||
-      (fOverbufferingEnabled && (inTransmitTime
-          <= inCurrentTime + fSendInterval + fSendAheadDurationInMsec))) {
+      (fOverbufferingEnabled && (inTransmitTime <= inCurrentTime + fSendInterval + fSendAheadDurationInMsec))) {
     //
     // If this happens, this packet needs to be sent regardless of overbuffering
     return -1;
@@ -102,10 +99,8 @@ SInt64 RTPOverbufferWindow::CheckTransmitTime(const SInt64 &inTransmitTime,
 
   // if the client is running low on memory, wait a while for it to be freed up
   // there's nothing magic bout these numbers, we're just trying to be conservative
-  if ((fWindowSize != -1)
-      && (inPacketSize * 5 > fWindowSize - fBytesSentSinceLastReport)) {
-    return inCurrentTime
-        + (fSendInterval * 5);  // client reports don't come that often
+  if ((fWindowSize != -1) && (inPacketSize * 5 > fWindowSize - fBytesSentSinceLastReport)) {
+    return inCurrentTime + (fSendInterval * 5);  // client reports don't come that often
   }
 
   // if we're far enough ahead, then wait until it's time to send more packets
@@ -133,12 +128,9 @@ SInt64 RTPOverbufferWindow::CheckTransmitTime(const SInt64 &inTransmitTime,
   // but don't send at more that double the bitrate (for any given time we should only get further
   // ahead by that amount of time)
   //printf("cta - pta = %qd, ct - pbb = %qd\n", fBucketTimeAhead - fPreviousBucketTimeAhead, SInt64((inCurrentTime - fPreviousBucketBegin) * (fOverbufferRate - 1.0)));
-  if (fBucketTimeAhead - fPreviousBucketTimeAhead
-      > ((inCurrentTime - fPreviousBucketBegin) * (fOverbufferRate - 1.0))) {
-    fBucketTimeAhead = fPreviousBucketTimeAhead + SInt64(
-        (inCurrentTime - fPreviousBucketBegin) * (fOverbufferRate - 1.0));
-    return inCurrentTime
-        + fSendInterval;        // this will get us to the next bucket
+  if (fBucketTimeAhead - fPreviousBucketTimeAhead > ((inCurrentTime - fPreviousBucketBegin) * (fOverbufferRate - 1.0))) {
+    fBucketTimeAhead = fPreviousBucketTimeAhead + SInt64((inCurrentTime - fPreviousBucketBegin) * (fOverbufferRate - 1.0));
+    return inCurrentTime + fSendInterval;        // this will get us to the next bucket
   }
 
   // don't send more than 10% over the average bitrate for the previous second

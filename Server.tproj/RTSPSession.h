@@ -111,13 +111,13 @@ class RTSPSession : public RTSPSessionInterface {
   static void PostRegisterModules();
 
   bool IsPlaying() {
-    if (fRTPSession == NULL) return false;
+    if (fRTPSession == nullptr) return false;
     return fRTPSession->GetSessionState() == qtssPlayingState;
   }
 
  private:
 
-  SInt64 Run();
+  SInt64 Run() override;
 
   // Gets & creates RTP session for this request.
   QTSS_Error FindRTPSession(RefTable *inTable);
@@ -179,17 +179,16 @@ class RTSPSession : public RTSPSessionInterface {
 
   static char const *sHTTPResponseFormatStr;
   static char const *sHTTPNoServerResponseFormatStr;
-  char fProxySessionID[QTSS_MAX_SESSION_ID_LENGTH
-  ];    // our magic cookie to match proxy connections
+  char fProxySessionID[QTSS_MAX_SESSION_ID_LENGTH];    // our magic cookie to match proxy connections
   StrPtrLen fProxySessionIDPtr;
   Ref fProxyRef;
   enum {
     // the kinds of HTTP Methods we're interested in for
     // RTSP tunneling
-        kHTTPMethodInit       // initialize to this
-    , kHTTPMethodUnknown    // tested, but unknown
-    , kHTTPMethodGet        // found one of these methods...
-    , kHTTPMethodPost
+    kHTTPMethodInit,       // initialize to this
+    kHTTPMethodUnknown,    // tested, but unknown
+    kHTTPMethodGet,        // found one of these methods...
+    kHTTPMethodPost,
   };
 
   UInt16 fHTTPMethod;

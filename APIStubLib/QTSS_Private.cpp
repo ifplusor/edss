@@ -120,7 +120,7 @@ QTSS_Error QTSS_GetAttrInfoByID(QTSS_Object inObject, QTSS_AttributeID inAttrID,
   return (sCallbacks->addr[kGetAttrInfoByIDCallback])(inObject, inAttrID, outAttrInfoObject);
 }
 
-QTSS_Error QTSS_GetAttrInfoByName(QTSS_Object inObject, char *inAttrName, QTSS_Object *outAttrInfoObject) {
+QTSS_Error QTSS_GetAttrInfoByName(QTSS_Object inObject, char const *inAttrName, QTSS_Object *outAttrInfoObject) {
   return (sCallbacks->addr[kGetAttrInfoByNameCallback])(inObject, inAttrName, outAttrInfoObject);
 }
 

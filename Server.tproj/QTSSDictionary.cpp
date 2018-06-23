@@ -251,7 +251,7 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
     theAttrs = fInstanceAttrs;
   }
 
-  if (theMap == NULL) return QTSS_AttrDoesntExist;
+  if (theMap == nullptr) return QTSS_AttrDoesntExist;
 
   SInt32 theMapIndex = theMap->ConvertAttrIDToArrayIndex(inAttrID);
 
@@ -278,7 +278,7 @@ SetValue(QTSS_AttributeID inAttrID, UInt32 inIndex, const void *inBuffer, UInt32
       // instead of directly using the old storage as the old storage didn't
       // have its string null terminated
       UInt32 tempStringLen = theAttrs[theMapIndex].fAttributeData.Len;
-      char *temp = new char[tempStringLen + 1];
+      auto *temp = new char[tempStringLen + 1];
       ::memcpy(temp, theAttrs[theMapIndex].fAttributeData.Ptr, tempStringLen);
       temp[tempStringLen] = '\0';
       delete[] theAttrs[theMapIndex].fAttributeData.Ptr;

@@ -136,7 +136,7 @@ QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo *inInfo, QTSS_Stan
     inInfo = fSourceInfo;
 
   // Store a reference to this sourceInfo permanently
-  Assert((fSourceInfo == NULL) || (inInfo == fSourceInfo));
+  Assert((fSourceInfo == nullptr) || (inInfo == fSourceInfo));
   fSourceInfo = inInfo;
 
   // this must be set to the new SDP.
@@ -177,8 +177,7 @@ QTSS_Error ReflectorSession::SetupReflectorSession(SourceInfo *inInfo, QTSS_Stan
 }
 
 void ReflectorSession::AddBroadcasterClientSession(QTSS_StandardRTSP_Params *inParams) {
-  if (NULL == fStreamArray || NULL == inParams)
-    return;
+  if (nullptr == fStreamArray || nullptr == inParams) return;
 
   for (UInt32 x = 0; x < fSourceInfo->GetNumStreams(); x++) {
     if (fStreamArray[x] != nullptr) {
@@ -245,13 +244,9 @@ void ReflectorSession::RemoveOutput(ReflectorOutput *inOutput, bool isClient) {
     QTSS_RoleParams theParams;
     theParams.easyStreamInfoParams.inStreamName = fSessionName.Ptr;
     theParams.easyStreamInfoParams.inChannel = fChannelNum;
-    auto numModules =
-        QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyCMSFreeStreamRole);
-    for (UInt32 currentModule = 0; currentModule < numModules;
-         currentModule++) {
-      auto theModule =
-          QTSServerInterface::GetModule(QTSSModule::kEasyCMSFreeStreamRole,
-                                        currentModule);
+    auto numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyCMSFreeStreamRole);
+    for (UInt32 currentModule = 0; currentModule < numModules; currentModule++) {
+      auto theModule = QTSServerInterface::GetModule(QTSSModule::kEasyCMSFreeStreamRole, currentModule);
       (void) theModule->CallDispatch(Easy_CMSFreeStream_Role, &theParams);
     }
   }
@@ -264,10 +259,8 @@ void ReflectorSession::TearDownAllOutputs() {
 
 void ReflectorSession::RemoveSessionFromOutput(QTSS_ClientSessionObject inSession) {
   for (UInt32 x = 0; x < fSourceInfo->GetNumStreams(); x++) {
-    ((ReflectorSocket *) fStreamArray[x]->GetSocketPair()->GetSocketA())->RemoveBroadcasterSession(
-        inSession);
-    ((ReflectorSocket *) fStreamArray[x]->GetSocketPair()->GetSocketB())->RemoveBroadcasterSession(
-        inSession);
+    ((ReflectorSocket *) fStreamArray[x]->GetSocketPair()->GetSocketA())->RemoveBroadcasterSession(inSession);
+    ((ReflectorSocket *) fStreamArray[x]->GetSocketPair()->GetSocketB())->RemoveBroadcasterSession(inSession);
   }
   fBroadcasterSession = nullptr;
 }
@@ -301,13 +294,10 @@ void ReflectorSession::DelRedisLive() {
   theParams.easyStreamInfoParams.inStreamName = fSessionName.Ptr;
   theParams.easyStreamInfoParams.inChannel = fChannelNum;
   theParams.easyStreamInfoParams.inAction = easyRedisActionDelete;
-  UInt32 numModules =
-      QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisUpdateStreamInfoRole);
+  UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisUpdateStreamInfoRole);
   for (UInt32 currentModule = 0; currentModule < numModules; currentModule++) {
     s_printf("从redis中删除推流名称%s\n", fSourceID.Ptr);
-    QTSSModule *theModule =
-        QTSServerInterface::GetModule(QTSSModule::kRedisUpdateStreamInfoRole,
-                                      currentModule);
+    QTSSModule *theModule = QTSServerInterface::GetModule(QTSSModule::kRedisUpdateStreamInfoRole, currentModule);
     (void) theModule->CallDispatch(Easy_RedisUpdateStreamInfo_Role, &theParams);
   }
 }
@@ -326,13 +316,9 @@ SInt64 ReflectorSession::Run() {
     QTSS_RoleParams theParams;
     theParams.easyStreamInfoParams.inStreamName = fSessionName.Ptr;
     theParams.easyStreamInfoParams.inChannel = fChannelNum;
-    auto numModules =
-        QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyCMSFreeStreamRole);
-    for (UInt32 currentModule = 0; currentModule < numModules;
-         currentModule++) {
-      auto theModule =
-          QTSServerInterface::GetModule(QTSSModule::kEasyCMSFreeStreamRole,
-                                        currentModule);
+    auto numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kEasyCMSFreeStreamRole);
+    for (UInt32 currentModule = 0; currentModule < numModules; currentModule++) {
+      auto theModule = QTSServerInterface::GetModule(QTSSModule::kEasyCMSFreeStreamRole, currentModule);
       (void) theModule->CallDispatch(Easy_CMSFreeStream_Role, &theParams);
     }
   } else {
@@ -342,15 +328,10 @@ SInt64 ReflectorSession::Run() {
     theParams.easyStreamInfoParams.inNumOutputs = fNumOutputs;
     theParams.easyStreamInfoParams.inBitrate = GetBitRate();
     theParams.easyStreamInfoParams.inAction = easyRedisActionSet;
-    auto numModules =
-        QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisUpdateStreamInfoRole);
-    for (UInt32 currentModule = 0; currentModule < numModules;
-         currentModule++) {
-      auto theModule =
-          QTSServerInterface::GetModule(QTSSModule::kRedisUpdateStreamInfoRole,
-                                        currentModule);
-      (void) theModule->CallDispatch(Easy_RedisUpdateStreamInfo_Role,
-                                     &theParams);
+    auto numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisUpdateStreamInfoRole);
+    for (UInt32 currentModule = 0; currentModule < numModules; currentModule++) {
+      auto theModule = QTSServerInterface::GetModule(QTSSModule::kRedisUpdateStreamInfoRole, currentModule);
+      (void) theModule->CallDispatch(Easy_RedisUpdateStreamInfo_Role, &theParams);
     }
   }
 
