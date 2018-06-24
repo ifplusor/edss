@@ -99,7 +99,7 @@ class ReflectorOutput {
   inline bool SetBookMarkPacket(CF::QueueElem *thePacketElemPtr);
 
   /**
-   * 发送实际的 Packet
+   * 将 Packet 通过 inStreamCookie 标记的 RTPStream 发送出去
    *
    * @param inPacket  the packet contents
    * @param inStreamCookie  the cookie of the stream to which it will be written

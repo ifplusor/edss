@@ -626,8 +626,9 @@ void QTSServerPrefs::GetTransportSrcAddr(StrPtrLen *ioBuf) {
   if ((theTransportAddr->Len > 0) && (theTransportAddr->Len < ioBuf->Len)) {
     ::memcpy(ioBuf->Ptr, theTransportAddr->Ptr, theTransportAddr->Len);
     ioBuf->Len = theTransportAddr->Len;
-  } else
+  } else {
     ioBuf->Len = 0;
+  }
 }
 
 char *QTSServerPrefs::GetStringPref(QTSS_AttributeID inAttrID) {

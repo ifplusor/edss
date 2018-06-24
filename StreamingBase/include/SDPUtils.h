@@ -58,10 +58,10 @@ class SDPContainer {
   };
 
   enum {
-    kV = 1 << kVPos,
-    kS = 1 << kSPos,
-    kT = 1 << kTPos,
-    kO = 1 << kOPos,
+    kV = 1U << kVPos,
+    kS = 1U << kSPos,
+    kT = 1U << kTPos,
+    kO = 1U << kOPos,
     kAllReq = kV | kS | kT | kO
   };
 

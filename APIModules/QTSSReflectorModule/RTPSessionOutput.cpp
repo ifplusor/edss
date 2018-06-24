@@ -613,11 +613,11 @@ WritePacket(StrPtrLen *inPacket, void *inStreamCookie, UInt32 inFlags, SInt64 pa
         }
 
         { // increment packet counts
-          UInt32 *packetCountPtr = NULL;
-          UInt32 theLen = 0;
+          UInt32 *packetCountPtr = nullptr;
+          UInt32 theLen2 = 0;
 
-          (void) QTSS_GetValuePtr(*theStreamPtr, sStreamPacketCountAttr, 0, (void **) &packetCountPtr, &theLen);
-          if (theLen > 0) {
+          (void) QTSS_GetValuePtr(*theStreamPtr, sStreamPacketCountAttr, 0, (void **) &packetCountPtr, &theLen2);
+          if (theLen2 > 0) {
             *packetCountPtr += 1;
             //printf("SET sStreamPacketCountAttr =%lu\n", *packetCountPtr);
           }

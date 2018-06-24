@@ -389,6 +389,8 @@ void SDPSourceInfo::Parse(char *sdpData, UInt32 sdpLen) {
           Assert(tempTtl < 65536);
         }
 
+        // 地址映射
+        bool isNAT = CF::Net::SocketUtils::ConvertToLocalAddr(&tempIPAddr);
         if (theStreamIndex > 0) {
           // if this c= line is part of a stream, it overrides the global stream information
           fStreamArray[theStreamIndex - 1].fDestIPAddr = tempIPAddr;

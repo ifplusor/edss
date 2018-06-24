@@ -232,8 +232,7 @@ bool QTSServer::Initialize(XMLPrefsParser *inPrefsSource, PrefsSource *inMessage
 
   //
   // DEFAULT IP ADDRESS & DNS NAME
-  // 在 startServer 函数里已经调用了 SocketUtils::Initialize,关于网络及 socket 的一些数据
-  // 已经被收集。
+  // 在 startServer 函数里已经调用了 SocketUtils::Initialize, 关于网络及 socket 的一些数据已经被收集。
   if (!this->SetDefaultIPAddr())
     return false;
 
@@ -363,9 +362,7 @@ bool QTSServer::SetDefaultIPAddr() {
   if (this->GetValue(qtssSvrDefaultDNSName)->Ptr == nullptr) {
     //If we've gotten here, what has probably happened is the IP address (explicitly
     //entered as a preference) doesn't exist
-    QTSSModuleUtils::LogError(qtssFatalVerbosity,
-                              qtssMsgDefaultRTSPAddrUnavail,
-                              0);
+    QTSSModuleUtils::LogError(qtssFatalVerbosity, qtssMsgDefaultRTSPAddrUnavail, 0);
     return false;
   }
   return true;

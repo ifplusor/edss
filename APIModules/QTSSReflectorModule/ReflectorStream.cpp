@@ -359,7 +359,7 @@ SInt32 ReflectorStream::AddOutput(ReflectorOutput *inOutput, SInt32 putInThisBuc
       for (UInt32 dTwo = 0; dTwo < sBucketSize; dTwo++)
           Assert(fOutputArray[dOne][dTwo] != inOutput);
 #endif
-  if (inOutput) {
+  if (inOutput != nullptr) {
     inOutput->setNewFlag(true);
   }
 
@@ -465,18 +465,17 @@ BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags, 
   } else {
     // NOTE: 对于指定了 IP、Port 的情况, QTSServer::SetupUDPSockets 创建的 socket 对显然无法满足要求,
     //   所以这里会再次创建 socket 对。
-    //   fStreamInfo.fDestIPAddr 是从 sdp 的 c 行解析, fStreamInfo.fPort 是从 m 行解析
     if (isMulticastDest) {
       fSockets = sSocketPool.GetUDPSocketPair(INADDR_ANY, fStreamInfo.fPort, fStreamInfo.fSrcIPAddr, 0);
-    } else {
-      fSockets = sSocketPool.GetUDPSocketPair(fStreamInfo.fDestIPAddr, fStreamInfo.fPort, fStreamInfo.fSrcIPAddr, 0);
-    }
-
-    if ((fSockets == nullptr) && fStreamInfo.fSetupToReceive) {
-      fStreamInfo.fPort = 0;
-      if (isMulticastDest) {
+      if ((fSockets == nullptr) && fStreamInfo.fSetupToReceive) {
+        fStreamInfo.fPort = 0;
         fSockets = sSocketPool.GetUDPSocketPair(INADDR_ANY, fStreamInfo.fPort, fStreamInfo.fSrcIPAddr, 0);
-      } else {
+      }
+    } else {
+      // fStreamInfo.fDestIPAddr 是从 sdp 的 c 行解析, fStreamInfo.fPort 是从 m 行解析
+      fSockets = sSocketPool.GetUDPSocketPair(fStreamInfo.fDestIPAddr, fStreamInfo.fPort, fStreamInfo.fSrcIPAddr, 0);
+      if ((fSockets == nullptr) && fStreamInfo.fSetupToReceive) {
+        fStreamInfo.fPort = 0;
         fSockets = sSocketPool.GetUDPSocketPair(fStreamInfo.fDestIPAddr, fStreamInfo.fPort, fStreamInfo.fSrcIPAddr, 0);
       }
     }
@@ -569,6 +568,8 @@ void ReflectorStream::SendReceiverReport() {
   *theEyeWriter++ = htonl(theEyeCount) & 0x7fffffffU;
   *theEyeWriter   = htonl(0) & 0x7fffffffU;
 
+  // TODO(james): 发送丢包数量
+
   // send the 3 packets(RR,SDES,APP) to the multicast RTCP addr & port for this stream
   (void) fSockets->GetSocketB()->SendTo(fDestRTCPAddr, fDestRTCPPort, fReceiverReportBuffer, fReceiverReportSize);
 }
@@ -622,6 +623,8 @@ ReflectorSender::~ReflectorSender() {
 
 /**
  * 检测是否有新的数据包，或到达唤醒时间
+ *
+ * fHashNewPackets || (fNextTimeToRun != 0 && inCurrentTime >= fNextTimeToRun)
  */
 bool ReflectorSender::ShouldReflectNow(const SInt64 &inCurrentTime, SInt64 *ioWakeupTime) {
   Assert(ioWakeupTime != nullptr);
@@ -1066,7 +1069,7 @@ void ReflectorSender::ReflectPackets(SInt64 *ioWakeupTime, Queue *inFreeQueue) {
           // everybody starts at the oldest packet in the buffer delay or uses a bookmark
           packetElem = fFirstPacketInQueueForNewOutput;
           firstPacket = true;
-          theOutput->setNewFlag(false);
+          theOutput->setNewFlag(false); // how use?
         } else {
           firstPacket = false;
         }
@@ -1074,7 +1077,7 @@ void ReflectorSender::ReflectPackets(SInt64 *ioWakeupTime, Queue *inFreeQueue) {
         // sBucketDelayInMsec 对应于配置文件中的 reflector_bucket_offset_delay_msec, 缺省值为 73.
         SInt64 bucketDelay = ReflectorStream::sBucketDelayInMsec * (SInt64) bucketIndex;
         packetElem = this->SendPacketsToOutput(theOutput, packetElem, currentTime, bucketDelay, firstPacket);
-        if (packetElem) {
+        if (packetElem) { // 理论上不为 NULL
           QueueElem *newElem = NeedRelocateBookMark(packetElem);
 
           auto *thePacket = (ReflectorPacket *) newElem->GetEnclosingObject();
@@ -1103,7 +1106,7 @@ void ReflectorSender::ReflectPackets(SInt64 *ioWakeupTime, Queue *inFreeQueue) {
 }
 
 /**
- * 将 Packet 序列写入 ReflectorOutput
+ * 将 Packet 序列写入 ReflectorOutput，直到队列为空或阻塞
  */
 QueueElem *ReflectorSender::SendPacketsToOutput(ReflectorOutput *theOutput, QueueElem *currentPacket,
                                                 SInt64 currentTime, SInt64 bucketDelay, bool firstPacket) {
@@ -1199,10 +1202,11 @@ QueueElem *ReflectorSender::GetClientBufferStartPacketOffset(SInt64 offsetMsec, 
   return oldestPacketInClientBufferTime;
 }
 
+/**
+ * Iterate through the senders queue to clear out packets.
+ * Start at the oldest packet and walk forward to the newest packet
+ */
 void ReflectorSender::RemoveOldPackets(Queue *inFreeQueue) {
-  // Iterate through the senders queue to clear out packets
-  // Start at the oldest packet and walk forward to the newest packet
-  //
   QueueIter removeIter(&fPacketQueue);
   SInt64 theCurrentTime = Core::Time::Milliseconds();
 
@@ -1267,11 +1271,12 @@ QueueElem *ReflectorSender::NeedRelocateBookMark(QueueElem *elem) {
   Assert(thePacket);
 
   packetDelay = theCurrentTime - thePacket->fTimeArrived;
-  if ((packetDelay > currentMaxPacketDelay) && IsKeyFrameFirstPacket(thePacket)) { // or IsFrameFirstPacket
+  if (packetDelay > currentMaxPacketDelay) {
+    // fStream->fStreamFormat == ReflectorStream::kStreamFormatVideoH264 && IsKeyFrameFirstPacket(thePacket)
     if (fKeyFrameStartPacketElementPointer) {
       auto *keyPacket = (ReflectorPacket *) (fKeyFrameStartPacketElementPointer->GetEnclosingObject());
       if (keyPacket->fTimeArrived > thePacket->fTimeArrived) {
-        this->fStream->GetMyReflectorSession()->SetHasVideoKeyFrameUpdate(true);
+//        this->fStream->GetMyReflectorSession()->SetHasVideoKeyFrameUpdate(true);
         return fKeyFrameStartPacketElementPointer;
       }
     }
@@ -1317,7 +1322,7 @@ QueueElem *ReflectorSender:: GetNewestKeyFrameFirstPacket(QueueElem *currentElem
 
 
 /**
- * 判断当前RTP包是否为H.264 I关键帧的第一个RTP包
+ * 判断当前RTP包是否为H.264 关键帧的第一个RTP包
  * 下面的写法可能不太严谨(仅针对H264 的情况，未考虑其他格式)
  */
 bool ReflectorSender::IsKeyFrameFirstPacket(ReflectorPacket *thePacket) {
@@ -1801,8 +1806,8 @@ void ReflectorSocket::GetIncomingData(const SInt64 &inMilliseconds) {
     // if the port number of this socket is odd, this packet is an RTCP packet.
     thePacket->fIsRTCP = static_cast<bool>(this->GetLocalPort() & 1U);
     DEBUG_LOG(0,
-              "local port:%u, isRTCP=%s\n",
-              this->GetLocalPort(), thePacket->fIsRTCP ? "true" : "false");
+              "remote addr:%x, remote port:%u, local port:%u, isRTCP=%s\n",
+              theRemoteAddr, theRemotePort, this->GetLocalPort(), thePacket->fIsRTCP ? "true" : "false");
 
     // 获取 Socket 对应的 Sender,对 Sender、thePacket 进行一系列设置,最终将 thePacket
     // 挂入 Sender 的 fPacketQueue

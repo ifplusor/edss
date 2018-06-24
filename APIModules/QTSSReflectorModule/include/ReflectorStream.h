@@ -323,7 +323,7 @@ class ReflectorSender : public CF::Net::UDPDemuxerTask {
   bool IsKeyFrameFirstPacket(ReflectorPacket *thePacket);
 
   ReflectorStream *fStream;
-  UInt32 fWriteFlag;
+  UInt32 fWriteFlag; // 标记 RTP/RTCP
 
   CF::Queue fPacketQueue;
   CF::QueueElem *fFirstNewPacketInQueue; // set in ReflectorSocket::ProcessPacket, and clear in ReflectorSender::ReflectPackets
@@ -601,7 +601,7 @@ void ReflectorStream::UpdateBitRate(SInt64 currentTime) {
     fLastBitRateSample = currentTime;
 
     DEBUG_LOG(1,
-              "--- stream@%p  sample time:%" _S64BITARG_ "  bit rate:%" _U32BITARG_ "\n",
+              "--- receive packets  stream@%p  sample time:%" _S64BITARG_ "  bit rate:%" _U32BITARG_ "\n",
               this, fLastBitRateSample, fCurrentBitRate);
   }
 }

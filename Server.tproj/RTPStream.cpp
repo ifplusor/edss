@@ -629,8 +629,11 @@ void RTPStream::AppendTransport(RTSPRequestInterface *request) {
     char srcIPAddrBuf[20];
     StrPtrLen theSrcIPAddress(srcIPAddrBuf, 20);
     QTSServerInterface::GetServer()->GetPrefs()->GetTransportSrcAddr(&theSrcIPAddress);
-    if (theSrcIPAddress.Len == 0)
+    if (theSrcIPAddress.Len == 0) {
       theSrcIPAddress = *fSockets->GetSocketA()->GetLocalAddrStr();
+//      UInt32 addr = fSockets->GetSocketA()->GetLocalAddr();
+//      theSrcIPAddress = CF::Net::SocketUtils::ConvertToLocalAddr(theSrcIPAddress);
+    }
 
     if (request->IsPushRequest()) {
       char rtpPortStr[10];
