@@ -52,6 +52,8 @@
 /*fantasy add this*/
 #include "KeyFrameCache.h"
 
+#define STREAM_USE_ET 0
+
 //This will add some printfs that are useful for checking the thinning
 #define REFLECTOR_THINNING_DEBUGGING 0
 #define MAX_CACHE_SIZE  (1024*1024*2)

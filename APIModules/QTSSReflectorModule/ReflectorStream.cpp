@@ -532,8 +532,13 @@ BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags, 
 
   // finally, register these sockets for events
   if (qtssRTPTransportTypeUDP == fTransportType) {
+#if STREAM_USE_ET
     fSockets->GetSocketA()->RequestEvent(EV_RE);
     fSockets->GetSocketB()->RequestEvent(EV_RE);
+#else
+    fSockets->GetSocketA()->RequestEvent(EV_REOS);
+    fSockets->GetSocketB()->RequestEvent(EV_REOS);
+#endif
   }
 
   return QTSS_NoErr;
@@ -1419,7 +1424,11 @@ void ReflectorSocketPool::DestructUDPSocketPair(Net::UDPSocketPair *inPair) {
 
 ReflectorSocket::ReflectorSocket()
     : IdleTask(),
+#if STREAM_USE_ET
       UDPSocket(nullptr, Net::Socket::kNonBlockingSocketType | Net::Socket::kEdgeTriggeredSocketMode | Net::UDPSocket::kWantsDemuxer),
+#else
+      UDPSocket(nullptr, Net::Socket::kNonBlockingSocketType | Net::UDPSocket::kWantsDemuxer),
+#endif
       fBroadcasterClientSession(nullptr),
       fLastBroadcasterTimeOutRefresh(0),
       fSleepTime(0),
@@ -1829,7 +1838,9 @@ void ReflectorSocket::GetIncomingData(const SInt64 &inMilliseconds) {
     this->ProcessPacket(inMilliseconds, thePacket, theRemoteAddr, theRemotePort);
   }
 
-//  this->RequestEvent(EV_REOS); // re watch EV_RE
+#if !STREAM_USE_ET
+  this->RequestEvent(EV_REOS); // re watch EV_RE
+#endif
 }
 
 /**
