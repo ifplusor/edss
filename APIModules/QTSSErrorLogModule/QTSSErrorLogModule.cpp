@@ -146,8 +146,7 @@ QTSS_Error QTSSErrorLogModule_Main(void *inPrivateArgs) {
   return _stublibrary_main(inPrivateArgs, QTSSErrorLogModuleDispatch);
 }
 
-QTSS_Error QTSSErrorLogModuleDispatch(QTSS_Role inRole,
-                                      QTSS_RoleParamPtr inParamBlock) {
+QTSS_Error QTSSErrorLogModuleDispatch(QTSS_Role inRole, QTSS_RoleParamPtr inParamBlock) {
   switch (inRole) {
     case QTSS_Register_Role: return Register(&inParamBlock->regParams);
     case QTSS_StateChange_Role: return StateChange(&inParamBlock->stateChangeParams);
@@ -225,21 +224,17 @@ QTSS_Error LogError(QTSS_RoleParamPtr inParamBlock) {
   QTSServerPrefs *thePrefs = QTSServerInterface::GetServer()->GetPrefs();
 
   Core::MutexLocker locker(sLogMutex);
-  if (thePrefs->GetErrorLogVerbosity()
-      >= inParamBlock->errorParams.inVerbosity) {
+  if (thePrefs->GetErrorLogVerbosity() >= inParamBlock->errorParams.inVerbosity) {
     size_t inStringLen = ::strlen(inParamBlock->errorParams.inBuffer);
     size_t lastStringLen = ::strlen(sLastErrorString);
     bool isDuplicate = true;
 
-    if (inStringLen > sizeof(sLastErrorString)
-        - 1) //truncate to max char buffer subtract \0 terminator
+    if (inStringLen > sizeof(sLastErrorString) - 1) //truncate to max char buffer subtract \0 terminator
       inStringLen = sizeof(sLastErrorString) - 1;
 
     if (lastStringLen != inStringLen) //same size?
       isDuplicate = false; // different sizes
-    else if (::strncmp(inParamBlock->errorParams.inBuffer,
-                       sLastErrorString,
-                       lastStringLen) != 0) //same chars?
+    else if (::strncmp(inParamBlock->errorParams.inBuffer, sLastErrorString, lastStringLen) != 0) //same chars?
       isDuplicate = false; //different  chars
 
     //is this error message the same as the last one we received?
@@ -254,8 +249,7 @@ QTSS_Error LogError(QTSS_RoleParamPtr inParamBlock) {
         //The error logger is the bottleneck for any and all messages printed by the server.
         //For debugging purposes, these messages can be printed to stdout as well.
         if (thePrefs->IsScreenLoggingEnabled())
-          s_printf("--last message repeated %d times\n",
-                      sDupErrorStringCount);
+          s_printf("--last message repeated %d times\n", sDupErrorStringCount);
 
         CheckErrorLogState();
 
@@ -270,11 +264,7 @@ QTSS_Error LogError(QTSS_RoleParamPtr inParamBlock) {
           theDateBuffer[0] = '\0';
 
         char tempBuffer[kMaxLogStringLen];
-        s_snprintf(tempBuffer,
-                      sizeof(tempBuffer),
-                      "%s: --last message repeated %d times\n",
-                      theDateBuffer,
-                      sDupErrorStringCount);
+        s_snprintf(tempBuffer, sizeof(tempBuffer), "%s: --last message repeated %d times\n", theDateBuffer, sDupErrorStringCount);
 
         sErrorLog->WriteToLog(tempBuffer, kAllowLogToRoll);
 
@@ -291,9 +281,7 @@ QTSS_Error LogError(QTSS_RoleParamPtr inParamBlock) {
     //The error logger is the bottleneck for any and all messages printed by the server.
     //For debugging purposes, these messages can be printed to stdout as well.
     if (thePrefs->IsScreenLoggingEnabled())
-      s_printf("%s %s\n",
-                  sErrorLevel[verbLvl],
-                  inParamBlock->errorParams.inBuffer);
+      s_printf("%s %s\n", sErrorLevel[verbLvl], inParamBlock->errorParams.inBuffer);
 
     CheckErrorLogState();
 
@@ -308,14 +296,8 @@ QTSS_Error LogError(QTSS_RoleParamPtr inParamBlock) {
       theDateBuffer[0] = '\0';
 
     char tempBuffer[kMaxLogStringLen];
-    s_snprintf(tempBuffer,
-                  sizeof(tempBuffer),
-                  "%s: %s %s\n",
-                  theDateBuffer,
-                  sErrorLevel[verbLvl],
-                  inParamBlock->errorParams.inBuffer);
-    tempBuffer[sizeof(tempBuffer) - 2] =
-        '\n'; //make sure the entry has a line feed before the \0 terminator
+    s_snprintf(tempBuffer, sizeof(tempBuffer), "%s: %s %s\n", theDateBuffer, sErrorLevel[verbLvl], inParamBlock->errorParams.inBuffer);
+    tempBuffer[sizeof(tempBuffer) - 2] = '\n'; //make sure the entry has a line feed before the \0 terminator
     tempBuffer[sizeof(tempBuffer) - 1] = '\0'; //make sure it is 0 terminated.
 
     sErrorLog->WriteToLog(tempBuffer, kAllowLogToRoll);
@@ -362,10 +344,7 @@ void WriteStartupMessage() {
 
   char tempBuffer[kMaxLogStringLen];
   if (result)
-    s_snprintf(tempBuffer,
-                  sizeof(tempBuffer),
-                  "# Streaming STARTUP %s\n",
-                  theDateBuffer);
+    s_snprintf(tempBuffer, sizeof(tempBuffer), "# Streaming STARTUP %s\n", theDateBuffer);
 
   // log startup message to error log as well.
   if ((result) && (sErrorLog != NULL))
@@ -391,10 +370,7 @@ void WriteShutdownMessage() {
 
   char tempBuffer[kMaxLogStringLen];
   if (result)
-    s_snprintf(tempBuffer,
-                  sizeof(tempBuffer),
-                  "# Streaming SHUTDOWN %s\n",
-                  theDateBuffer);
+    s_snprintf(tempBuffer, sizeof(tempBuffer), "# Streaming SHUTDOWN %s\n", theDateBuffer);
 
   if (result && sErrorLog != NULL)
     sErrorLog->WriteToLog(tempBuffer, kAllowLogToRoll);
@@ -414,6 +390,7 @@ SInt64 ErrorLogCheckTask::Run() {
       success = sErrorLog->CheckRollLog();
     Assert(success);
   }
+
   // execute this task again in one hour.
   return (60 * 60 * 1000);
 }

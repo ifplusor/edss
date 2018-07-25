@@ -68,7 +68,7 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
   // object holders is > 0, the RTSPSession will NEVER go away. However,
   // the object managing the session should be aware that if IsLiveSession returns
   // false it may be wise to relinquish control of the session
-  void IncrementObjectHolderCount() { /*(void)atomic_add(&fObjectHolders, 1);*/ ++fObjectHolders; }
+  void IncrementObjectHolderCount() { ++fObjectHolders; }
 
   void DecrementObjectHolderCount();
 
@@ -112,13 +112,13 @@ class RTSPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
   // Allows non-buffered writes to the client. These will flow control.
 
   // THE FIRST ENTRY OF THE IOVEC MUST BE BLANK!!!
-  virtual QTSS_Error WriteV(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength, UInt32 *outLenWritten);
+  QTSS_Error WriteV(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength, UInt32 *outLenWritten) override;
 
-  virtual QTSS_Error Write(void *inBuffer, UInt32 inLength, UInt32 *outLenWritten, UInt32 inFlags);
+  QTSS_Error Write(void *inBuffer, UInt32 inLength, UInt32 *outLenWritten, UInt32 inFlags) override;
 
-  virtual QTSS_Error Read(void *ioBuffer, UInt32 inLength, UInt32 *outLenRead);
+  QTSS_Error Read(void *ioBuffer, UInt32 inLength, UInt32 *outLenRead) override;
 
-  virtual QTSS_Error RequestEvent(QTSS_EventType inEventMask);
+  QTSS_Error RequestEvent(QTSS_EventType inEventMask) override;
 
   // performs RTP over RTSP
   QTSS_Error InterleavedWrite(void *inBuffer, UInt32 inLen, UInt32 *outLenWritten, unsigned char channel);

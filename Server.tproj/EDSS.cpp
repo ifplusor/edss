@@ -190,13 +190,11 @@ char *EDSS::GetPersonalityGroup() {
 // TaskThreadPool Settings
 
 UInt32 EDSS::GetShortTaskThreads() {
-  return 1;
-//  return sServer->GetPrefs()->GetNumThreads(); // whatever the prefs say
+  return sServer->GetPrefs()->GetNumThreads(); // whatever the prefs say
 }
 
 UInt32 EDSS::GetBlockingThreads() {
-  return 1;
-//  return sServer->GetPrefs()->GetNumBlockingThreads(); // whatever the prefs say
+  return sServer->GetPrefs()->GetNumBlockingThreads(); // whatever the prefs say
 }
 
 

@@ -207,7 +207,7 @@ void RTPSessionInterface::SetValueComplete(UInt32 inAttrIndex,
 void RTPSessionInterface::UpdateRTSPSession(RTSPSessionInterface *inNewRTSPSession) {
   if (inNewRTSPSession != fRTSPSession) {
     // If there was an old session, let it know that we are done
-    if (fRTSPSession != NULL)
+    if (fRTSPSession != nullptr)
       fRTSPSession->DecrementObjectHolderCount();
 
     // Increment this count to prevent the RTSP session from being deleted

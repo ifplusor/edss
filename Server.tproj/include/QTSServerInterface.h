@@ -109,19 +109,16 @@ class QTSServerInterface : public QTSSDictionary {
 
   // total rtp bytes sent by the server
   void IncrementTotalRTPBytes(UInt32 bytes) {
-    //(void)atomic_add(&fPeriodicRTPBytes, bytes);
     fPeriodicRTPBytes.fetch_add(bytes);
   }
 
   // total rtp packets sent by the server
   void IncrementTotalPackets() {
-    //(void)atomic_add(&fPeriodicRTPPackets, 1);
     ++fPeriodicRTPPackets;
   }
 
   // total rtp bytes reported as lost by the clients
   void IncrementTotalRTPPacketsLost(UInt32 packets) {
-    //(void)atomic_add(&fPeriodicRTPPacketsLost, packets);
     fPeriodicRTPPacketsLost.fetch_add(packets);
   }
 
@@ -130,13 +127,9 @@ class QTSServerInterface : public QTSSDictionary {
     CF::Core::MutexLocker locker(&fMutex);
     fNumRTPSessions++;
     fTotalRTPSessions++;
-    UInt32 numModules =
-        QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisSetRTSPLoadRole);
-    for (UInt32 currentModule = 0; currentModule < numModules;
-         currentModule++) {
-      QTSSModule *theModule =
-          QTSServerInterface::GetModule(QTSSModule::kRedisSetRTSPLoadRole,
-                                        currentModule);
+    UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisSetRTSPLoadRole);
+    for (UInt32 currentModule = 0; currentModule < numModules; currentModule++) {
+      QTSSModule *theModule = QTSServerInterface::GetModule(QTSSModule::kRedisSetRTSPLoadRole, currentModule);
       (void) theModule->CallDispatch(Easy_RedisSetRTSPLoad_Role, NULL);
     }
   }
@@ -144,13 +137,9 @@ class QTSServerInterface : public QTSSDictionary {
   void AlterCurrentRTPSessionCount(SInt32 inDifference) {
     CF::Core::MutexLocker locker(&fMutex);
     fNumRTPSessions += inDifference;
-    UInt32 numModules =
-        QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisSetRTSPLoadRole);
-    for (UInt32 currentModule = 0; currentModule < numModules;
-         currentModule++) {
-      QTSSModule *theModule =
-          QTSServerInterface::GetModule(QTSSModule::kRedisSetRTSPLoadRole,
-                                        currentModule);
+    UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisSetRTSPLoadRole);
+    for (UInt32 currentModule = 0; currentModule < numModules; currentModule++) {
+      QTSSModule *theModule = QTSServerInterface::GetModule(QTSSModule::kRedisSetRTSPLoadRole, currentModule);
       (void) theModule->CallDispatch(Easy_RedisSetRTSPLoad_Role, NULL);
     }
   }

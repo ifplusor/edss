@@ -160,8 +160,7 @@ RTSPSession::RTSPSession(bool doReportHTTPConnectionAddress)
       fFoundValidAccept(false),
       fDoReportHTTPConnectionAddress(doReportHTTPConnectionAddress),
       fCurrentModule(0),
-      fState(kReadingFirstRequest),
-      fMsgCount(0) {
+      fState(kReadingFirstRequest) {
   this->SetTaskName("RTSPSession");
 
   // must guarantee this map is present

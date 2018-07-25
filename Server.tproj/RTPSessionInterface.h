@@ -58,17 +58,17 @@ class RTPSessionInterface : public QTSSDictionary, public CF::Thread::Task {
 
   RTPSessionInterface();
 
-  virtual ~RTPSessionInterface() {
+  ~RTPSessionInterface() override {
     if (GetQualityLevel() != 0)
       QTSServerInterface::GetServer()->IncrementNumThinned(-1);
-    if (fRTSPSession != NULL)
+    if (fRTSPSession != nullptr)
       fRTSPSession->DecrementObjectHolderCount();
     delete[] fSRBuffer.Ptr;
     delete[] fAuthNonce.Ptr;
     delete[] fAuthOpaque.Ptr;
   }
 
-  virtual void SetValueComplete(UInt32 inAttrIndex, QTSSDictionaryMap *inMap, UInt32 inValueIndex, void *inNewValue, UInt32 inNewValueLen);
+  void SetValueComplete(UInt32 inAttrIndex, QTSSDictionaryMap *inMap, UInt32 inValueIndex, void *inNewValue, UInt32 inNewValueLen) override;
 
   //Timeouts. This allows clients to refresh the timeout on this session
   void RefreshTimeout() { fTimeoutTask.RefreshTimeout(); }

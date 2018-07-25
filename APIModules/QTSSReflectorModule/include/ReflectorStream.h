@@ -600,8 +600,8 @@ void ReflectorStream::UpdateBitRate(SInt64 currentTime) {
     // Don't check again for awhile!
     fLastBitRateSample = currentTime;
 
-    DEBUG_LOG(1,
-              "--- receive packets  stream@%p  sample time:%" _S64BITARG_ "  bit rate:%" _U32BITARG_ "\n",
+    DEBUG_LOG(0,
+              "ReflectorStream@%p: receive packets. sample time:%" _S64BITARG_ ", bit rate:%" _U32BITARG_ "\n",
               this, fLastBitRateSample, fCurrentBitRate);
   }
 }

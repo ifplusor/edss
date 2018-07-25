@@ -224,7 +224,6 @@ bool QTSServer::Initialize(XMLPrefsParser *inPrefsSource, PrefsSource *inMessage
 
   //
   // Load ERROR LOG module only. This is good in case there is a startup error.
-
   auto *theLoggingModule = new QTSSModule("QTSSErrorLogModule");
   (void) theLoggingModule->SetupModule(&sCallbacks, &QTSSErrorLogModule_Main);
   (void) AddModule(theLoggingModule);

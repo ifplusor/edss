@@ -176,10 +176,7 @@ UInt32 AccessChecker::UpdateUserProfiles() {
   StrPtrLen userData;
   QTSS_TimeVal newModDate = -1;
   // QTSSModuleUtils::ReadEntireFile allocates memory for userData
-  QTSS_Error err = QTSSModuleUtils::ReadEntireFile(fUsersFilePath,
-                                                   &userData,
-                                                   fUsersFileModDate,
-                                                   &newModDate);
+  QTSS_Error err = QTSSModuleUtils::ReadEntireFile(fUsersFilePath, &userData, fUsersFileModDate, &newModDate);
   if (err == QTSS_FileNotFound)
     resultErr |= kUsersFileNotFoundErr;
   else if (err != QTSS_NoErr)
@@ -197,10 +194,7 @@ UInt32 AccessChecker::UpdateUserProfiles() {
   // Read the groups file into a buffer
   StrPtrLen groupData;
   // QTSSModuleUtils::ReadEntireFile allocates memory for groupData
-  err = QTSSModuleUtils::ReadEntireFile(fGroupsFilePath,
-                                        &groupData,
-                                        fGroupsFileModDate,
-                                        &newModDate);
+  err = QTSSModuleUtils::ReadEntireFile(fGroupsFilePath, &groupData, fGroupsFileModDate, &newModDate);
   if (err == QTSS_FileNotFound)
     resultErr |= kGroupsFileNotFoundErr;
   else if (err != QTSS_NoErr)
@@ -219,8 +213,7 @@ UInt32 AccessChecker::UpdateUserProfiles() {
     return resultErr;
   }
 
-  if ((fUsersFileModDate == oldUsersFileModDate)
-      && (fGroupsFileModDate == oldGroupsFileModDate))
+  if ((fUsersFileModDate == oldUsersFileModDate) && (fGroupsFileModDate == oldGroupsFileModDate))
     return resultErr;
 
   // If either the users or groups file has changed
@@ -232,10 +225,7 @@ UInt32 AccessChecker::UpdateUserProfiles() {
   if (userData.Len == 0)
     (void) QTSSModuleUtils::ReadEntireFile(fUsersFilePath, &userData, -1, NULL);
   if (groupData.Len == 0 && !groupFileErrors)
-    (void) QTSSModuleUtils::ReadEntireFile(fGroupsFilePath,
-                                           &groupData,
-                                           -1,
-                                           NULL);
+    (void) QTSSModuleUtils::ReadEntireFile(fGroupsFilePath, &groupData, -1, NULL);
 
 
   // This will delete the memory allocated for userData when we return from this function
@@ -256,8 +246,7 @@ UInt32 AccessChecker::UpdateUserProfiles() {
     // Skip over leading whitespace
     authLineParser.ConsumeUntil(NULL, StringParser::sNonWhitespaceMask);
     // Skip over comments and blank lines
-    if ((authLineParser.GetDataRemaining() == 0) || (authLineParser[0] == '#')
-        || (authLineParser[0] == '\0'))
+    if ((authLineParser.GetDataRemaining() == 0) || (authLineParser[0] == '#') || (authLineParser[0] == '\0'))
       continue;
     authLineParser.ConsumeWord(&word);
     if (sAuthWord.Equal(word)) {
@@ -396,13 +385,10 @@ UInt32 AccessChecker::UpdateUserProfiles() {
 }
 
 // No memory is allocated
-bool AccessChecker::HaveFilePathsChanged(char const *inUsersFilePath,
-                                         char const *inGroupsFilePath) {
+bool AccessChecker::HaveFilePathsChanged(char const *inUsersFilePath, char const *inGroupsFilePath) {
   bool changed = true;
-  if ((inUsersFilePath != NULL) && (inGroupsFilePath != NULL)
-      && (fUsersFilePath != NULL) && (fGroupsFilePath != NULL)) {
-    if ((strcmp(inUsersFilePath, fUsersFilePath) == 0)
-        && (strcmp(inGroupsFilePath, fGroupsFilePath) == 0))
+  if ((inUsersFilePath != NULL) && (inGroupsFilePath != NULL) && (fUsersFilePath != NULL) && (fGroupsFilePath != NULL)) {
+    if ((strcmp(inUsersFilePath, fUsersFilePath) == 0) && (strcmp(inGroupsFilePath, fGroupsFilePath) == 0))
       changed = false;
   }
   return changed;

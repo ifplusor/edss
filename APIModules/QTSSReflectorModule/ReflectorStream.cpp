@@ -504,14 +504,12 @@ BindSockets(QTSS_StandardRTSP_Params *inParams, UInt32 inReflectorSessionFlags, 
   ((ReflectorSocket *) fSockets->GetSocketA())->SetSSRCFilter(filterState, timeout);
   ((ReflectorSocket *) fSockets->GetSocketB())->SetSSRCFilter(filterState, timeout);
 
-#if 1
   // Always set the Rcv buf size for the sockets. This is important because the
   // server is going to be getting many packets on these sockets.
   if (qtssRTPTransportTypeUDP == fTransportType) {
-    fSockets->GetSocketA()->SetSocketRcvBufSize(1024 * 1024);
+    fSockets->GetSocketA()->SetSocketRcvBufSize(3 * 1024 * 1024);
     fSockets->GetSocketB()->SetSocketRcvBufSize(1024 * 1024);
   }
-#endif
 
   // If the broadcaster is sending RTP directly to us, we don't
   // need to join a multicast group because we're not using multicast
@@ -1063,7 +1061,7 @@ void ReflectorSender::ReflectPackets(SInt64 *ioWakeupTime, Queue *inFreeQueue) {
       {
         Core::MutexLocker locker2(&theOutput->fMutex);
 
-        // 返回既在 fBookmarkedPacketsElemsArray 数组同时属于 fPacketQueue 的成员
+        // 返回既在 fBookmarkedPacketsElemsArray 数组，同时属于 fPacketQueue 的成员
         QueueElem *packetElem = theOutput->GetBookMarkedPacket(&fPacketQueue);
         if (packetElem == nullptr) { // should only be a new output
           // everybody starts at the oldest packet in the buffer delay or uses a bookmark
@@ -1445,7 +1443,8 @@ ReflectorSocket::ReflectorSocket()
 }
 
 ReflectorSocket::~ReflectorSocket() {
-  //printf("ReflectorSocket::~ReflectorSocket\n");
+  DEBUG_LOG(0, "ReflectorSocket::~ReflectorSocket@%p\n", this);
+
   while (fFreeQueue.GetLength() > 0) {
     auto *packet = (ReflectorPacket *) fFreeQueue.DeQueue()->GetEnclosingObject();
     delete packet;
@@ -1468,7 +1467,7 @@ void ReflectorSocket::RemoveSender(ReflectorSender *inSender) {
 
 /*
  * ReflectorSocket::Run() -> ReflectorSender::ReflectPackets() -> ReflectorSender::SendPacketsToOutput() -> ReflectorOutput::WritePacket()
- * 当 ReflectorSocket 接受到推流上来的数据后，会启动 Task。
+ * 当 ReflectorSocket 接收到推流上来的数据后，会启动 Task。
  * 在 ReflectorSocket::Run() 中，遍历 fSenderQueue，并调用每个 Sender 的 ReflectPackets()
  * 在 ReflectorSender::ReflectPackets() 中，遍历与 fStream 相关联的 ReflectorOutput，并对 Output 调用 SendPacketsToOutput()
  * 在 ReflectorSender::SendPacketsToOutput() 中，遍历 fPacketQueue，并对每个 Packet 调用 Output 的 WritePacket()
@@ -1482,6 +1481,7 @@ SInt64 ReflectorSocket::Run() {
   this->CancelTimeout();
 
   EventFlags theEvents = this->GetEvents();
+  DEBUG_LOG(0, "ReflectorSocket@%p: wake ReflectorSocket with events=0x%X\n", this, theEvents);
 
   //if we have been told to delete ourselves, do so.
   if (theEvents & kKillEvent) return -1;
@@ -1507,11 +1507,11 @@ SInt64 ReflectorSocket::Run() {
   fSleepTime = 0;
 
   // Now that we've gotten all available packets, have the streams reflect
-  for (QueueIter iter2(&fSenderQueue); !iter2.IsDone(); iter2.Next()) {
-    auto *theSender2 = (ReflectorSender *) iter2.GetCurrent()->GetEnclosingObject();
+  for (QueueIter iter(&fSenderQueue); !iter.IsDone(); iter.Next()) {
+    auto *theSender = (ReflectorSender *) iter.GetCurrent()->GetEnclosingObject();
     // 根据 fNextTimeToRun 和当前时间判断是否马上进行 Reflect.
-    if (theSender2 != nullptr && theSender2->ShouldReflectNow(theMilliseconds, &fSleepTime))
-        theSender2->ReflectPackets(&fSleepTime, &fFreeQueue);
+    if (theSender != nullptr && theSender->ShouldReflectNow(theMilliseconds, &fSleepTime))
+        theSender->ReflectPackets(&fSleepTime, &fFreeQueue);
   }
 
 #if DEBUG
@@ -1520,8 +1520,10 @@ SInt64 ReflectorSocket::Run() {
 
   // For smoothing purposes, the streams can mark when they want to wakeup.
   // fSleepTime 实际上是 Sender 的 fNextTimeToRun,利用 IdleTimerThread 实现下一次的继续运行。
-  if (fSleepTime > 0)
+  if (fSleepTime > 0) {
+    DEBUG_LOG(0, "ReflectorSocket@%p: set idle time %lld\n", this, fSleepTime);
     this->SetIdleTimer(fSleepTime);
+  }
 
 #if DEBUG
   //The debugging check above expects real time.
@@ -1786,6 +1788,8 @@ void ReflectorSocket::GetIncomingData(const SInt64 &inMilliseconds) {
   UInt32 theRemoteAddr = 0;
   UInt16 theRemotePort = 0;
 
+  DEBUG_LOG(0, "ReflectorSocket@%p::GetIncomingData\n", this);
+
   // we use ET mode, get all the outstanding packets for this socket
   for (;;) {
     // get a packet off the free queue.
@@ -1793,30 +1797,39 @@ void ReflectorSocket::GetIncomingData(const SInt64 &inMilliseconds) {
 
     // 调用 ::recvfrom 从 socket 里读取数据到 thePacket 的缓冲区
     thePacket->fPacketPtr.Len = 0;
-    (void) this->RecvFrom(&theRemoteAddr, &theRemotePort, thePacket->fPacketPtr.Ptr,
-                          ReflectorPacket::kMaxReflectorPacketSize, &thePacket->fPacketPtr.Len);
+    OS_Error theErr = this->RecvFrom(&theRemoteAddr, &theRemotePort, thePacket->fPacketPtr.Ptr,
+                                     ReflectorPacket::kMaxReflectorPacketSize, &thePacket->fPacketPtr.Len);
+    if (theErr != OS_NoErr) {
+      if (theErr == EAGAIN) {
+        DEBUG_LOG(0, "ReflectorSocket@%p::GetIncomingData no more packets on this socket!\n", this);
+        break;  // no more packets on this socket!
+      } else {
+        DEBUG_LOG(0, "ReflectorSocket@%p::GetIncomingData encounter error:%d\n", theErr, this);
+        break;
+      }
+    }
 
-    if (thePacket->fPacketPtr.Len == 0) {
+    if (thePacket->fPacketPtr.Len <= 0) {
       // put the packet back on the free queue, because we didn't actually get any data here.
       fFreeQueue.EnQueue(&thePacket->fQueueElem);
-      //s_printf("ReflectorSocket::GetIncomingData no more packets on this socket!\n");
-      break;  // no more packets on this socket!
+      continue;
     }
 
     // if the port number of this socket is odd, this packet is an RTCP packet.
     thePacket->fIsRTCP = static_cast<bool>(this->GetLocalPort() & 1U);
     DEBUG_LOG(0,
-              "remote addr:%x, remote port:%u, local port:%u, isRTCP=%s\n",
-              theRemoteAddr, theRemotePort, this->GetLocalPort(), thePacket->fIsRTCP ? "true" : "false");
+              "ReflectorSocket@%p: remote addr:%x, remote port:%hu, local port:%hu, isRTCP=%s\n",
+              this, theRemoteAddr, theRemotePort, this->GetLocalPort(), thePacket->fIsRTCP ? "true" : "false");
+    DEBUG_LOG(0 && !thePacket->fIsRTCP,
+              "ReflectorSocket@%p: SSRC=0x%X, Seq=%hu, Time=%u\n",
+              this, thePacket->GetSSRC(), thePacket->GetPacketRTPSeqNum(), thePacket->GetPacketRTPTime());
 
     // 获取 Socket 对应的 Sender,对 Sender、thePacket 进行一系列设置,最终将 thePacket
     // 挂入 Sender 的 fPacketQueue
     this->ProcessPacket(inMilliseconds, thePacket, theRemoteAddr, theRemotePort);
-
-    //s_printf("ReflectorSocket::GetIncomingData \n");
   }
 
-//  this->RequestEvent(EV_RE); // re watch EV_RE
+//  this->RequestEvent(EV_REOS); // re watch EV_RE
 }
 
 /**

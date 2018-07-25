@@ -22,16 +22,15 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       RTPOverbufferWindow.h
+/**
+ * @file RTPOverbufferWindow.h
+ * @author Denis Serenyi
+ *
+ * Class that tracks packets that are part of the "overbuffer". That is,
+ * packets that are being sent ahead of time. This class can be used
+ * to make sure the server isn't overflowing the client's overbuffer size.
+ */
 
-    Contains:   Class that tracks packets that are part of the "overbuffer". That is,
-                packets that are being sent ahead of time. This class can be used
-                to make sure the server isn't overflowing the client's overbuffer size.
-
-    Written By: Denis Serenyi
-
-*/
 
 #ifndef __RTP_OVERBUFFER_WINDOW_H__
 #define __RTP_OVERBUFFER_WINDOW_H__

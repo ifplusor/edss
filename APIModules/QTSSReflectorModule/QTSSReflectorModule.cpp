@@ -694,10 +694,14 @@ QTSS_Error ProcessRTSPRequest(QTSS_StandardRTSP_Params *inParams) {
   RTPSessionOutput **theOutput = nullptr;
   QTSS_Error theErr = QTSS_GetValuePtr(inParams->inClientSession, sOutputAttr, 0, (void **) &theOutput, &theLen);
   if ((theErr != QTSS_NoErr) || (theLen != sizeof(RTPSessionOutput *))) { // a broadcaster push session
-    if (*theMethod == qtssPlayMethod || *theMethod == qtssRecordMethod)
+    if (*theMethod == qtssPlayMethod || *theMethod == qtssRecordMethod) {
       return DoPlay(inParams, nullptr);
-    else // 不能响应推流端的 teardown 请求
+    } else if (*theMethod == qtssTeardownMethod) {
+      // TODO: 不能响应推流端的 teardown 请求
       return QTSS_RequestFailed;
+    } else {
+      return QTSS_RequestFailed;
+    }
   }
 
   switch (*theMethod) {
@@ -1081,7 +1085,7 @@ QTSS_Error DoAnnounce(QTSS_StandardRTSP_Params *inParams) {
       return QTSSModuleUtils::SendErrorResponse(inParams->inRTSPRequest, qtssClientForbidden, 0);
   }
 #endif
-  char sdpContext[1024] = {0};
+  char sdpContext[4096] = {0};
   sprintf(sdpContext, "%s%s", sessionHeaders, mediaHeaders);
   SDPCache::GetInstance()->setSdpMap(theStreamName, sdpContext);
 
@@ -1245,7 +1249,7 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
   DoDescribeAddRequiredSDPLines(inParams, theSession, outModDate, &editedSDP, &theSDPData);
   StrPtrLen editedSDPSPL(editedSDP.GetBufPtr(), editedSDP.GetBytesWritten());
 
-  // 6. SetSDPBuffer会调用SDP的解析方法paser()，在该方法内对SDP解析的同时，分析出该SDP是否合法，赋予属性fValid；
+  // 6. SetSDPBuffer会调用SDP的解析方法parse()，在该方法内对SDP解析的同时，分析出该SDP是否合法，赋予属性fValid；
   // ------------ Check the headers
 
   SDPContainer checkedSDPContainer;

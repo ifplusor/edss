@@ -101,8 +101,8 @@ typedef UInt32 QTSS_AddStreamFlags;
  * QTSS_PlayFlags used in the QTSS_Play Callback function.
  */
 enum {
-  qtssPlayFlagsSendRTCP = 0x00000010,   // have the server generate RTCP Sender Reports
-  qtssPlayFlagsAppendServerInfo = 0x00000020    // have the server append the server info APP packet to your RTCP Sender Reports
+  qtssPlayFlagsSendRTCP = 0x00000010, // have the server generate RTCP Sender Reports
+  qtssPlayFlagsAppendServerInfo = 0x00000020 // have the server append the server info APP packet to your RTCP Sender Reports
 };
 typedef UInt32 QTSS_PlayFlags;
 

@@ -168,8 +168,7 @@ void QTSSRollingLog::EnableLog(bool appendDotLog) {
 
   fLog = ::fopen(fLogFullPath, "a+");//open for "append"
   if (nullptr != fLog) {
-    if (!logExists) //the file is new, write a log header with the create time of the file.
-    {
+    if (!logExists) { //the file is new, write a log header with the create time of the file.
       fLogCreateTime = this->WriteLogHeader(fLog);
 #if __MacOSX__
       (void) ::chown(fLogFullPath, 76, (gid_t)-1);//set owner to user qtss.
@@ -220,10 +219,7 @@ bool QTSSRollingLog::FormatDate(char *ioDateBuffer, bool logTimeInGMT) {
   // the date time is in GMT, unless logTimeInGMT is false, in which case
   // the time logged is local time
   //s_strftime(ioDateBuffer, kMaxDateBufferSize, "%d/%b/%Y:%H:%M:%S", theLocalTime);
-  s_strftime(ioDateBuffer,
-                kMaxDateBufferSizeInBytes,
-                "%Y-%m-%d %H:%M:%S",
-                theTime);
+  s_strftime(ioDateBuffer, kMaxDateBufferSizeInBytes, "%Y-%m-%d %H:%M:%S", theTime);
   return true;
 }
 
@@ -314,27 +310,21 @@ bool QTSSRollingLog::RenameLogFile(char const *inFileName) {
   //and append the log number and suffix
   SInt32 theErr = 0;
   for (SInt32 x = 0; (theErr == 0) && (x <= 1000); x++) {
-    if (x
-        == 1000) //we don't have any digits left, so just reuse the "---" until tomorrow...
-    {
+    if (x == 1000) { //we don't have any digits left, so just reuse the "---" until tomorrow...
       //add a bogus log number and exit the loop
       s_sprintf(theNewNameBuffer + theBaseNameLength, "---.log");
       break;
     }
 
     //add the log number & suffix
-    s_sprintf(theNewNameBuffer + theBaseNameLength,
-                 "%03" _S32BITARG_ ".log",
-                 x);
+    s_sprintf(theNewNameBuffer + theBaseNameLength, "%03" _S32BITARG_ ".log", x);
 
     //assume that when ::stat returns an error, it is becase
     //the file doesnt exist. Once that happens, we have a unique name
     // csl - shouldn't you watch for a ENOENT result?
     struct stat theIdontCare;
     theErr = ::stat(theNewNameBuffer, &theIdontCare);
-    WarnV((theErr == 0 || Core::Thread::GetErrno() == ENOENT),
-          "unexpected stat error in RenameLogFile");
-
+    WarnV((theErr == 0 || Core::Thread::GetErrno() == ENOENT), "unexpected stat error in RenameLogFile");
   }
 
   //rename the file. Use posix rename function
@@ -387,10 +377,7 @@ time_t QTSSRollingLog::WriteLogHeader(FILE *inFile) {
   //theLocalTime->tm_sec = 0;
 
   char tempbuf[1024];
-  s_strftime(tempbuf,
-                sizeof(tempbuf),
-                "#Log File Created On: %m/%d/%Y %H:%M:%S\n",
-                theLocalTime);
+  s_strftime(tempbuf, sizeof(tempbuf), "#Log File Created On: %m/%d/%Y %H:%M:%S\n", theLocalTime);
   //s_sprintf(tempbuf, "#Log File Created On: %d/%d/%d %d:%d:%d %d:%d:%d GMT\n",
   //          theLocalTime->tm_mon, theLocalTime->tm_mday, theLocalTime->tm_year,
   //          theLocalTime->tm_hour, theLocalTime->tm_min, theLocalTime->tm_sec,
@@ -510,6 +497,7 @@ SInt64 QTSSRollingLog::Run() {
       }
     }
   }
+
   return 60 * 1000;
 }
 
@@ -533,5 +521,4 @@ void QTSSRollingLog::ResetToMidnight(time_t *inTimePtr, time_t *outTimePtr) {
   //theLocalTime->tm_year -= 1900;
 
   *outTimePtr = ::mktime(theLocalTime);
-
 }
