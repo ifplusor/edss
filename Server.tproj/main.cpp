@@ -87,7 +87,7 @@ void usage() {
 }
 
 // 发送信号量给子进程
-bool sendtochild(int sig, pid_t myPID) {
+bool send2child(int sig, pid_t myPID) {
   if (sChildPID != 0 && sChildPID != myPID) { // this is the parent
     // Send signal to child
     ::kill(sChildPID, sig);
@@ -106,7 +106,7 @@ void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
   //
   // SIGHUP means we should reread our preferences
   if (sig == SIGHUP) {
-    if (sendtochild(sig, myPID)) {
+    if (send2child(sig, myPID)) {
       return;
     } else {
       // This is the child process.
@@ -123,7 +123,7 @@ void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
 
   //Try to shut down gracefully the first time, shutdown forcefully the next time
   if (sig == SIGINT) { // kill the child only
-    if (sendtochild(sig, myPID)) {
+    if (send2child(sig, myPID)) {
       return;// ok we're done
     } else {
       s_printf("receive SIGINT\n");
@@ -137,7 +137,7 @@ void sigcatcher(int sig, int /*sinfo*/, struct sigcontext * /*sctxt*/) {
 
   if (sig == SIGTERM || sig == SIGQUIT) { // kill child then quit
     s_printf("receive SIGTERM\n");
-    if (sendtochild(sig, myPID)) {
+    if (send2child(sig, myPID)) {
       return;// ok we're done
     } else {
       // Tell the server that there has been a SigTerm, the main thread will start
@@ -537,12 +537,11 @@ CF_Error CFInit(int argc, char **argv) {
   // 创建配置类并注册到CxxFramework环境中
   EDSS *config = EDSS::StartServer(theXMLParser, theMessagesSource, thePort, statsUpdateInterval, theInitialState,
                                    dontFork, debugLevel, debugOptions, sAbsolutePath);
-  if (config != nullptr) {
-    CF::CFEnv::Register(config);
-    return CF_NoErr;
+  if (config == nullptr) {
+    return CF_FatalError;
   }
-
-  return CF_FatalError;
+  CF::CFEnv::Register(config);
+  return CF_NoErr;
 }
 
 CF_Error CFExit(CF_Error exitCode) {
