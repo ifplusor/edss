@@ -22,12 +22,11 @@
  * @APPLE_LICENSE_HEADER_END@
  *
  */
-/*
-    File:       QTSSModuleUtils.cpp
-
-    Contains:   Implements utility routines defined in QTSSModuleUtils.h.
-                    
-*/
+/**
+ * @file: QTSSModuleUtils.cpp
+ *
+ * Implements utility routines defined in QTSSModuleUtils.h.
+ */
 
 #include <CF/DateTranslator.h>
 #include <CF/ArrayObjectDeleter.h>
@@ -36,7 +35,7 @@
 #include "QTSSModuleUtils.h"
 
 #include "QTAccessFile.h"
-#include "SDPCache.h"
+#include "FileCache.h"
 
 #if !__WinSock__
 
@@ -50,11 +49,11 @@
 
 using namespace CF;
 
-QTSS_TextMessagesObject QTSSModuleUtils::sMessages = NULL;
-QTSS_ServerObject       QTSSModuleUtils::sServer = NULL;
-QTSS_StreamRef          QTSSModuleUtils::sErrorLog = NULL;
+QTSS_TextMessagesObject QTSSModuleUtils::sMessages = nullptr;
+QTSS_ServerObject       QTSSModuleUtils::sServer = nullptr;
+QTSS_StreamRef          QTSSModuleUtils::sErrorLog = nullptr;
 bool                    QTSSModuleUtils::sEnableRTSPErrorMsg = false;
-QTSS_ErrorVerbosity QTSSModuleUtils::sMissingPrefVerbosity = qtssMessageVerbosity;
+QTSS_ErrorVerbosity     QTSSModuleUtils::sMissingPrefVerbosity = qtssMessageVerbosity;
 
 void QTSSModuleUtils::
 Initialize(QTSS_TextMessagesObject inMessages, QTSS_ServerObject inServer, QTSS_StreamRef inErrorLog) {
@@ -65,31 +64,71 @@ Initialize(QTSS_TextMessagesObject inMessages, QTSS_ServerObject inServer, QTSS_
 
 QTSS_Error QTSSModuleUtils::
 ReadEntireFile(char *inPath, StrPtrLen *outData, QTSS_TimeVal inModDate, QTSS_TimeVal *outModDate) {
-#if 0
-  QTSS_Object theFileObject = NULL;
-#endif
   QTSS_Error theErr = QTSS_NoErr;
 
-  outData->Ptr = NULL;
+  outData->Ptr = nullptr;
   outData->Len = 0;
 
+#if USE_FILE_CACHE
+  //
+  // read from file cache
+
   do {
-#if 0
+    QTSS_TimeVal theModDate = FileCache::GetInstance()->getModify(inPath);
+    if (theModDate < 0 || (inModDate != -1 && theModDate <= inModDate)) {
+      // If file hasn't been modified since inModDate, don't have to read the file
+      theErr = QTSS_FileNotFound;
+      break;
+    }
+
+    UInt64 theLength = 0;
+    char *fileContext = FileCache::GetInstance()->get(inPath);
+    if (fileContext == nullptr) {
+      theErr = QTSS_FileNotFound;
+      break;
+    } else {
+      theLength = strlen(fileContext);
+    }
+
+    if (theLength > kSInt32_Max) {
+      theErr = QTSS_RequestFailed;
+      break;
+    }
+
+    outData->Ptr = new char[(SInt32) (theLength + 1)];
+    outData->Len = (UInt32) theLength;
+    outData->Ptr[outData->Len] = 0;
+
+    // Read the data
+    memcpy(outData->Ptr, fileContext, theLength);
+
+  } while (false);
+
+  if (theErr != QTSS_FileNotFound) {
+    return theErr;
+  }
+#endif
+
+#if !DONT_READ_FILE
+  //
+  // read from file system
+
+  QTSS_Object theFileObject = nullptr;
+
+  do {
     // Use the QTSS file system API to read the file
     theErr = QTSS_OpenFileObject(inPath, 0, &theFileObject);
     if (theErr != QTSS_NoErr)
         break;
-#endif
-    UInt32 theParamLen = 8;
-    QTSS_TimeVal *theModDate = NULL;
-    unsigned long long date = 0;
-    //theErr = QTSS_GetValuePtr(theFileObject, qtssFlObjModDate, 0, (void**)&theModDate, &theParamLen);
-    date = SDPCache::GetInstance()->getSdpCacheDate(inPath);
-    theModDate = (QTSS_TimeVal *) &date;
+
+    UInt32 theParamLen = 0;
+    QTSS_TimeVal *theModDate = nullptr;
+
+    theErr = QTSS_GetValuePtr(theFileObject, qtssFlObjModDate, 0, (void**)&theModDate, &theParamLen);
     Assert(theParamLen == sizeof(QTSS_TimeVal));
     if (theParamLen != sizeof(QTSS_TimeVal)) break;
 
-    if (outModDate != NULL)
+    if (outModDate != nullptr)
       *outModDate = (QTSS_TimeVal) *theModDate;
 
     if (inModDate != -1) {
@@ -98,36 +137,24 @@ ReadEntireFile(char *inPath, StrPtrLen *outData, QTSS_TimeVal inModDate, QTSS_Ti
         break;
     }
 
-    theParamLen = 8;
-    UInt64 *theLength = NULL;
-    UInt64 sdpLen = 0;
-    //theErr = QTSS_GetValuePtr(theFileObject, qtssFlObjLength, 0, (void**)&theLength, &theParamLen);
-    char *sdpContext = SDPCache::GetInstance()->getSdpMap(inPath);
-    if (sdpContext == NULL) {
-      theErr = QTSS_RequestFailed;
-    } else {
-      sdpLen = strlen(sdpContext);
-    }
-
-    theLength = &sdpLen;
-
+    theParamLen = 0;
+    UInt64 *theLength = nullptr;
+    theErr = QTSS_GetValuePtr(theFileObject, qtssFlObjLength, 0, (void**)&theLength, &theParamLen);
     if (theParamLen != sizeof(UInt64)) break;
 
-    if (*theLength > kSInt32_Max) break;
+    if (*theLength > kSInt32_Max) {
+      theErr = QTSS_RequestFailed;
+      break;
+    }
 
     // Allocate memory for the file data
     outData->Ptr = new char[(SInt32) (*theLength + 1)];
-    outData->Len = (SInt32) *theLength;
+    outData->Len = (UInt32) *theLength;
     outData->Ptr[outData->Len] = 0;
 
     // Read the data
     UInt32 recvLen = 0;
-    if (sdpContext) {
-      recvLen = *theLength;
-      // theErr = QTSS_Read(theFileObject, outData->Ptr, outData->Len, &recvLen);
-      memcpy(outData->Ptr, sdpContext, *theLength);
-    }
-
+    theErr = QTSS_Read(theFileObject, outData->Ptr, outData->Len, &recvLen);
     if (theErr != QTSS_NoErr) {
       outData->Delete();
       break;
@@ -136,12 +163,12 @@ ReadEntireFile(char *inPath, StrPtrLen *outData, QTSS_TimeVal inModDate, QTSS_Ti
 
   } while (false);
 
-#if 0
   // Close the file
-  if(theFileObject != NULL) {
+  if (theFileObject != nullptr) {
       theErr = QTSS_CloseFileObject(theFileObject);
   }
 #endif
+
   return theErr;
 }
 

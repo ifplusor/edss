@@ -42,7 +42,7 @@
 #include "SDPSourceInfo.h"
 
 #include "SDPUtils.h"
-#include <SDPCache.h>
+#include <FileCache.h>
 
 
 using namespace std;
@@ -740,21 +740,7 @@ ReflectorSession *DoSessionSetup(QTSS_StandardRTSP_Params *inParams, QTSS_Attrib
 
   if (theErr != QTSS_NoErr) return nullptr;
 
-//  char *theQueryString = NULL;
-//  theErr = QTSS_GetValueAsString(inParams->inRTSPRequest, qtssRTSPReqQueryString, 0, &theQueryString);
-//  QTSSCharArrayDeleter theQueryStringDeleter(theQueryString);
-
-//  std::string queryTemp;
-//  if (theQueryString) {
-//    queryTemp = EasyUtil::Urldecode(theQueryString);
-//  }
-//  Net::QueryParamList parList(const_cast<char *>(queryTemp.c_str()));
-
   UInt32 theChannelNum = 1;
-//  char const *chnNum = parList.DoFindCGIValueForParam(EASY_TAG_CHANNEL);
-//  if (chnNum) {
-//    theChannelNum = (UInt32) stoi(chnNum);
-//  }
 
   StrPtrLen theFullPath(theFullPathStr);
 
@@ -1087,7 +1073,7 @@ QTSS_Error DoAnnounce(QTSS_StandardRTSP_Params *inParams) {
 #endif
   char sdpContext[4096] = {0};
   sprintf(sdpContext, "%s%s", sessionHeaders, mediaHeaders);
-  SDPCache::GetInstance()->setSdpMap(theStreamName, sdpContext);
+  FileCache::GetInstance()->put(theStreamName, sdpContext);
 
   //s_printf("QTSSReflectorModule:DoAnnounce SendResponse OK=200\n");
 
@@ -1155,53 +1141,6 @@ QTSS_Error DoDescribe(QTSS_StandardRTSP_Params *inParams) {
   if (theSession == nullptr) return QTSS_RequestFailed;
 
   theRefCount++;
-
-  //	//redis,streamid/serial/channel.sdp,for example "./Movies/\streamid\serial\channel0.sdp"
-  //	if(true)
-  //	{
-  //		//1.get the path
-  //		char* theFileNameStr = NULL;
-  //		QTSS_Error theErrEx = QTSS_GetValueAsString(inParams->inRTSPRequest, qtssRTSPReqLocalPath, 0, &theFileNameStr);
-  //		Assert(theErrEx == QTSS_NoErr);
-  //		QTSSCharArrayDeleter theFileNameStrDeleter(theFileNameStr);
-  //
-  //		//2.get SessionID
-  //		char chStreamId[64]={0};
-  //#ifdef __Win32__//it's different between linux and windows
-  //
-  //		char movieFolder[256] = { 0 };
-  //		UInt32 thePathLen = 256;
-  //		QTSServerInterface::GetServer()->GetPrefs()->GetMovieFolder(&movieFolder[0], &thePathLen);
-  //		StringParser parser(&StrPtrLen(theFileNameStr));
-  //		StrPtrLen strName;
-  //		parser.ConsumeLength(NULL,thePathLen);
-  //		parser.Expect('\\');
-  //		parser.ConsumeUntil(&strName,'\\');
-  //		memcpy(chStreamId,strName.Ptr,strName.Len);
-  //#else
-  //
-  //#endif
-  //		//3.auth the streamid in redis
-  //		char chResult = 0;
-  //		QTSS_RoleParams theParams;
-  //		theParams.JudgeStreamIDParams.inStreanID = chStreamId;
-  //		theParams.JudgeStreamIDParams.outresult = &chResult;
-  //
-  //		UInt32 numModules = QTSServerInterface::GetNumModulesInRole(QTSSModule::kRedisJudgeStreamIDRole);
-  //		for ( UInt32 currentModule=0;currentModule < numModules; currentModule++)
-  //		{
-  //			QTSSModule* theModule = QTSServerInterface::GetModule(QTSSModule::kRedisJudgeStreamIDRole, currentModule);
-  //			(void)theModule->CallDispatch(Easy_RedisJudgeStreamID_Role, &theParams);
-  //		}
-  //		//if(chResult == 0)
-  //		if(false)
-  //		{
-  //			sSessionMap->Release(theSession->GetRef());//don't forget
-  //			return QTSSModuleUtils::SendErrorResponse(inParams->inRTSPRequest, qtssClientBadRequest,0);;
-  //		}
-  //		//auth sucessfully
-  //	}
-  //	//redis
 
   // 2. 如果已经有一个输出会话附属到这个客户端会话，那么就删除之；
   RTPSessionOutput **theOutput = nullptr;
@@ -1415,7 +1354,7 @@ ReflectorSession *FindOrCreateSession(StrPtrLen *inName, QTSS_StandardRTSP_Param
     QTSS_Error theErr = theSession->SetupReflectorSession(theInfo, inParams, theSetupFlag, sOneSSRCPerStream, sTimeoutSSRCSecs);
     if (theErr != QTSS_NoErr) {
       // delete theSession;
-      SDPCache::GetInstance()->eraseSdpMap(theSession->GetSourceID()->Ptr);
+      FileCache::GetInstance()->remove(theSession->GetSourceID()->Ptr);
       theSession->DelRedisLive();
       theSession->Signal(Thread::Task::kKillEvent);
       return nullptr;
@@ -1499,7 +1438,8 @@ void DeleteReflectorPushSession(QTSS_StandardRTSP_Params *inParams, ReflectorSes
     sSessionMap->Release(theSession->GetRef());
 
   ReflectorSession *stopSessionProcessing = nullptr;
-  QTSS_Error theErr = QTSS_SetValue(inParams->inClientSession, sClientBroadcastSessionAttr, 0, &stopSessionProcessing, sizeof(stopSessionProcessing));
+  QTSS_Error theErr = QTSS_SetValue(inParams->inClientSession, sClientBroadcastSessionAttr, 0,
+      &stopSessionProcessing, sizeof(stopSessionProcessing));
   Assert(theErr == QTSS_NoErr);
 
   if (foundSession)
@@ -1510,7 +1450,7 @@ void DeleteReflectorPushSession(QTSS_StandardRTSP_Params *inParams, ReflectorSes
     theSession->TearDownAllOutputs(); // just to be sure because we are about to delete the session.
     sSessionMap->UnRegister(theSessionRef);// we had an error while setting up-- don't let anyone get the session
     //delete theSession;
-    SDPCache::GetInstance()->eraseSdpMap(theSession->GetSourceID()->Ptr);
+    FileCache::GetInstance()->remove(theSession->GetSourceID()->Ptr);
     theSession->DelRedisLive();
     theSession->Signal(Thread::Task::kKillEvent);
   }
@@ -2052,7 +1992,7 @@ void RemoveOutput(ReflectorOutput *inOutput, ReflectorSession *theSession, bool 
 
         sSessionMap->UnRegister(theSessionRef);
         //delete theSession;
-        SDPCache::GetInstance()->eraseSdpMap(theSession->GetSourceID()->Ptr);
+        FileCache::GetInstance()->remove(theSession->GetSourceID()->Ptr);
         theSession->DelRedisLive();
 
         theSession->Signal(Thread::Task::kKillEvent);

@@ -37,6 +37,14 @@
 #include "QTSS.h"
 #include "RTPMetaInfoPacket.h"
 
+#ifndef USE_FILE_CACHE
+#define USE_FILE_CACHE 1
+#endif
+
+#ifndef DONT_READ_FILE
+#define DONT_READ_FILE 1
+#endif
+
 class QTSSModuleUtils {
  public:
   // compatibility features for certain players
@@ -50,8 +58,11 @@ class QTSSModuleUtils {
 
   static void Initialize(QTSS_TextMessagesObject inMessages, QTSS_ServerObject inServer, QTSS_StreamRef inErrorLog);
 
-  // Read the complete contents of the file at inPath into the StrPtrLen.
-  // This function allocates memory for the file data.
+  /**
+   * @brief Read the complete contents of the file at inPath into the StrPtrLen.
+   *
+   * @note This function allocates memory for the file data.
+   */
   static QTSS_Error ReadEntireFile(char *inPath, CF::StrPtrLen *outData, QTSS_TimeVal inModDate = -1,
                                    QTSS_TimeVal *outModDate = nullptr);
 
@@ -83,8 +94,7 @@ class QTSSModuleUtils {
   //
   // 2.   Appends the x-RTP-Meta-Info header to the response, using the proper
   //      fields from the array, as well as the IDs provided in the array
-  static QTSS_Error AppendRTPMetaInfoHeader(QTSS_RTSPRequestObject inRequest,
-                                            CF::StrPtrLen *inRTPMetaInfoHeader,
+  static QTSS_Error AppendRTPMetaInfoHeader(QTSS_RTSPRequestObject inRequest, CF::StrPtrLen *inRTPMetaInfoHeader,
                                             RTPMetaInfoPacket::FieldID *inFieldIDArray);
 
   // This function sends an error to the RTSP client. You must provide a
@@ -92,18 +102,15 @@ class QTSSModuleUtils {
   //
   // It always returns QTSS_RequestFailed.
 
-  static QTSS_Error SendErrorResponse(QTSS_RTSPRequestObject inRequest,
-                                      QTSS_RTSPStatusCode inStatusCode,
-                                      QTSS_AttributeID inTextMessage,
-                                      CF::StrPtrLen *inStringArg = NULL);
+  static QTSS_Error SendErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatusCode,
+                                      QTSS_AttributeID inTextMessage, CF::StrPtrLen *inStringArg = NULL);
 
   // This function sends an error to the RTSP client. You don't have to provide
   // a text message ID, but instead you need to provide the error message in a
   // string
   //
   // It always returns QTSS_RequestFailed
-  static QTSS_Error SendErrorResponseWithMessage(QTSS_RTSPRequestObject inRequest,
-                                                 QTSS_RTSPStatusCode inStatusCode,
+  static QTSS_Error SendErrorResponseWithMessage(QTSS_RTSPRequestObject inRequest, QTSS_RTSPStatusCode inStatusCode,
                                                  CF::StrPtrLen *inErrorMessageStr);
 
   // Sends and HTTP 1.1 error message with an error message in HTML if errorMessage != NULL.
@@ -111,34 +118,34 @@ class QTSSModuleUtils {
   // Use the QTSS_RTSPStatusCodes for the inStatusCode, for now they are the same as HTTP.
   //
   // It always returns QTSS_RequestFailed
-  static QTSS_Error SendHTTPErrorResponse(QTSS_RTSPRequestObject inRequest,
-                                          QTSS_SessionStatusCode inStatusCode,
-                                          bool inKillSession,
-                                          char *errorMessage);
+  static QTSS_Error SendHTTPErrorResponse(QTSS_RTSPRequestObject inRequest, QTSS_SessionStatusCode inStatusCode,
+                                          bool inKillSession, char *errorMessage);
 
   //Modules most certainly don't NEED to use this function, but it is awfully handy
   //if they want to take advantage of it. Using the SDP data provided in the iovec,
   //this function sends a standard describe response.
   //NOTE: THE FIRST ENTRY OF THE IOVEC MUST BE EMPTY!!!!
-  static void SendDescribeResponse(QTSS_RTSPRequestObject inRequest,
-                                   QTSS_ClientSessionObject inSession,
-                                   iovec *describeData,
-                                   UInt32 inNumVectors,
-                                   UInt32 inTotalLength);
+  static void SendDescribeResponse(QTSS_RTSPRequestObject inRequest, QTSS_ClientSessionObject inSession,
+                                   iovec *describeData, UInt32 inNumVectors, UInt32 inTotalLength);
 
   // Called by SendDescribeResponse to coalesce iovec to a buffer
   // Allocates memory - remember to delete it!
   static char *CoalesceVectors(iovec *inVec, UInt32 inNumVectors, UInt32 inTotalLength);
 
-  //
-  // SEARCH FOR A SPECIFIC MODULE OBJECT
+  /**
+   * @brief SEARCH FOR A SPECIFIC MODULE OBJECT
+   */
   static QTSS_ModulePrefsObject GetModuleObjectByName(const CF::StrPtrLen &inModuleName);
 
-  //
-  // GET MODULE PREFS OBJECT
+  /**
+   * @brief GET MODULE PREFS OBJECT
+   */
   static QTSS_ModulePrefsObject GetModulePrefsObject(QTSS_ModuleObject inModObject);
 
-  // GET MODULE ATTRIBUTES OBJECT
+  //
+  /**
+   * @brief GET MODULE ATTRIBUTES OBJECT
+   */
   static QTSS_Object GetModuleAttributesObject(QTSS_ModuleObject inModObject);
 
   //
@@ -166,33 +173,35 @@ class QTSSModuleUtils {
   static void GetAttribute(QTSS_Object inObject, char const *inAttributeName, QTSS_AttrDataType inType,
                            void *ioBuffer, void *inDefaultValue, UInt32 inBufferLen);
 
-  static void GetIOAttribute(QTSS_Object inObject,
-                             char *inAttributeName,
-                             QTSS_AttrDataType inType,
-                             void *ioDefaultResultBuffer,
-                             UInt32 inBufferLen);
-  //
-  // GET STRING ATTRIBUTE
-  //
-  // Does the same thing as GetAttribute, but does it for string attribute. Returns a newly
-  // allocated buffer with the attribute value inside it.
-  //
-  // Pass in NULL for the default value or an empty string if the default is not known.
+  static void GetIOAttribute(QTSS_Object inObject, char *inAttributeName, QTSS_AttrDataType inType,
+                             void *ioDefaultResultBuffer, UInt32 inBufferLen);
+
+  /**
+   * @brief GET STRING ATTRIBUTE
+   *
+   * Does the same thing as GetAttribute, but does it for string attribute.
+   *
+   * @note Pass in NULL for the default value or an empty string if the default is not known.
+   *
+   * @return a newly allocated buffer with the attribute value inside it.
+   */
   static char *GetStringAttribute(QTSS_Object inObject, char const *inAttributeName, char *inDefaultValue);
 
-  //
-  // GET ATTR ID
-  //
-  // Given an attribute in an object, returns its attribute ID
-  // or qtssIllegalAttrID if it isn't found.
+  /**
+   * @brief GET ATTR ID
+   *
+   * @param inObject
+   * @param inAttributeName attribute in object
+   *
+   * @returns attribute ID, or qtssIllegalAttrID if it isn't found.
+   */
   static QTSS_AttributeID GetAttrID(QTSS_Object inObject, char const *inAttributeName);
 
-  //
-  //
-  //
-  /// Get the type of request. Returns qtssActionFlagsNoFlags on failure.
-  //  Result is a bitmap of flags
-  //
+  /**
+   * @brief Get the type of request.
+   *
+   * @returns a bitmap of flags, or qtssActionFlagsNoFlags on failure.
+   */
   static QTSS_ActionFlags GetRequestActions(QTSS_RTSPRequestObject theRTSPRequest);
 
   static char *GetLocalPath_Copy(QTSS_RTSPRequestObject theRTSPRequest);
@@ -261,10 +270,7 @@ class IPComponentStr {
 };
 
 bool IPComponentStr::IsLocal() {
-  if (this->Equal(&sLocalIPCompStr))
-    return true;
-
-  return false;
+  return this->Equal(&sLocalIPCompStr);
 }
 
 CF::StrPtrLen *IPComponentStr::GetComponent(UInt16 which) {

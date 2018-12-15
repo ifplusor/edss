@@ -5,7 +5,7 @@ add_subdirectory(RTCPUtilitiesLib)
 
 set(HEADER_FILES
         include/SDPUtils.h
-        include/SDPCache.h
+        include/FileCache.h
         include/UserAgentParser.h
         include/KeyFrameCache.h
         include/RTPProtocol.h
@@ -13,7 +13,7 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
         SDPUtils.cpp
-        SDPCache.cpp
+        FileCache.cpp
         UserAgentParser.cpp
         KeyFrameCache.cpp
         H264Packet.cpp)
