@@ -52,7 +52,11 @@
 /*fantasy add this*/
 #include "KeyFrameCache.h"
 
+#if EVENT_EDGE_TRIGGERED_SUPPORTED
+#define STREAM_USE_ET 1
+#else
 #define STREAM_USE_ET 0
+#endif
 
 //This will add some printfs that are useful for checking the thinning
 #define REFLECTOR_THINNING_DEBUGGING 0
